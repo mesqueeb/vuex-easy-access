@@ -8,6 +8,12 @@ The Vuex Easy Access plugin does two things:
 
 There are several vuex plugins available making boilerplating etc easier for you. I felt most of them are overkill and wanted something small and simple.
 
+## Installation
+
+```
+npm i --save vuex-easy-access
+```
+
 ## 1. Add a global getter/setter for each state property
 
 ### What you can do
@@ -61,7 +67,7 @@ The `set()` method of Vuex Easy Access checks to see if an action with the synta
 
 ### Set up
 ```js
-import { defaultSetter, defaultGetter } from './VuexEasyAccess'
+import { defaultSetter, defaultGetter } from 'vuex-easy-access'
 
 const store = new Vuex.Store(initialStore)
 
