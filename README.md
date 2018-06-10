@@ -19,8 +19,11 @@ npm i --save vuex-easy-access
 ### What you can do
 
 You can access and set anything in your store through `get()` and `set()` methods:
-- `get()` will automatically look for a getter, if none it will return the state
-- `set()` will automatically look for an action, if none it will make a mutation
+- `get(path)` will automatically look for a getter, if none it will return the state
+- `set(path, val)` will automatically look for an action, if none it will make a mutation
+
+The `path` syntax is: `module/submodule/stateVal.subProp`.<br>
+`/` for modules and `.` for sub properties when the state value is an object.
 
 ### Why this is awesome
 
