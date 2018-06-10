@@ -20,8 +20,8 @@ You can access and set anything in your store through `get()` and `set()` method
 
 In the example below we'll see why the `get()` and `set()` methods are helpful.
 
-You have an app where users have themes and can set colors per theme.
-The module path is: user/theme
+You have an app where users have themes and can set colors per theme.<br>
+The module path is: user/theme<br>
 The state: `colors: {primary: 'blue', secondary: 'white'}`
 
 Simple usage allows:
@@ -81,8 +81,8 @@ Vuex Easy Access creates one mutation for every single property in your store! A
 
 #### What really happens?
 
-In line with the examples above:
-The module path is: user/theme
+In line with the examples above:<br>
+The module path is: user/theme<br>
 The state: `colors: {primary: 'blue', secondary: 'white'}`
 
 Vuex Easy Access will then automatically generate these mutations:
@@ -103,5 +103,5 @@ mutations: {
 }
 ```
 
-Happy Vuexing!
+Happy Vuexing!<br>
 -Luca Ban
