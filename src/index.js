@@ -1,5 +1,6 @@
 /**
  * Vuex Easy Access plugin
+ * Unified syntax with simple set() and get() store access + auto generate mutations!
  *
  * @author     Luca Ban
  * @contact    https://lucaban.com
@@ -111,4 +112,4 @@ function defaultGetter (path, store) {
   return getDeepValue(store.state, path)
 }
 
-export { defaultMutations, defaultSetter, defaultGetter }
+module.exports = { defaultMutations, defaultSetter, defaultGetter }
