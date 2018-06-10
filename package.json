@@ -2,7 +2,7 @@
   "name": "vuex-easy-access",
   "version": "1.0.0",
   "description": "Unified syntax with simple set() and get() store access + auto generate mutations",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
