@@ -77,17 +77,17 @@ function defaultSetter(path, payload, store) {
   // ['info', 'user', 'favColours.primary']
   var props = pArr.pop();
   // 'favColours.primary'
-  var modulePath = pArr.join('/');
+  var modulePath = pArr.length ? pArr.join('/') + '/' : '';
   // 'info/user'
   var actionName = 'set' + props[0].toUpperCase() + props.substring(1);
   // 'setFavColours.primary'
-  var actionPath = modulePath + '/' + actionName;
+  var actionPath = modulePath + actionName;
   // 'info/user/setFavColours.primary'
   var action = store._actions[actionPath];
   if (action) {
     return store.dispatch(actionPath, payload);
   }
-  var mutationPath = modulePath + '/SET_' + props.toUpperCase();
+  var mutationPath = modulePath + 'SET_' + props.toUpperCase();
   return store.commit(mutationPath, payload);
 }
 
