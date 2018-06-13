@@ -78,17 +78,19 @@ function defaultSetter (path, payload, store) {
   // ['info', 'user', 'favColours.primary']
   const props = pArr.pop()
   // 'favColours.primary'
-  const modulePath = pArr.join('/')
+  const modulePath = (pArr.length)
+    ? pArr.join('/') + '/'
+    : ''
   // 'info/user'
   const actionName = 'set' + props[0].toUpperCase() + props.substring(1)
   // 'setFavColours.primary'
-  const actionPath = modulePath + '/' + actionName
+  const actionPath = modulePath + actionName
   // 'info/user/setFavColours.primary'
   const action = store._actions[actionPath]
   if (action) {
     return store.dispatch(actionPath, payload)
   }
-  const mutationPath = modulePath + '/SET_' + props.toUpperCase()
+  const mutationPath = modulePath + 'SET_' + props.toUpperCase()
   return store.commit(mutationPath, payload)
 }
 
