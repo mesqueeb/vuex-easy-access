@@ -8,6 +8,10 @@ The Vuex Easy Access plugin does two things:
 
 There are several vuex plugins available making boilerplating etc easier for you. I felt most of them are overkill and wanted something small and simple.
 
+## Feedback
+
+Do you have questions, comments, suggestions or feedback? Feel free to open an issue! ♥
+
 ## Installation
 
 ```
