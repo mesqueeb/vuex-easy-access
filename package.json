@@ -14,7 +14,8 @@
     "vuex",
     "store",
     "plugin",
-    "vue"
+    "vue",
+    "boilerplate"
   ],
   "author": "Luca Ban - Mesqueeb",
   "license": "MIT",
