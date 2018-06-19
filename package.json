@@ -1,6 +1,6 @@
 {
   "name": "vuex-easy-access",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Unified syntax with simple set() and get() store access + auto generate mutations",
   "main": "dist/index.min.js",
   "scripts": {
