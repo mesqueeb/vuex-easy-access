@@ -1,10 +1,11 @@
 {
   "name": "vuex-easy-access",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Unified syntax with simple set() and get() store access + auto generate mutations",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm i && npm i -g parcel-bundler && parcel build ./src/index.js"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,6 @@
     "babel-preset-env": "^1.7.0"
   },
   "dependencies": {
-    "is-what": "^1.0.0"
+    "is-what": "^1.0.2"
   }
 }

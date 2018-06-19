@@ -133,9 +133,7 @@ mutations: {
 ## Build from source
 
 ```bash
-npm i
-npm i -g parcel-bundler
-parcel build ./src/index.js
+npm run build
 ```
 
 Happy Vuexing!<br>
