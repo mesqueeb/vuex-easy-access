@@ -106,4 +106,4 @@ function spliceDeepValue (target, path, value, index = 0, deleteCount = 0) {
   return deepRef.splice(index, deleteCount, value)
 }
 
-export { setDeepValue, getDeepValue, popDeepValue, pushDeepValue, spliceDeepValue }
+module.exports = { getDeepRef, setDeepValue, getDeepValue, popDeepValue, pushDeepValue, spliceDeepValue }

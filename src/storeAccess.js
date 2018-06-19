@@ -127,4 +127,4 @@ function defaultGetter (path, store) {
   return getDeepValue(store.state, path)
 }
 
-export default { defaultMutations, defaultSetter, defaultGetter }
+module.exports = { defaultMutations, defaultSetter, defaultGetter }
