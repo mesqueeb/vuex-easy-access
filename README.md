@@ -6,21 +6,20 @@ The Vuex Easy Access plugin does two things:
 
 <!-- TOC -->
 
-- [Vuex Easy Access](#vuex-easy-access)
-    - [Motivation](#motivation)
-    - [Feedback](#feedback)
-    - [Installation](#installation)
-    - [1. Add a global getter/setter for each state property](#1-add-a-global-gettersetter-for-each-state-property)
-        - [What you can do](#what-you-can-do)
-        - [Why this is awesome](#why-this-is-awesome)
-            - [Scenario 1](#scenario-1)
-            - [Scenario 2](#scenario-2)
-        - [Usage](#usage)
-    - [2. Automatically generate mutations for each state property](#2-automatically-generate-mutations-for-each-state-property)
-        - [What's all this then?](#whats-all-this-then)
-            - [What really happens?](#what-really-happens)
-        - [Usage](#usage-1)
-    - [Build from source](#build-from-source)
+- [Motivation](#motivation)
+- [Feedback](#feedback)
+- [Installation](#installation)
+- [1. Add a global getter/setter for each state property](#1-add-a-global-gettersetter-for-each-state-property)
+    - [What you can do](#what-you-can-do)
+    - [Why this is awesome](#why-this-is-awesome)
+        - [Scenario 1](#scenario-1)
+        - [Scenario 2](#scenario-2)
+    - [Usage](#usage)
+- [2. Automatically generate mutations for each state property](#2-automatically-generate-mutations-for-each-state-property)
+    - [What's all this then?](#whats-all-this-then)
+        - [What really happens?](#what-really-happens)
+    - [Usage](#usage-1)
+- [Build from source](#build-from-source)
 
 <!-- /TOC -->
 
