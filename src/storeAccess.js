@@ -7,7 +7,7 @@
  */
 
 import { setDeepValue, getDeepValue, popDeepValue, pushDeepValue, spliceDeepValue } from './objectDeepValueUtils'
-import { isObject, isArray } from './objectTypeUtils'
+import { isObject, isArray } from 'is-what'
 
 /**
  * Creates the mutations for each property of the object passed recursively

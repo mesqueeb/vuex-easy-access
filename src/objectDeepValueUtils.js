@@ -1,5 +1,5 @@
 
-import { isArray } from './objectTypeUtils'
+import { isArray } from 'is-what'
 
 /**
  * Returns the keys of a path
