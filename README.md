@@ -4,8 +4,7 @@ The Vuex Easy Access plugin does two things:
 1. Add a global getter/setter for each state property
 2. Automatically generate mutations for each state property
 
-<hr>
-<!-- TOC -->
+### Table of contents
 
 - [Motivation](#motivation)
 - [Feedback](#feedback)
@@ -13,16 +12,11 @@ The Vuex Easy Access plugin does two things:
 - [1. Add a global getter/setter for each state property](#1-add-a-global-gettersetter-for-each-state-property)
     - [What you can do](#what-you-can-do)
     - [Why this is awesome](#why-this-is-awesome)
-        - [Scenario 1](#scenario-1)
-        - [Scenario 2](#scenario-2)
     - [Usage](#usage)
 - [2. Automatically generate mutations for each state property](#2-automatically-generate-mutations-for-each-state-property)
     - [What's all this then?](#whats-all-this-then)
-        - [What really happens?](#what-really-happens)
     - [Usage](#usage-1)
 - [Build from source](#build-from-source)
-
-<!-- /TOC -->
 
 ## Motivation
 
