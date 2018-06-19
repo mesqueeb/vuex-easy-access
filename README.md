@@ -4,6 +4,26 @@ The Vuex Easy Access plugin does two things:
 1. Add a global getter/setter for each state property
 2. Automatically generate mutations for each state property
 
+<!-- TOC -->
+
+- [Vuex Easy Access](#vuex-easy-access)
+    - [Motivation](#motivation)
+    - [Feedback](#feedback)
+    - [Installation](#installation)
+    - [1. Add a global getter/setter for each state property](#1-add-a-global-gettersetter-for-each-state-property)
+        - [What you can do](#what-you-can-do)
+        - [Why this is awesome](#why-this-is-awesome)
+            - [Scenario 1](#scenario-1)
+            - [Scenario 2](#scenario-2)
+        - [Usage](#usage)
+    - [2. Automatically generate mutations for each state property](#2-automatically-generate-mutations-for-each-state-property)
+        - [What's all this then?](#whats-all-this-then)
+            - [What really happens?](#what-really-happens)
+        - [Usage](#usage-1)
+    - [Build from source](#build-from-source)
+
+<!-- /TOC -->
+
 ## Motivation
 
 There are several vuex plugins available making boilerplating etc easier for you. I felt most of them are overkill and wanted something small and simple.
@@ -72,7 +92,7 @@ Now inside your entire app, whenever `set('user/theme/colors.primary')` is calle
 
 The `set()` method of Vuex Easy Access checks to see if an action with the syntax `setProp` exist. If it exists it will dispatch this action, if not it will just make a default mutation: `commit('user/theme/SET_COLORS.PRIMARY', newColor)`
 
-### Set up
+### Usage
 ```js
 import { defaultSetter, defaultGetter } from 'vuex-easy-access'
 
@@ -106,7 +126,7 @@ store.commit('user/theme/SET_COLORS.SECONDARY', newValue)
 ```
 And Vuex Easy Access does all this in just 2 lines. Say goodbye to boilerplating. Don't let it be a roadblock in order to do best practices!
 
-### Set up
+### Usage
 ```js
 import { defaultMutations } from 'vuex-easy-access'
 // in the module's mutations:
@@ -114,6 +134,14 @@ mutations: {
   ...defaultMutations (initialState)
   // pass your initialState
 }
+```
+
+## Build from source
+
+```bash
+npm i
+npm i -g parcel-bundler
+parcel build ./src/index.js
 ```
 
 Happy Vuexing!<br>
