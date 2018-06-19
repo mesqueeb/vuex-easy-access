@@ -1,11 +1,265 @@
-parcelRequire=function(e,r,n,t){var i="function"==typeof parcelRequire&&parcelRequire,o="function"==typeof require&&require;function u(n,t){if(!r[n]){if(!e[n]){var f="function"==typeof parcelRequire&&parcelRequire;if(!t&&f)return f(n,!0);if(i)return i(n,!0);if(o&&"string"==typeof n)return o(n);var c=new Error("Cannot find module '"+n+"'");throw c.code="MODULE_NOT_FOUND",c}p.resolve=function(r){return e[n][1][r]||r};var l=r[n]=new u.Module(n);e[n][0].call(l.exports,p,l,l.exports,this)}return r[n].exports;function p(e){return u(p.resolve(e))}}u.isParcelRequire=!0,u.Module=function(e){this.id=e,this.bundle=u,this.exports={}},u.modules=e,u.cache=r,u.parent=i,u.register=function(r,n){e[r]=[function(e,r){r.exports=n},{}]};for(var f=0;f<n.length;f++)u(n[f]);if(n.length){var c=u(n[n.length-1]);"object"==typeof exports&&"undefined"!=typeof module?module.exports=c:"function"==typeof define&&define.amd?define(function(){return c}):t&&(this[t]=c)}return u}({7:[function(require,module,exports) {
-var define;
-var e;parcelRequire=function(r,n,t,i){var u="function"==typeof parcelRequire&&parcelRequire,o="function"==typeof require&&require;function f(e,t){if(!n[e]){if(!r[e]){var i="function"==typeof parcelRequire&&parcelRequire;if(!t&&i)return i(e,!0);if(u)return u(e,!0);if(o&&"string"==typeof e)return o(e);var c=new Error("Cannot find module '"+e+"'");throw c.code="MODULE_NOT_FOUND",c}s.resolve=function(n){return r[e][1][n]||n};var l=n[e]=new f.Module(e);r[e][0].call(l.exports,s,l,l.exports,this)}return n[e].exports;function s(e){return f(s.resolve(e))}}f.isParcelRequire=!0,f.Module=function(e){this.id=e,this.bundle=f,this.exports={}},f.modules=r,f.cache=n,f.parent=u,f.register=function(e,n){r[e]=[function(e,r){r.exports=n},{}]};for(var c=0;c<t.length;c++)f(t[c]);if(t.length){var l=f(t[t.length-1]);"object"==typeof exports&&"undefined"!=typeof module?module.exports=l:"function"==typeof e&&e.amd&&e(function(){return l})}return f}({1:[function(e,r,n){function t(e){return Object.prototype.toString.call(e).slice(8,-1)}r.exports={getType:t,isUndefined:function(e){return"Undefined"===t(e)},isNull:function(e){return"Null"===t(e)},isObject:function(e){return"Object"===t(e)},isArray:function(e){return"Array"===t(e)},isString:function(e){return"String"===t(e)},isNumber:function(e){return"Number"===t(e)},isBoolean:function(e){return"Boolean"===t(e)},isRegExp:function(e){return"RegExp"===t(e)},isDate:function(e){return"Date"===t(e)}}},{}]},{},[1]);
-},{}],4:[function(require,module,exports) {
-"use strict";var e=require("is-what");function r(e){return e.match(/\w+/g)}function t(e,t){for(var n=r(t),i=e;i&&n.length>1;)i=i[n.shift()];var u=n.shift();if(i&&i.hasOwnProperty(u))return i[u]}function n(e,r){return t(e,r)}function i(e,n,i){var u=r(n),a=u.pop(),p=t(e,u.join());return p&&p.hasOwnProperty(key)&&(p[a]=i),e}function u(r,n){var i=t(r,n);if((0,e.isArray)(i))return i.pop()}function a(r,n,i){var u=t(r,n);if((0,e.isArray)(u))return u.push(i)}function p(r,n,i){var u=arguments.length>3&&void 0!==arguments[3]?arguments[3]:0,a=arguments.length>4&&void 0!==arguments[4]?arguments[4]:0,p=t(r,n);if((0,e.isArray)(p))return p.splice(u,a,i)}module.exports={getDeepRef:t,setDeepValue:i,getDeepValue:n,popDeepValue:u,pushDeepValue:a,spliceDeepValue:p};
-},{"is-what":7}],3:[function(require,module,exports) {
-"use strict";var e=Object.assign||function(e){for(var t=1;t<arguments.length;t++){var r=arguments[t];for(var n in r)Object.prototype.hasOwnProperty.call(r,n)&&(e[n]=r[n])}return e},t=require("./objectDeepValueUtils"),r=require("is-what");function n(u,a){return(0,r.isObject)(u)?Object.keys(u).reduce(function(s,o){var p=a?a+"."+o:o;s["SET_"+p.toUpperCase()]=function(e,r){return(0,t.setDeepValue)(e,p,r)};var i=u[o];if((0,r.isObject)(i)){var c=n(i,p);s=e({},s,c)}(0,r.isArray)(i)&&(s["POP_"+p.toUpperCase()]=function(e){return(0,t.popDeepValue)(e,p)},s["PUSH_"+p.toUpperCase()]=function(e,r){return(0,t.pushDeepValue)(e,p,r)},s["SPLICE_"+p.toUpperCase()]=function(e,r,n,u){return(0,t.spliceDeepValue)(e,p,r,n,u)});return s},{}):{}}function u(e){return n(e)}function a(e,t,r){var n=e.split("/"),u=n.pop(),a=n.length?n.join("/")+"/":"",s=a+("set"+u[0].toUpperCase()+u.substring(1));if(r._actions[s])return r.dispatch(s,t);var o=a+"SET_"+u.toUpperCase();return r.commit(o,t)}function s(e,r){return r.getters.hasOwnProperty(e)?r.getters[e]:(0,t.getDeepValue)(r.state,e)}module.exports={defaultMutations:u,defaultSetter:a,defaultGetter:s};
-},{"./objectDeepValueUtils":4,"is-what":7}],1:[function(require,module,exports) {
-"use strict";var e=require("./storeAccess"),t=require("./objectDeepValueUtils");module.exports={defaultMutations:e.defaultMutations,defaultSetter:e.defaultSetter,defaultGetter:e.defaultGetter,getDeepRef:t.getDeepRef};
-},{"./storeAccess":3,"./objectDeepValueUtils":4}]},{},[1], null)
-//# sourceMappingURL=/index.map
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('is-what')) :
+  typeof define === 'function' && define.amd ? define(['is-what'], factory) :
+  (factory(global.isWhat));
+}(this, (function (isWhat) { 'use strict';
+
+  /**
+   * Returns the keys of a path
+   *
+   * @param   {string} path   a/path/like.this
+   * @returns {array} with keys
+   */
+  function getKeysFromPath(path) {
+    if (!path) return [];
+    return path.match(/\w+/g);
+  }
+
+  /**
+   * Gets a deep property in an object, based on a path to that property
+   *
+   * @param {object} target an object to wherefrom to retrieve the deep reference of
+   * @param {string} path   'path/to.prop'
+   *
+   * @returns {object} the property which was requested
+   */
+  function getDeepRef() {
+    var target = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var path = arguments[1];
+
+    var keys = getKeysFromPath(path);
+    var obj = target;
+    while (obj && keys.length > 1) {
+      obj = obj[keys.shift()];
+    }
+    var key = keys.shift();
+    if (obj && obj.hasOwnProperty(key)) {
+      return obj[key];
+    }
+  }
+
+  /**
+   * Gets a deep property in an object, based on a path to that property
+   *
+   * @param   {object} target   the Object to get the value of
+   * @param   {string} path     'path/to/prop.subprop'
+   *
+   * @returns {object}          the property's value
+   */
+  function getDeepValue(target, path) {
+    return getDeepRef(target, path);
+  }
+
+  /**
+   * Sets a value to a deep property in an object, based on a path to that property
+   *
+   * @param   {object} target   the Object to set the value on
+   * @param   {string} path     'path/to/prop.subprop'
+   * @param   {*}      value    the value to set
+   *
+   * @returns {object}          the original target object
+   */
+  function setDeepValue(target, path, value) {
+    var keys = getKeysFromPath(path);
+    var lastKey = keys.pop();
+    var deepRef = getDeepRef(target, keys.join());
+    if (deepRef && deepRef.hasOwnProperty(key)) {
+      deepRef[lastKey] = value;
+    }
+    return target;
+  }
+
+  /**
+   * Pops a value of an array which is a deep property in an object, based on a path to that property
+   *
+   * @param   {object} target   the Object to set the value on
+   * @param   {string} path     'path.to.sub.prop'
+   *
+   * @returns {*}               the popped value
+   */
+  function popDeepValue(target, path) {
+    var deepRef = getDeepRef(target, path);
+    if (!isWhat.isArray(deepRef)) return;
+    return deepRef.pop();
+  }
+  /**
+   * Pushes a value in an array which is a deep property in an object, based on a path to that property
+   *
+   * @param   {object} target   the Object to set the value on
+   * @param   {string} path     'path/to.sub.prop'
+   * @param   {*}      value    the value to set
+   *
+   * @returns {number}          the new length of the array
+   */
+  function pushDeepValue(target, path, value) {
+    var deepRef = getDeepRef(target, path);
+    if (!isWhat.isArray(deepRef)) return;
+    return deepRef.push(value);
+  }
+  /**
+   * Splice into an array which is a deep property in an object, based on a path to that property
+   *
+   * @param   {object} target       the Object to set the value on
+   * @param   {string} path         'path/to.sub.prop'
+   * @param   {*}      value        the value to splice in
+   * @param   {number} index        the index to splice in the value, defaults to 0
+   * @param   {number} deleteCount  the amount of items to delete, defaults to 0
+   *
+   * @returns {array}              an array containing the deleted elements
+   */
+  function spliceDeepValue(target, path, value) {
+    var index = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+    var deleteCount = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0;
+
+    var deepRef = getDeepRef(target, path);
+    if (!isWhat.isArray(deepRef)) return;
+    return deepRef.splice(index, deleteCount, value);
+  }
+
+  var _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
+  /**
+   * Vuex Easy Access plugin
+   * Unified syntax with simple set() and get() store access + auto generate mutations!
+   *
+   * @author     Luca Ban
+   * @contact    https://lucaban.com
+   */
+
+  /**
+   * Creates the mutations for each property of the object passed recursively
+   *
+   * @param   {object} propParent an Object of which all props will get a mutation
+   * @param   {string} path       the path taken until the current propParent instance
+   *
+   * @returns {object}            all mutations for each property.
+   */
+  function makeMutationsForAllProps(propParent, path) {
+    if (!isWhat.isObject(propParent)) return {};
+    return Object.keys(propParent).reduce(function (mutations, prop) {
+      var propPath = !path ? prop : path + '.' + prop;
+      var name = 'SET_' + propPath.toUpperCase();
+      mutations[name] = function (state, newVal) {
+        return setDeepValue(state, propPath, newVal);
+      };
+      var propValue = propParent[prop];
+      // If the prop is an object, make the children setters as well
+      if (isWhat.isObject(propValue)) {
+        var childrenMutations = makeMutationsForAllProps(propValue, propPath);
+        mutations = _extends({}, mutations, childrenMutations);
+      }
+      // If the prop is an array, make array mutations as well
+      if (isWhat.isArray(propValue)) {
+        var pop = 'POP_' + propPath.toUpperCase();
+        mutations[pop] = function (state) {
+          return popDeepValue(state, propPath);
+        };
+        var push = 'PUSH_' + propPath.toUpperCase();
+        mutations[push] = function (state, value) {
+          return pushDeepValue(state, propPath, value);
+        };
+        var splice = 'SPLICE_' + propPath.toUpperCase();
+        mutations[splice] = function (state, value, index, deleteCount) {
+          return spliceDeepValue(state, propPath, value, index, deleteCount);
+        };
+      }
+      return mutations;
+    }, {});
+  }
+
+  /**
+   * Creates all mutations for the state of a module.
+   * Usage:
+   * commit('module/path/SET_PATH.TO.PROP', newValue)
+   * Import method:
+   * mutations {
+   *   ...defaultMutations (initialState)
+   * }
+   *
+   * @param   {object} initialState   the initial state of a module
+   *
+   * @returns {object}                all mutations for the state
+   */
+  function defaultMutations(initialState) {
+    return makeMutationsForAllProps(initialState);
+  }
+
+  /**
+   * Creates a setter function in the store to set any state value
+   * Usage:
+   * `set('module/path/path.to.prop', newValue)`
+   * it will check first for existence of: `dispatch('module/path/setPath.to.prop')`
+   * if non existant it will execute: `commit('module/path/SET_PATH.TO.PROP', newValue)`
+   * Import method:
+   * `store.set = (path, payload) => { return defaultSetter(path, payload, store) }`
+   *
+   * @param   {string}   path     the path of the prop to set eg. 'info/user/favColours.primary'
+   * @param   {*}        payload  the payload to set the prop to
+   * @param   {object}   store    the store to attach
+   *
+   * @returns {function}          dispatch or commit
+   */
+  function defaultSetter(path, payload, store) {
+    // path = 'info/user/favColours.primary'
+    var pArr = path.split('/');
+    // ['info', 'user', 'favColours.primary']
+    var props = pArr.pop();
+    // 'favColours.primary'
+    var modulePath = pArr.length ? pArr.join('/') + '/' : '';
+    // 'info/user'
+    var actionName = 'set' + props[0].toUpperCase() + props.substring(1);
+    // 'setFavColours.primary'
+    var actionPath = modulePath + actionName;
+    // 'info/user/setFavColours.primary'
+    var action = store._actions[actionPath];
+    if (action) {
+      return store.dispatch(actionPath, payload);
+    }
+    var mutationPath = modulePath + 'SET_' + props.toUpperCase();
+    return store.commit(mutationPath, payload);
+  }
+
+  /**
+   * Creates a getter function in the store to set any state value
+   * Usage:
+   * `get('module/path/path.to.prop')`
+   * it will check first for existence of: `getters['module/path/path.to.prop']`
+   * if non existant it will return: `state.module.path.path.to.prop`
+   * Import method:
+   * `store.get = (path) => { return defaultGetter(path, store) }`
+   *
+   * @param   {string}   path     the path of the prop to get eg. 'info/user/favColours.primary'
+   * @param   {object}   store    the store to attach
+   *
+   * @returns {function}          getter or state
+   */
+  function defaultGetter(path, store) {
+    var getterExists = store.getters.hasOwnProperty(path);
+    if (getterExists) return store.getters[path];
+    return getDeepValue(store.state, path);
+  }
+
+  /**
+   * Vuex Easy Access plugin
+   * Unified syntax with simple set() and get() store access + auto generate mutations!
+   *
+   * @author     Luca Ban
+   * @contact    https://lucaban.com
+   */
+
+  module.exports = { defaultMutations: defaultMutations, defaultSetter: defaultSetter, defaultGetter: defaultGetter, getDeepRef: getDeepRef };
+
+})));
+//# sourceMappingURL=index.js.map

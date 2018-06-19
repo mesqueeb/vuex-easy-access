@@ -8,6 +8,7 @@ import { isArray } from 'is-what'
  * @returns {array} with keys
  */
 function getKeysFromPath (path) {
+  if (!path) return []
   return path.match(/\w+/g)
 }
 
@@ -19,7 +20,7 @@ function getKeysFromPath (path) {
  *
  * @returns {object} the property which was requested
  */
-function getDeepRef (target, path) {
+function getDeepRef (target = {}, path) {
   let keys = getKeysFromPath(path)
   let obj = target
   while (obj && keys.length > 1) {
@@ -106,4 +107,4 @@ function spliceDeepValue (target, path, value, index = 0, deleteCount = 0) {
   return deepRef.splice(index, deleteCount, value)
 }
 
-module.exports = { getDeepRef, setDeepValue, getDeepValue, popDeepValue, pushDeepValue, spliceDeepValue }
+export { getDeepRef, setDeepValue, getDeepValue, popDeepValue, pushDeepValue, spliceDeepValue }
