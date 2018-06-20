@@ -57,7 +57,7 @@ function setDeepValue (target, path, value) {
   const keys = getKeysFromPath(path)
   const lastKey = keys.pop()
   const deepRef = getDeepRef(target, keys.join())
-  if (deepRef && deepRef.hasOwnProperty(key)) {
+  if (deepRef && deepRef.hasOwnProperty(lastKey)) {
     deepRef[lastKey] = value
   }
   return target

@@ -63,7 +63,7 @@
     var keys = getKeysFromPath(path);
     var lastKey = keys.pop();
     var deepRef = getDeepRef(target, keys.join());
-    if (deepRef && deepRef.hasOwnProperty(key)) {
+    if (deepRef && deepRef.hasOwnProperty(lastKey)) {
       deepRef[lastKey] = value;
     }
     return target;
