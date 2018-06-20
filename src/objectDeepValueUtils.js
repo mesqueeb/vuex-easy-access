@@ -101,7 +101,7 @@ function pushDeepValue (target, path, value) {
  *
  * @returns {array}              an array containing the deleted elements
  */
-function spliceDeepValue (target, path, value, index = 0, deleteCount = 0) {
+function spliceDeepValue (target, path, index = 0, deleteCount = 0, value) {
   const deepRef = getDeepRef(target, path)
   if (!isArray(deepRef)) return
   return deepRef.splice(index, deleteCount, value)

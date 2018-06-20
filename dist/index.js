@@ -107,9 +107,10 @@
    *
    * @returns {array}              an array containing the deleted elements
    */
-  function spliceDeepValue(target, path, value) {
-    var index = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-    var deleteCount = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0;
+  function spliceDeepValue(target, path) {
+    var index = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+    var deleteCount = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+    var value = arguments[4];
 
     var deepRef = getDeepRef(target, path);
     if (!isWhat.isArray(deepRef)) return;
@@ -171,8 +172,8 @@
           return pushDeepValue(state, propPath, value);
         };
         var splice = 'SPLICE_' + propPath.toUpperCase();
-        mutations[splice] = function (state, value, index, deleteCount) {
-          return spliceDeepValue(state, propPath, value, index, deleteCount);
+        mutations[splice] = function (state, index, deleteCount, value) {
+          return spliceDeepValue(state, propPath, index, deleteCount, value);
         };
       }
       return mutations;
