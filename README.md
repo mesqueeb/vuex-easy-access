@@ -6,6 +6,8 @@ The Vuex Easy Access plugin does two things:
 
 ### Table of contents
 
+<!-- TOC -->
+
 - [Motivation](#motivation)
 - [Feedback](#feedback)
 - [Installation](#installation)
@@ -16,7 +18,10 @@ The Vuex Easy Access plugin does two things:
 - [2. Automatically generate mutations for each state property](#2-automatically-generate-mutations-for-each-state-property)
     - [What's all this then?](#whats-all-this-then)
     - [Usage](#usage-1)
+    - [Bonus: Array mutations!](#bonus-array-mutations)
 - [Build from source](#build-from-source)
+
+<!-- /TOC -->
 
 ## Motivation
 
@@ -129,6 +134,21 @@ mutations: {
   // pass your initialState
 }
 ```
+
+### Bonus: Array mutations!
+
+Yes, yes, I know. The fun just doesn't end. We also have them array mutations set for you!<br>
+state: `pokemon: []`
+Will become:
+```js
+// you caught a new pokemon:
+store.commit('PUSH_POKEMON', newPokemon)
+// you don't need that last pokemon anymore:
+store.commit('POP_POKEMON')
+// you change your first pokemon for a new one
+store.commit('SPLICE_POKEMON', 0, 1, newPokemon)
+```
+All these mutations are set up for you, automatically. You only need to write your state.
 
 ## Build from source
 
