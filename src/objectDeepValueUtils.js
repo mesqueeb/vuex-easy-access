@@ -1,4 +1,3 @@
-
 import { isArray } from 'is-what'
 
 /**
@@ -22,6 +21,7 @@ function getKeysFromPath (path) {
  */
 function getDeepRef (target = {}, path) {
   let keys = getKeysFromPath(path)
+  if (!keys.length) return target
   let obj = target
   while (obj && keys.length > 1) {
     obj = obj[keys.shift()]

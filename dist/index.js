@@ -28,6 +28,7 @@
     var path = arguments[1];
 
     var keys = getKeysFromPath(path);
+    if (!keys.length) return target;
     var obj = target;
     while (obj && keys.length > 1) {
       obj = obj[keys.shift()];

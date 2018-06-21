@@ -1,8 +1,8 @@
 {
   "name": "vuex-easy-access",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Unified syntax with simple set() and get() store access + auto generate mutations",
-  "main": "dist/index.min.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm i && npm i rollup -g && rollup -c build/rollup.js"
