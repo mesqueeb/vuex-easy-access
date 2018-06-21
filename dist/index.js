@@ -260,7 +260,7 @@
    * @contact    https://lucaban.com
    */
 
-  module.exports = { defaultMutations: defaultMutations, defaultSetter: defaultSetter, defaultGetter: defaultGetter, getDeepRef: getDeepRef };
+  module.exports = { defaultMutations: defaultMutations, defaultSetter: defaultSetter, defaultGetter: defaultGetter, getDeepRef: getDeepRef, getKeysFromPath: getKeysFromPath };
 
 })));
 //# sourceMappingURL=index.js.map

@@ -7,6 +7,6 @@
  */
 
 import { defaultMutations, defaultSetter, defaultGetter } from './storeAccess'
-import { getDeepRef } from './objectDeepValueUtils'
+import { getDeepRef, getKeysFromPath } from './objectDeepValueUtils'
 
-module.exports = { defaultMutations, defaultSetter, defaultGetter, getDeepRef }
+module.exports = { defaultMutations, defaultSetter, defaultGetter, getDeepRef, getKeysFromPath }
