@@ -85,7 +85,7 @@ function defaultMutations (initialState) {
  *
  * @returns {function}          dispatch or commit
  */
-function defaultSetter (path, payload, store) {
+function defaultSetter (path, payload, store, vuexEasyFirestore) {
   // path = 'info/user/favColours.primary'
   const pArr = path.split('/')
   // ['info', 'user', 'favColours.primary']
@@ -94,14 +94,29 @@ function defaultSetter (path, payload, store) {
   const modulePath = (pArr.length)
     ? pArr.join('/') + '/'
     : ''
-  // 'info/user'
+  // 'info/user/'
   const actionName = 'set' + props[0].toUpperCase() + props.substring(1)
   // 'setFavColours.primary'
   const actionPath = modulePath + actionName
   // 'info/user/setFavColours.primary'
-  const action = store._actions[actionPath]
-  if (action) {
+  const actionExists = store._actions[actionPath]
+  if (actionExists) {
     return store.dispatch(actionPath, payload)
+  }
+  if (vuexEasyFirestore) {
+    // 'info/user/set', {favColours: {primary: payload}}'
+    const pathIsModule = store._modulesNamespaceMap[path + '/']
+    const firestoreActionPath = (pathIsModule)
+      ? path + '/set'
+      : modulePath + 'set'
+    const newPayload = (pathIsModule)
+      ? payload
+      : {}
+    if (!pathIsModule) newPayload[props] = payload
+    const firestoreActionExists = store._actions[firestoreActionPath]
+    if (firestoreActionExists) {
+      return store.dispatch(firestoreActionPath, newPayload)
+    }
   }
   const mutationPath = modulePath + 'SET_' + props.toUpperCase()
   return store.commit(mutationPath, payload)
