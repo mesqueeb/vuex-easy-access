@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('is-what')) :
-  typeof define === 'function' && define.amd ? define(['is-what'], factory) :
-  (factory(global.isWhat));
-}(this, (function (isWhat) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('is-what')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'is-what'], factory) :
+  (factory((global.Index = {}),global.isWhat));
+}(this, (function (exports,isWhat) { 'use strict';
 
   /**
    * Returns the keys of a path
@@ -213,21 +213,32 @@
    *
    * @returns {function}          dispatch or commit
    */
-  function defaultSetter(path, payload, store) {
+  function defaultSetter(path, payload, store, vuexEasyFirestore) {
     // path = 'info/user/favColours.primary'
     var pArr = path.split('/');
     // ['info', 'user', 'favColours.primary']
     var props = pArr.pop();
     // 'favColours.primary'
     var modulePath = pArr.length ? pArr.join('/') + '/' : '';
-    // 'info/user'
+    // 'info/user/'
     var actionName = 'set' + props[0].toUpperCase() + props.substring(1);
     // 'setFavColours.primary'
     var actionPath = modulePath + actionName;
     // 'info/user/setFavColours.primary'
-    var action = store._actions[actionPath];
-    if (action) {
+    var actionExists = store._actions[actionPath];
+    if (actionExists) {
       return store.dispatch(actionPath, payload);
+    }
+    if (vuexEasyFirestore) {
+      // 'info/user/set', {favColours: {primary: payload}}'
+      var pathIsModule = store._modulesNamespaceMap[path + '/'];
+      var firestoreActionPath = pathIsModule ? path + '/set' : modulePath + 'set';
+      var newPayload = pathIsModule ? payload : {};
+      if (!pathIsModule) newPayload[props] = payload;
+      var firestoreActionExists = store._actions[firestoreActionPath];
+      if (firestoreActionExists) {
+        return store.dispatch(firestoreActionPath, newPayload);
+      }
     }
     var mutationPath = modulePath + 'SET_' + props.toUpperCase();
     return store.commit(mutationPath, payload);
@@ -253,6 +264,12 @@
     return getDeepValue(store.state, path);
   }
 
+  var defaultConfig = {
+    setter: 'set',
+    getter: 'get',
+    vuexEasyFirestore: false
+  };
+
   /**
    * Vuex Easy Access plugin
    * Unified syntax with simple set() and get() store access + auto generate mutations!
@@ -261,7 +278,28 @@
    * @contact    https://lucaban.com
    */
 
-  module.exports = { defaultMutations: defaultMutations, defaultSetter: defaultSetter, defaultGetter: defaultGetter, getDeepRef: getDeepRef, getKeysFromPath: getKeysFromPath };
+  function createEasyAccess(userConfig) {
+    var conf = Object.assign(defaultConfig, userConfig);
+    var vuexEasyFirestore = conf.vuexEasyFirestore;
+    return function (store) {
+      store[conf.setter] = function (path, payload) {
+        return defaultSetter(path, payload, store, vuexEasyFirestore);
+      };
+      store[conf.getter] = function (path) {
+        return defaultGetter(path, store);
+      };
+    };
+  }
+
+  exports.default = createEasyAccess;
+  exports.createEasyAccess = createEasyAccess;
+  exports.defaultMutations = defaultMutations;
+  exports.defaultSetter = defaultSetter;
+  exports.defaultGetter = defaultGetter;
+  exports.getDeepRef = getDeepRef;
+  exports.getKeysFromPath = getKeysFromPath;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 //# sourceMappingURL=index.js.map

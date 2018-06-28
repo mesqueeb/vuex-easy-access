@@ -14,9 +14,7 @@ function createEasyAccess (userConfig) {
   const conf = Object.assign(defaultConfig, userConfig)
   const vuexEasyFirestore = conf.vuexEasyFirestore
   return store => {
-    store[conf.setter] = (path, payload) => {
-      console.log('vuexEasyFirestore → ', vuexEasyFirestore)
-      return defaultSetter(path, payload, store, vuexEasyFirestore) }
+    store[conf.setter] = (path, payload) => { return defaultSetter(path, payload, store, vuexEasyFirestore) }
     store[conf.getter] = (path) => { return defaultGetter(path, store) }
   }
 }

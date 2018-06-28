@@ -4,8 +4,8 @@ The Vuex Easy Access plugin does two things:
 1. Add a global getter/setter for each state property
 2. Automatically generate mutations for each state property
 
-Todo
-1. Make it so it doesn't matter if the user uses `/` or `.`
+<!-- Todo -->
+<!-- 1. Make it so it doesn't matter if the user uses `/` or `.` -->
 
 ### Table of contents
 
