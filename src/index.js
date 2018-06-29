@@ -7,6 +7,17 @@
  */
 
 import { defaultMutations, defaultSetter, defaultGetter } from './storeAccess'
-import { getDeepRef } from './objectDeepValueUtils'
+import defaultConfig from './defaultConfig'
+import { getDeepRef, getKeysFromPath } from './objectDeepValueUtils'
 
-module.exports = { defaultMutations, defaultSetter, defaultGetter, getDeepRef }
+function createEasyAccess (userConfig) {
+  const conf = Object.assign(defaultConfig, userConfig)
+  const vuexEasyFirestore = conf.vuexEasyFirestore
+  return store => {
+    store[conf.setter] = (path, payload) => { return defaultSetter(path, payload, store, vuexEasyFirestore) }
+    store[conf.getter] = (path) => { return defaultGetter(path, store) }
+  }
+}
+
+export default createEasyAccess
+export { createEasyAccess, defaultMutations, defaultSetter, defaultGetter, getDeepRef, getKeysFromPath }

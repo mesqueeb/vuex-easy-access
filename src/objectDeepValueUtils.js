@@ -1,4 +1,3 @@
-
 import { isArray } from 'is-what'
 
 /**
@@ -8,6 +7,7 @@ import { isArray } from 'is-what'
  * @returns {array} with keys
  */
 function getKeysFromPath (path) {
+  if (!path) return []
   return path.match(/\w+/g)
 }
 
@@ -19,8 +19,9 @@ function getKeysFromPath (path) {
  *
  * @returns {object} the property which was requested
  */
-function getDeepRef (target, path) {
+function getDeepRef (target = {}, path) {
   let keys = getKeysFromPath(path)
+  if (!keys.length) return target
   let obj = target
   while (obj && keys.length > 1) {
     obj = obj[keys.shift()]
@@ -56,7 +57,7 @@ function setDeepValue (target, path, value) {
   const keys = getKeysFromPath(path)
   const lastKey = keys.pop()
   const deepRef = getDeepRef(target, keys.join())
-  if (deepRef && deepRef.hasOwnProperty(key)) {
+  if (deepRef && deepRef.hasOwnProperty(lastKey)) {
     deepRef[lastKey] = value
   }
   return target
@@ -100,10 +101,10 @@ function pushDeepValue (target, path, value) {
  *
  * @returns {array}              an array containing the deleted elements
  */
-function spliceDeepValue (target, path, value, index = 0, deleteCount = 0) {
+function spliceDeepValue (target, path, index = 0, deleteCount = 0, value) {
   const deepRef = getDeepRef(target, path)
   if (!isArray(deepRef)) return
   return deepRef.splice(index, deleteCount, value)
 }
 
-export { setDeepValue, getDeepValue, popDeepValue, pushDeepValue, spliceDeepValue }
+export { getDeepRef, getKeysFromPath, setDeepValue, getDeepValue, popDeepValue, pushDeepValue, spliceDeepValue }
