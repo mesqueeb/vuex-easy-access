@@ -1,7 +1,7 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('is-what')) :
   typeof define === 'function' && define.amd ? define(['exports', 'is-what'], factory) :
-  (factory((global.Index = {}),global.isWhat));
+  (factory((global.VuexEasyAccess = {}),global.isWhat));
 }(this, (function (exports,isWhat) { 'use strict';
 
   /**
@@ -302,4 +302,4 @@
   Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.umd.js.map

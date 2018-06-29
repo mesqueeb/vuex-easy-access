@@ -200,6 +200,8 @@ Now you will only be able to use `store.getIt()` and `store.setIt()` instead.
 
 Do you have questions, comments, suggestions or feedback? Or any feature that's missing that you'd love to have? Feel free to open an issue! ♥
 
+Also check out the sister vuex-plugin for Firebase: [Vuex Easy Firestore](https://github.com/mesqueeb/VuexEasyFirestore)!
+
 --
 
 Happy Vuexing!<br>
