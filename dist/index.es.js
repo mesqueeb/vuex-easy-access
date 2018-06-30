@@ -147,6 +147,7 @@ var _extends = Object.assign || function (target) {
 function makeMutationsForAllProps(propParent, path) {
   if (!isObject(propParent)) return {};
   return Object.keys(propParent).reduce(function (mutations, prop) {
+    if (prop[0] === '_') return mutations;
     var propPath = !path ? prop : path + '.' + prop;
     var name = 'SET_' + propPath.toUpperCase();
     mutations[name] = function (state, newVal) {

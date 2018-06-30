@@ -148,6 +148,7 @@ var VuexEasyAccess = (function (exports,isWhat) {
   function makeMutationsForAllProps(propParent, path) {
     if (!isWhat.isObject(propParent)) return {};
     return Object.keys(propParent).reduce(function (mutations, prop) {
+      if (prop[0] === '_') return mutations;
       var propPath = !path ? prop : path + '.' + prop;
       var name = 'SET_' + propPath.toUpperCase();
       mutations[name] = function (state, newVal) {

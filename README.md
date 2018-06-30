@@ -20,6 +20,7 @@ The Vuex Easy Access plugin does two things:
 - [2. Automatically generate mutations for each state property](#2-automatically-generate-mutations-for-each-state-property)
     - [What's all this then?](#whats-all-this-then)
     - [Usage](#usage-1)
+    - [Ignore certain state props](#ignore-certain-state-props)
     - [Bonus: Array mutations!](#bonus-array-mutations)
 - [3. Advanced configuration](#3-advanced-configuration)
     - [Vuex Easy Firestore integration for Google firebase](#vuex-easy-firestore-integration-for-google-firebase)
@@ -43,6 +44,7 @@ npm i --save vuex-easy-access
 ### What you can do
 
 You can access and set anything in your store through `get()` and `set()` methods:
+
 - `get(path)` will automatically look for a getter, if none it will return the state
 - `set(path, val)` will automatically look for an action, if none it will make a mutation
 
@@ -54,10 +56,11 @@ The `path` syntax is: `module/submodule/stateVal.subProp`.<br>
 In the example below we'll see why the `get()` and `set()` methods are helpful.
 
 You have an app where users have themes and can set colors per theme.<br>
-The module path is: user/theme<br>
-The state: `colors: {primary: 'blue', secondary: 'white'}`
+The module path is: `user/theme`<br>
+`state: {colors: {primary: 'blue', secondary: 'white'}}`
 
 Simple usage allows:
+
 - Set primary color: `this.$store.set('user/theme/colors.primary', '#265EF6')`
 - Get primary color: `this.$store.get('user/theme/colors.primary')`
 
@@ -79,6 +82,7 @@ The `get()` method of Vuex Easy Access first checks if a getter with the syntax 
 
 #### Scenario 2
 Now we want to make an api call to the server every time the user updates this value. We would want to set up an action in our same module:
+
 ```js
 // in the user/theme module
 actions: {
@@ -88,6 +92,7 @@ actions: {
   }
 }
 ```
+
 Now inside your entire app, whenever `set('user/theme/colors.primary')` is called, the action above will be triggered and the color is synced to the server.
 
 The `set()` method of Vuex Easy Access checks to see if an action with the syntax `setProp` exist. If it exists it will dispatch this action, if not it will just make a default mutation: `commit('user/theme/SET_COLORS.PRIMARY', newColor)`. (Make sure you set up a mutation with the correct syntax above. To auto-generate mutations see [chapter 2](#2-automatically-generate-mutations-for-each-state-property).)
@@ -96,6 +101,7 @@ The `set()` method of Vuex Easy Access checks to see if an action with the synta
 In cases you want to sync your vuex store with Firebase's Firestore see [chapter 3](#3-advanced-configuration).
 
 ### Usage
+
 ```js
 import createEasyAccess from 'vuex-easy-access'
 // do the magic 🧙🏻‍♂️
@@ -120,18 +126,21 @@ Vuex Easy Access creates one mutation for every single property in your store! A
 #### What really happens?
 
 In line with the examples above:<br>
-The module path is: user/theme<br>
-The state: `colors: {primary: 'blue', secondary: 'white'}`
+The module path is: `user/theme`<br>
+`state: {colors: {primary: 'blue', secondary: 'white'}}`
 
 Vuex Easy Access will then automatically generate these mutations:
+
 ```js
 store.commit('user/theme/SET_COLORS', newValue)
 store.commit('user/theme/SET_COLORS.PRIMARY', newValue)
 store.commit('user/theme/SET_COLORS.SECONDARY', newValue)
 ```
+
 And Vuex Easy Access does all this in just 2 lines. Say goodbye to boilerplating. Don't let it be a roadblock in order to do best practices!
 
 ### Usage
+
 ```js
 import { defaultMutations } from 'vuex-easy-access'
 // in the root or a module's mutations:
@@ -142,11 +151,19 @@ mutations: {
 }
 ```
 
+### Ignore certain state props
+
+Vuex Easy Access will ignore any props starting with an underscore.<br>
+  eg. `state: {_privateProp: '...', normalProp: '...'}`
+
+This will make sure that **only** the mutation for `normalProp` is generated: `mutate('SET_NORMALPROP')`
+
 ### Bonus: Array mutations!
 
 Yes, yes, I know. The fun just doesn't end. We also have them array mutations set for you!<br>
-state: `pokemon: []`
+`state: {pokemon: []}`
 Will become:
+
 ```js
 // you caught a new pokemon:
 store.commit('PUSH_POKEMON', newPokemon)
@@ -161,6 +178,7 @@ All these mutations are set up for you, automatically. You only need to write yo
 ## 3. Advanced configuration
 
 When you create your easyAccess plugin, you can make some configuration through an object:
+
 ```js
 import createEasyAccess from 'vuex-easy-access'
 const configuration = {/* your configuration */}
@@ -171,6 +189,7 @@ store: {
   plugins: [easyAccess]
 }
 ```
+
 All possible values for `configuration` are explained here:
 
 ### Vuex Easy Firestore integration for Google firebase
@@ -187,6 +206,7 @@ This will make sure that whenever you set a value in a module that's auto-synced
 ### get() set() function names
 
 If for some reason you want to change the default function names for `store.get()` and `store.set()`, you can do so by passing an object to `createEasyAccess()` like so:
+
 ```js
 const easyAccess = createEasyAccess({
   getter: 'getIt',
@@ -194,6 +214,7 @@ const easyAccess = createEasyAccess({
 })
 // and include as shown above
 ```
+
 Now you will only be able to use `store.getIt()` and `store.setIt()` instead.
 
 ## Feedback
