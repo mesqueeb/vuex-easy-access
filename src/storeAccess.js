@@ -21,6 +21,7 @@ function makeMutationsForAllProps(propParent, path) {
   if (!isObject(propParent)) return {}
   return Object.keys(propParent)
   .reduce((mutations, prop) => {
+    if (prop[0] === '_') return mutations
     let propPath = (!path)
       ? prop
       : path + '.' + prop
