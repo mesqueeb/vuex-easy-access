@@ -76,6 +76,7 @@ function popDeepValue (target, path) {
   if (!isArray(deepRef)) return
   return deepRef.pop()
 }
+
 /**
  * Pushes a value in an array which is a deep property in an object, based on a path to that property
  *
@@ -90,6 +91,7 @@ function pushDeepValue (target, path, value) {
   if (!isArray(deepRef)) return
   return deepRef.push(value)
 }
+
 /**
  * Splice into an array which is a deep property in an object, based on a path to that property
  *
