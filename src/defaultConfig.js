@@ -2,5 +2,7 @@
 export default {
   setter: 'set',
   getter: 'get',
-  vuexEasyFirestore: false
+  vuexEasyFirestore: false,
+  ignorePrivateProps: true,
+  pattern: 'standard'
 }

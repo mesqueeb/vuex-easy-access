@@ -15,16 +15,17 @@ The Vuex Easy Access plugin does two things:
 - [Installation](#installation)
 - [1. Add a global getter/setter for each state property](#1-add-a-global-gettersetter-for-each-state-property)
     - [What you can do](#what-you-can-do)
-    - [Why this is awesome](#why-this-is-awesome)
+    - [Overwriting get/set with custom logic](#overwriting-getset-with-custom-logic)
     - [Usage](#usage)
 - [2. Automatically generate mutations for each state property](#2-automatically-generate-mutations-for-each-state-property)
     - [What's all this then?](#whats-all-this-then)
     - [Usage](#usage-1)
-    - [Ignore certain state props](#ignore-certain-state-props)
     - [Bonus: Array mutations!](#bonus-array-mutations)
 - [3. Advanced configuration](#3-advanced-configuration)
     - [Vuex Easy Firestore integration for Google firebase](#vuex-easy-firestore-integration-for-google-firebase)
     - [get() set() function names](#get-set-function-names)
+    - [Ignore private state props](#ignore-private-state-props)
+    - [Setter patterns](#setter-patterns)
 - [Feedback](#feedback)
 
 <!-- /TOC -->
@@ -51,23 +52,50 @@ You can access and set anything in your store through `get()` and `set()` method
 The `path` syntax is: `module/submodule/stateVal.subProp`.<br>
 `/` for modules and `.` for sub properties when the state value is an object.
 
-### Why this is awesome
+The get() and set() syntax is streamlined and easy to use! (unlike vuex's default syntax mess)
 
-In the example below we'll see why the `get()` and `set()` methods are helpful.
+In the example below we'll see some example uses:
+
+#### Use case: get/set in vue component
 
 You have an app where users have themes and can set colors per theme.<br>
 The module path is: `user/theme`<br>
 `state: {colors: {primary: 'blue', secondary: 'white'}}`
 
-Simple usage allows:
+```html
+<template>
+  Primary color: {{ $store.get('user/theme/colors.primary') }}
+  <button @click="$store.set('user/theme/colors.primary', 'red')">Make primary red</button>
+</template>
+```
 
-- Set primary color: `this.$store.set('user/theme/colors.primary', '#265EF6')`
-- Get primary color: `this.$store.get('user/theme/colors.primary')`
+Nothing required inside your component methods! Very clean! 🏄🏼‍♂️
 
-First of all, we see a nice streamlined syntax to get and set values. (unlike vuex's default syntax mess)
+#### Use case: set in vuex module
 
-#### Scenario 1
+For each property in each module a separate setter is created as a submodule for that module: `user/theme` will have a submodule `user/theme/set` with each state prop from `user/theme` as the identifier of the setter action.
+
+Eg. inside the `user/theme` module you could add the following action:
+
+```js
+actions: {
+  randomizeTheme ({dispatch}) {
+    dispatch('set/colors.primary', random())
+    dispatch('set/colors.secondary', random())
+    // these refer the submodule 'set' and action name 'colors.primary'
+    // these actions get added automatically by vuex-easy-access
+  }
+}
+```
+
+Please note: This requires your modules to be namespaced to work properly!
+
+### Overwriting get/set with custom logic
+
+#### Overwrite get
+
 Say that in the future we want to make sure when we get the primary color it will translate to a readable color name. For this let's set up a getter:
+
 ```js
 // in the user/theme module
 getters: {
@@ -76,11 +104,13 @@ getters: {
   }
 }
 ```
+
 Now automatically in your whole app where you used `get('user/theme/colors.primary')` it will start using this getter instead!
 
 The `get()` method of Vuex Easy Access first checks if a getter with the syntax like above exists. If it does it will return the getter, if not it will just return the state property: `state.user.theme.colors.primary`.
 
-#### Scenario 2
+#### Overwrite set
+
 Now we want to make an api call to the server every time the user updates this value. We would want to set up an action in our same module:
 
 ```js
@@ -95,7 +125,9 @@ actions: {
 
 Now inside your entire app, whenever `set('user/theme/colors.primary')` is called, the action above will be triggered and the color is synced to the server.
 
-The `set()` method of Vuex Easy Access checks to see if an action with the syntax `setProp` exist. If it exists it will dispatch this action, if not it will just make a default mutation: `commit('user/theme/SET_COLORS.PRIMARY', newColor)`. (Make sure you set up a mutation with the correct syntax above. To auto-generate mutations see [chapter 2](#2-automatically-generate-mutations-for-each-state-property).)
+The `set()` method of Vuex Easy Access checks to see if an action with the syntax `setProp` exist. If it exists it will dispatch this action, if not it will just make a default mutation: `commit('user/theme/SET_COLORS.PRIMARY', newColor)`.
+
+However, if the mutation does not exist it will give an error and tell you how to add the mutation in the console. But luckily, you can also add all mutations for each single state prop **automatically**. See [chapter 2](#2-automatically-generate-mutations-for-each-state-property) how to set up.
 
 **Firebase API**:<br>
 In cases you want to sync your vuex store with Firebase's Firestore see [chapter 3](#3-advanced-configuration).
@@ -113,13 +145,15 @@ store: {
 }
 ```
 
+That's it!! Simple and clean. ♫
+
 ## 2. Automatically generate mutations for each state property
 
 ### What's all this then?
 
 Since a vuex store is really easy to debug based on the commit history, it's best practice to have one single mutation for each property in the store.
 
-But do you know the pain of setting up one single mutation for each single state property in your store? If you do, be rejoiced! (If you don't then you might be secretly mutating the store directly? That is not safe to try at home really...)
+But do you know the pain of setting up one single mutation for each single state property in your store? No more!
 
 Vuex Easy Access creates one mutation for every single property in your store! All AUTOMATICALLY!
 
@@ -150,13 +184,6 @@ mutations: {
     // pass your state object
 }
 ```
-
-### Ignore certain state props
-
-Vuex Easy Access will ignore any props starting with an underscore.<br>
-  eg. `state: {_privateProp: '...', normalProp: '...'}`
-
-This will make sure that **only** the mutation for `normalProp` is generated: `mutate('SET_NORMALPROP')`
 
 ### Bonus: Array mutations!
 
@@ -198,7 +225,7 @@ You can add compatibility for the amazing sister plugin: [Vuex Easy Firestore](h
 
 ```js
 const easyAccess = createEasyAccess({vuexEasyFirestore: true})
-// and include as shown above
+// and include as plugin in vuex as shown above
 ```
 
 This will make sure that whenever you set a value in a module that's auto-synced to firestore through Vuex Easy Firestore, it will trigger the sync properly. Please see the [Vuex Easy Firestore documentation](https://github.com/mesqueeb/VuexEasyFirestore) for more information on how to set up auto-sync with firestore.
@@ -212,10 +239,116 @@ const easyAccess = createEasyAccess({
   getter: 'getIt',
   setter: 'setIt'
 })
-// and include as shown above
+// and include as plugin in vuex as shown above
 ```
 
-Now you will only be able to use `store.getIt()` and `store.setIt()` instead.
+Now instead of the `get` `set` keywords, you will only be able to use `store.getIt()` and `store.setIt()` and for dispatches `dispatch(setIt/prop)`.
+
+### Ignore private state props
+
+Vuex Easy Access will ignore any props **starting with an underscore** by *default*.<br>
+Eg.
+
+```js
+const state = {
+  _privateProp: '...', // this prop is not touched at all!
+  normalProp: '...'
+}
+const store = {
+  state,
+  mutations: {
+    ...defaultMutations(state)
+  },
+}
+```
+
+This will create only the mutation and dispatch setter for 'normalProp':
+
+- `mutate('SET_NORMALPROP', newVal)`
+- `dispatch('set/normalProp', newVal)`
+
+And none will be set for '_privateProp'.
+
+To disable this functionality you need to do:
+
+```js
+// in the config
+const easyAccess = createEasyAccess({
+  ignorePrivateProps: false, // true is the default
+})
+// and in your modules:
+mutations: {
+  ...defaultMutations(state, {ignorePrivateProps: false})
+}
+```
+
+(if you have any requests for more customisation of this functionality, please let me know in an issue!)
+
+### Setter patterns
+
+```js
+state: {
+  pokemonBox: {
+    water: []
+  },
+}
+// This state will give these setters:
+// From vue component:
+$store.set('pokemonBox/water', newVal)
+// From vuex store:
+dispatch('set/pokemonBox/water', newVal)
+```
+
+You can choose two setups for mutations: `standard` or `simple`:
+Overwrite setter actions:
+
+```js
+// 'standard' is the default:
+actions: {
+  'setPokemonBox.water': ({dispatch}, newVal) => {
+    // do something extra
+    dispatch('set/pokemonBox/water', newVal)
+  }
+}
+// 'simple'  uses just the property name:
+actions: {
+  'pokemonBox.water': ({dispatch}, newVal) => {
+    // do something extra
+    dispatch('set/pokemonBox/water', newVal)
+  }
+}
+```
+
+And the underlying mutations it uses:
+
+```js
+// 'standard':
+commit('SET_POKEMONBOX', newVal)
+commit('SET_POKEMONBOX.WATER', newVal)
+commit('PUSH_POKEMONBOX.WATER', newVal)
+commit('POP_POKEMONBOX.WATER', newVal)
+commit('SPLICE_POKEMONBOX.WATER', newVal)
+// 'simple':
+commit('pokemon', newVal)
+commit('pokemonBox.water', newVal)
+commit('pokemonBox.water.push', newVal)
+commit('pokemonBox.water.pop', newVal)
+commit('pokemonBox.water.splice', newVal)
+```
+
+You can choose your preferred pattern like this:
+
+```js
+const easyAccess = createEasyAccess({
+  pattern: 'simple', // or 'standard' → 'standard' is the default
+})
+// and in your modules:
+mutations: {
+  ...defaultMutations(state, {pattern: 'simple'}) // or 'standard'
+}
+```
+
+(Do not use conflicting choises in the plugin settings and the defaultMutations)
 
 ## Feedback
 
