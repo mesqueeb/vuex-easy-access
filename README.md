@@ -118,7 +118,7 @@ Now we want to make an api call to the server every time the user updates this v
 actions: {
   'setColors.primary': ({state, commit, dispatch}, newColor) => {
     dispatch('patchToServer', state.colors.primary, {root: true})
-    return commit('SET_COLORS.PRIMARY', newColor)
+    return commit('SET_COLORS.PRIMARY', newColor) // you have to commit manually when overwriting
   }
 }
 ```
@@ -299,22 +299,23 @@ $store.set('pokemonBox/water', newVal)
 dispatch('set/pokemonBox/water', newVal)
 ```
 
-You can choose two setups for mutations: `standard` or `simple`:
-Overwrite setter actions:
+You can choose two setups for mutations: `standard` or `simple`.
+
+This matters when you want to **overwrite the setter actions**:
 
 ```js
-// 'standard' is the default:
+// 'standard' uses 'set' in front of actions and 'SET_' in front of mutations:
 actions: {
-  'setPokemonBox.water': ({dispatch}, newVal) => {
+  'setPokemonBox.water': ({commit}, newVal) => {
     // do something extra
-    dispatch('set/pokemonBox/water', newVal)
+    commit('SET_POKEMONBOX.WATER', newVal) // you have to commit when overwriting
   }
 }
-// 'simple'  uses just the property name:
+// 'simple' uses just the property name:
 actions: {
-  'pokemonBox.water': ({dispatch}, newVal) => {
+  'pokemonBox.water': ({commit}, newVal) => {
     // do something extra
-    dispatch('set/pokemonBox/water', newVal)
+    commit('pokemonBox.water', newVal) // you have to commit when overwriting
   }
 }
 ```
