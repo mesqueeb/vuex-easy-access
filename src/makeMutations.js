@@ -57,8 +57,8 @@ function makeMutationsForAllProps(
       let splice = (conf.pattern === 'simple')
         ? propPath + '.splice'
         : 'SPLICE_' + propPath.toUpperCase()
-      mutations[splice] = (state, index, deleteCount, value) => {
-        return spliceDeepValue(state, propPath, index, deleteCount, value)
+      mutations[splice] = (state, array) => {
+        return spliceDeepValue(state, propPath, ...array)
       }
     }
     return mutations
