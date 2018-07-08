@@ -1,11 +1,11 @@
 {
   "name": "vuex-easy-access",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Unified syntax with simple set() and get() store access + auto generate mutations",
   "main": "dist/index.cjs.min.js",
   "module": "dist/index.es.min.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ava",
     "build": "rollup -c build/rollup.js",
     "watch": "rollup -c build/rollup.js --watch"
   },
@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/mesqueeb/VuexEasyAccess#readme",
   "devDependencies": {
+    "ava": "^0.25.0",
     "babel-core": "^6.26.3",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",

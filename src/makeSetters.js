@@ -63,7 +63,7 @@ function defaultSetter (path, payload, store, conf = {}) {
     return store.commit(mutationPath, payload)
   }
   console.error(`There is no mutation set for '${mutationPath}'.
-    Please add a mutation like so:
+    Please add a mutation like so in the correct module:
 
     mutations: {
       '${mutationName}': ({state}, payload) => {

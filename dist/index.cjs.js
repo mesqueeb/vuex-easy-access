@@ -142,6 +142,16 @@ var _extends = Object.assign || function (target) {
   return target;
 };
 
+var toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
+};
+
 /**
  * Creates the mutations for each property of the object passed recursively
  *
@@ -184,8 +194,8 @@ function makeMutationsForAllProps(propParent, path) {
       };
       // mutation name
       var splice = conf.pattern === 'simple' ? propPath + '.splice' : 'SPLICE_' + propPath.toUpperCase();
-      mutations[splice] = function (state, index, deleteCount, value) {
-        return spliceDeepValue(state, propPath, index, deleteCount, value);
+      mutations[splice] = function (state, array) {
+        return spliceDeepValue.apply(undefined, [state, propPath].concat(toConsumableArray(array)));
       };
     }
     return mutations;
@@ -285,7 +295,7 @@ function defaultSetter(path, payload, store) {
   if (mutationExists) {
     return store.commit(mutationPath, payload);
   }
-  console.error('There is no mutation set for \'' + mutationPath + '\'.\n    Please add a mutation like so:\n\n    mutations: {\n      \'' + mutationName + '\': ({state}, payload) => {\n        state.' + props + ' = payload\n      }\n    }\n\n    You can also add mutations automatically with vuex-easy-access.\n    See the documentation here:\n      https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property');
+  console.error('There is no mutation set for \'' + mutationPath + '\'.\n    Please add a mutation like so in the correct module:\n\n    mutations: {\n      \'' + mutationName + '\': ({state}, payload) => {\n        state.' + props + ' = payload\n      }\n    }\n\n    You can also add mutations automatically with vuex-easy-access.\n    See the documentation here:\n      https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property');
 }
 
 /**

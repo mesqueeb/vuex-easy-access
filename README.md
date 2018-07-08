@@ -197,10 +197,10 @@ store.commit('PUSH_POKEMON', newPokemon)
 // you don't need that last pokemon anymore:
 store.commit('POP_POKEMON')
 // you change your first pokemon for a new one
-store.commit('SPLICE_POKEMON', 0, 1, newPokemon)
+store.commit('SPLICE_POKEMON', [0, 1, newPokemon])
 ```
 
-All these mutations are set up for you, automatically. You only need to write your state.
+All these mutations are set up for you, automatically. You only need to write your state. Please note that the second parameter of 'splice' has to be an array with the 3 arguments just like the regular splice method.
 
 ## 3. Advanced configuration
 
