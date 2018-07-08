@@ -1,5 +1,5 @@
 
-import { defaultMutations } from '../dist/index.cjs.min'
+import { defaultMutations } from '../../dist/index.cjs.min'
 import config from './config'
 
 function initialState () {
