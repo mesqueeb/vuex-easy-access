@@ -2,6 +2,7 @@
 import { defaultMutations } from '../../dist/index.cjs.min'
 import config from './config'
 
+// Store root state
 function initialState () {
   return {
     pokemonBox: {
@@ -11,17 +12,21 @@ function initialState () {
     }
   }
 }
-const module2State = {
+
+// MODULE: gymData
+const gymDataState = {
   defeated: {
     palletTown: false,
   }
 }
 const gymData = {
   namespaced: true,
-  state: module2State,
-  mutations: defaultMutations(module2State, config)
+  state: gymDataState,
+  mutations: defaultMutations(gymDataState, config)
 }
-const moduleState = {
+
+// MODULE: locationJournal
+const locationJournalState = {
   visitedPlaces: {
     palletTown: true,
     gym: false
@@ -29,19 +34,22 @@ const moduleState = {
 }
 const locationJournal = {
   namespaced: true,
-  state: moduleState,
-  mutations: defaultMutations(moduleState, config),
+  state: locationJournalState,
+  mutations: defaultMutations(locationJournalState, config),
   modules: { gymData }
 }
-const userState = { user: null }
-const userModule = {
+
+// MODULE: user
+const userState = { user: {secretProp: null}, importedData: [] }
+const user = {
   namespaced: true,
   state: userState,
   mutations: defaultMutations(userState, config)
 }
 
+// export store
 export default {
-  modules: { locationJournal, user: userModule },
+  modules: { locationJournal, user },
   state: initialState(),
   mutations: defaultMutations(initialState(), config),
   actions: {},

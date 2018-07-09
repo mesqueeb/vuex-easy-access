@@ -17,7 +17,7 @@ function createCommonjsModule(fn, module) {
 }
 
 var index_cjs_min = createCommonjsModule(function (module, exports) {
-Object.defineProperty(exports, "__esModule", { value: !0 });var defaultConf = { setter: "set", getter: "get", vuexEasyFirestore: !1, ignorePrivateProps: !0, pattern: "standard" };function getKeysFromPath(e) {
+Object.defineProperty(exports, "__esModule", { value: !0 });var defaultConf = { setter: "set", getter: "get", vuexEasyFirestore: !1, ignorePrivateProps: !0, ignoreProps: [], pattern: "standard" };function getKeysFromPath(e) {
   return e ? e.match(/\w+/g) : [];
 }function getDeepRef() {
   var e = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : {},
@@ -54,11 +54,14 @@ Object.defineProperty(exports, "__esModule", { value: !0 });var defaultConf = { 
   }return Array.from(e);
 };function makeMutationsForAllProps(e, t) {
   var r = arguments.length > 2 && void 0 !== arguments[2] ? arguments[2] : {};return r = Object.assign({}, defaultConf, r), isWhat.isObject(e) ? Object.keys(e).reduce(function (a, n) {
-    if (r.ignorePrivateProps && "_" === n[0]) return a;var s = t ? t + "." + n : n;a["simple" === r.pattern ? s : "SET_" + s.toUpperCase()] = function (e, t) {
+    var s = t ? t + "." + n : n,
+        o = "simple" === r.pattern ? s : "SET_" + s.toUpperCase();if (r.ignorePrivateProps && "_" === n[0]) return a;if (r.ignoreProps.map(function (e) {
+      return e.replace(/(.*?)\/([^\/]*?)$/, "$2");
+    }).includes(s)) return a;a[o] = function (e, t) {
       return setDeepValue(e, s, t);
-    };var o = e[n];if (isWhat.isObject(o)) {
-      var u = makeMutationsForAllProps(o, s, r);a = _extends({}, a, u);
-    }isWhat.isArray(o) && (a["simple" === r.pattern ? s + ".pop" : "POP_" + s.toUpperCase()] = function (e) {
+    };var i = e[n];if (isWhat.isObject(i)) {
+      var u = makeMutationsForAllProps(i, s, r);a = _extends({}, a, u);
+    }isWhat.isArray(i) && (a["simple" === r.pattern ? s + ".pop" : "POP_" + s.toUpperCase()] = function (e) {
       return popDeepValue(e, s);
     }, a["simple" === r.pattern ? s + ".push" : "PUSH_" + s.toUpperCase()] = function (e, t) {
       return pushDeepValue(e, s, t);
@@ -74,22 +77,22 @@ Object.defineProperty(exports, "__esModule", { value: !0 });var defaultConf = { 
   var a = arguments.length > 3 && void 0 !== arguments[3] ? arguments[3] : {};a = Object.assign({}, defaultConf, a);var n = e.split("/"),
       s = n.pop(),
       o = n.length ? n.join("/") + "/" : "",
-      u = o + ("simple" === a.pattern ? s : "set" + s[0].toUpperCase() + s.substring(1));if (r._actions[u]) return r.dispatch(u, t);if (a.vuexEasyFirestore) {
-    var i = r._modulesNamespaceMap[e + "/"],
-        p = i ? e + "/set" : o + "set",
-        c = i ? t : {};if (i || (c[s] = t), r._actions[p]) return r.dispatch(p, c);
+      i = o + ("simple" === a.pattern ? s : "set" + s[0].toUpperCase() + s.substring(1));if (r._actions[i]) return r.dispatch(i, t);if (a.vuexEasyFirestore) {
+    var u = r._modulesNamespaceMap[e + "/"],
+        p = u ? e + "/set" : o + "set",
+        c = u ? t : {};if (u || (c[s] = t), r._actions[p]) return r.dispatch(p, c);
   }var l = "simple" === a.pattern ? s : "SET_" + s.toUpperCase(),
       f = o + l;if (r._mutations[f]) return r.commit(f, t);console.error("There is no mutation set for '" + f + "'.\n    Please add a mutation like so in the correct module:\n\n    mutations: {\n      '" + l + "': ({state}, payload) => {\n        state." + s + " = payload\n      }\n    }\n\n    You can also add mutations automatically with vuex-easy-access.\n    See the documentation here:\n      https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property");
 }function createSetterModule(e) {
   var t = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : "",
       r = arguments[2],
       a = arguments.length > 3 && void 0 !== arguments[3] ? arguments[3] : {};return a = Object.assign({}, defaultConf, a), { actions: function e(n) {
-      var s = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : "";return Object.keys(n).reduce(function (o, u) {
-        if (a.ignorePrivateProps && "_" === u[0]) return o;if (r._modulesNamespaceMap[t + u + "/"]) return o;var i = s ? s + "." + u : u,
-            p = t + i;o[i] = function (e, t) {
+      var s = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : "";return Object.keys(n).reduce(function (o, i) {
+        var u = s ? s + "." + i : i,
+            p = t + u;if (a.ignorePrivateProps && "_" === i[0]) return o;if (a.ignoreProps.includes(p)) return o;if (r._modulesNamespaceMap[p + "/"]) return o;o[u] = function (e, t) {
           return defaultSetter(p, t, r, a);
-        };var c = n[u];if (isWhat.isObject(c) && Object.keys(c).length) {
-          var l = e(c, i);Object.assign(o, l);
+        };var c = n[i];if (isWhat.isObject(c) && Object.keys(c).length) {
+          var l = e(c, u);Object.assign(o, l);
         }return o;
       }, {});
     }(e), namespaced: !0 };
@@ -98,7 +101,7 @@ Object.defineProperty(exports, "__esModule", { value: !0 });var defaultConf = { 
       a = e._modulesNamespaceMap;Object.keys(a).forEach(function (n) {
     var s = a[n],
         o = getKeysFromPath(n + t),
-        u = createSetterModule(s.state, n, e, r);e.registerModule(o, u);
+        i = createSetterModule(s.state, n, e, r);e.registerModule(o, i);
   }), r = Object.assign({}, defaultConf, r);var n = t,
       s = createSetterModule(e.state, "", e, r);e.registerModule(n, s);
 }function createEasyAccess(e) {
@@ -122,9 +125,11 @@ var index_cjs_min_5 = index_cjs_min.getDeepRef;
 var index_cjs_min_6 = index_cjs_min.getKeysFromPath;
 
 var config = {
-  pattern: 'simple'
+  pattern: 'simple',
+  ignoreProps: ['user/importedData', 'user/user.secretProp']
 };
 
+// Store root state
 function initialState() {
   return {
     pokemonBox: {
@@ -134,17 +139,20 @@ function initialState() {
     }
   };
 }
-var module2State = {
+
+// MODULE: gymData
+var gymDataState = {
   defeated: {
     palletTown: false
   }
 };
 var gymData = {
   namespaced: true,
-  state: module2State,
-  mutations: index_cjs_min_2(module2State, config)
-};
-var moduleState = {
+  state: gymDataState,
+  mutations: index_cjs_min_2(gymDataState, config)
+
+  // MODULE: locationJournal
+};var locationJournalState = {
   visitedPlaces: {
     palletTown: true,
     gym: false
@@ -152,19 +160,20 @@ var moduleState = {
 };
 var locationJournal = {
   namespaced: true,
-  state: moduleState,
-  mutations: index_cjs_min_2(moduleState, config),
+  state: locationJournalState,
+  mutations: index_cjs_min_2(locationJournalState, config),
   modules: { gymData: gymData }
-};
-var userState = { user: null };
-var userModule = {
+
+  // MODULE: user
+};var userState = { user: { secretProp: null }, importedData: [] };
+var user = {
   namespaced: true,
   state: userState,
   mutations: index_cjs_min_2(userState, config)
-};
 
-var storeObj = {
-  modules: { locationJournal: locationJournal, user: userModule },
+  // export store
+};var storeObj = {
+  modules: { locationJournal: locationJournal, user: user },
   state: initialState(),
   mutations: index_cjs_min_2(initialState(), config),
   actions: {},

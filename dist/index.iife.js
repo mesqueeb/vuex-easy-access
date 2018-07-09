@@ -6,6 +6,7 @@ var VuexEasyAccess = (function (exports,isWhat) {
     getter: 'get',
     vuexEasyFirestore: false,
     ignorePrivateProps: true,
+    ignoreProps: [],
     pattern: 'standard'
   };
 
@@ -164,15 +165,26 @@ var VuexEasyAccess = (function (exports,isWhat) {
     conf = Object.assign({}, defaultConf, conf);
     if (!isWhat.isObject(propParent)) return {};
     return Object.keys(propParent).reduce(function (mutations, prop) {
-      if (conf.ignorePrivateProps && prop[0] === '_') return mutations;
+      // Get the path info up until this point
       var propPath = !path ? prop : path + '.' + prop;
       // mutation name
       var name = conf.pattern === 'simple' ? propPath : 'SET_' + propPath.toUpperCase();
+      // Avoid making setters for private props
+      if (conf.ignorePrivateProps && prop[0] === '_') return mutations;
+      if (conf.ignoreProps
+      // replace 'module/submodule/prop.subprop' with 'prop.subprop'
+      // because: moduleNS is not knowns when this is called
+      .map(function (p) {
+        return p.replace(/(.*?)\/([^\/]*?)$/, '$2');
+      }).includes(propPath)) {
+        return mutations;
+      }
+      // All good, make the action!
       mutations[name] = function (state, newVal) {
         return setDeepValue(state, propPath, newVal);
       };
+      // BTW, check if the value of this prop was an object, if so, let's do it's children as well!
       var propValue = propParent[prop];
-      // If the prop is an object, make the children mutations as well
       if (isWhat.isObject(propValue)) {
         var childrenMutations = makeMutationsForAllProps(propValue, propPath, conf);
         mutations = _extends({}, mutations, childrenMutations);
@@ -314,15 +326,19 @@ var VuexEasyAccess = (function (exports,isWhat) {
       var _propPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
       return Object.keys(_targetState).reduce(function (carry, stateProp) {
-        // Avoid making setters for private props
-        if (conf.ignorePrivateProps && stateProp[0] === '_') return carry;
-        // Avoid making setters for child module props in parent
-        if (store._modulesNamespaceMap[moduleNS + stateProp + '/']) return carry;
+        // Get the path info up until this point
         var propPath = _propPath ? _propPath + '.' + stateProp : stateProp;
         var fullPath = moduleNS + propPath;
+        // Avoid making setters for private props
+        if (conf.ignorePrivateProps && stateProp[0] === '_') return carry;
+        if (conf.ignoreProps.includes(fullPath)) return carry;
+        // Avoid making setters for props which are an entire module on its own
+        if (store._modulesNamespaceMap[fullPath + '/']) return carry;
+        // All good, make the action!
         carry[propPath] = function (context, payload) {
           return defaultSetter(fullPath, payload, store, conf);
         };
+        // BTW, check if the value of this prop was an object, if so, let's do it's children as well!
         var propVal = _targetState[stateProp];
         if (isWhat.isObject(propVal) && Object.keys(propVal).length) {
           var childrenSetters = getSetters(propVal, propPath);

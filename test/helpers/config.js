@@ -1,4 +1,5 @@
 
 export default {
-  pattern: 'simple'
+  pattern: 'simple',
+  ignoreProps: ['user/importedData', 'user/user.secretProp'],
 }

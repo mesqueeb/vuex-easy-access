@@ -20,7 +20,7 @@ function makeMutationsForAllProps(
   if (!isObject(propParent)) return {}
   return Object.keys(propParent)
   .reduce((mutations, prop) => {
-    if (conf.ignorePrivateProps && prop[0] === '_') return mutations
+    // Get the path info up until this point
     let propPath = (!path)
       ? prop
       : path + '.' + prop
@@ -28,11 +28,22 @@ function makeMutationsForAllProps(
     let name = (conf.pattern === 'simple')
       ? propPath
       : 'SET_' + propPath.toUpperCase()
+    // Avoid making setters for private props
+    if (conf.ignorePrivateProps && prop[0] === '_') return mutations
+    if (conf.ignoreProps
+      // replace 'module/submodule/prop.subprop' with 'prop.subprop'
+      // because: moduleNS is not knowns when this is called
+      .map(p => p.replace(/(.*?)\/([^\/]*?)$/, '$2'))
+      .includes(propPath)
+    ) {
+      return mutations
+    }
+    // All good, make the action!
     mutations[name] = (state, newVal) => {
       return setDeepValue(state, propPath, newVal)
     }
+    // BTW, check if the value of this prop was an object, if so, let's do it's children as well!
     let propValue = propParent[prop]
-    // If the prop is an object, make the children mutations as well
     if (isObject(propValue)) {
       let childrenMutations = makeMutationsForAllProps(propValue, propPath, conf)
       mutations = {...mutations, ...childrenMutations}
