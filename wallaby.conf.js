@@ -4,21 +4,19 @@ module.exports = function (wallaby) {
       'src/**/*.js',
     ],
     tests: [
-      'test/*.js'
+      'test/**/*.js'
     ],
-    testFramework: 'ava',
     env: {
-			type: 'node',
-			runner: 'node'
-		},
+      type: 'node',
+      runner: 'node'
+    },
     compilers: {
       '**/*.js': wallaby.compilers.babel({
-        presets: ['@ava/babel-preset-env']
-      }),
-      '*.js': wallaby.compilers.babel({
-        presets: ['@ava/babel-preset-env']
-      }),
+        // Tell Wallaby to use Ava's Babel preset, necessary if your project doesn't use Babel otherwise.
+        presets: ['@ava/babel-preset-stage-4']
+      })
     },
-    workers: {restart: true}
+    testFramework: 'ava',
+    debug: true
   }
 }
