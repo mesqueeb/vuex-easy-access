@@ -28,14 +28,12 @@ test('makeActions', t => {
     'locationJournal/set/visitedPlaces',
     'locationJournal/set/visitedPlaces.palletTown',
     'locationJournal/set/visitedPlaces.gym',
-    'locationJournal/set/gymData',
-    'locationJournal/set/gymData.defeated',
-    'locationJournal/set/gymData.defeated.palletTown',
     'locationJournal/gymData/set/defeated',
     'locationJournal/gymData/set/defeated.palletTown',
     'set/pokemonBox',
     'set/pokemonBox.waterPokemon',
-    'set/pokemonBox.items'
+    'set/pokemonBox.items',
+    'user/set/user'
   ]
   expectedActions.forEach(a => t.truthy(actions[a]))
 })
@@ -43,6 +41,7 @@ test('makeActions', t => {
 test('makeSetterModules', t => {
   const modules = store._modulesNamespaceMap
   const expectedModules = [
+    'user/set/',
     'locationJournal/set/',
     'locationJournal/gymData/set/',
     'set/'

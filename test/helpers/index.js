@@ -9,5 +9,5 @@ storeObj.plugins = [easyAccess]
 // create store
 Vue.use(Vuex)
 const store = new Vuex.Store(storeObj)
-
+// console.log('store → ', store)
 export default store
