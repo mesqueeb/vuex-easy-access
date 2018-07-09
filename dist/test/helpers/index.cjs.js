@@ -85,7 +85,7 @@ Object.defineProperty(exports, "__esModule", { value: !0 });var defaultConf = { 
       r = arguments[2],
       a = arguments.length > 3 && void 0 !== arguments[3] ? arguments[3] : {};return a = Object.assign({}, defaultConf, a), { actions: function e(n) {
       var s = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : "";return Object.keys(n).reduce(function (o, u) {
-        if (a.ignorePrivateProps && "_" === u[0]) return o;if (r._modulesNamespaceMap[u + "/"]) return o;var i = s ? s + "." + u : u,
+        if (a.ignorePrivateProps && "_" === u[0]) return o;if (r._modulesNamespaceMap[t + u + "/"]) return o;var i = s ? s + "." + u : u,
             p = t + i;o[i] = function (e, t) {
           return defaultSetter(p, t, r, a);
         };var c = n[u];if (isWhat.isObject(c) && Object.keys(c).length) {
@@ -156,9 +156,15 @@ var locationJournal = {
   mutations: index_cjs_min_2(moduleState, config),
   modules: { gymData: gymData }
 };
+var userState = { user: null };
+var userModule = {
+  namespaced: true,
+  state: userState,
+  mutations: index_cjs_min_2(userState, config)
+};
 
 var storeObj = {
-  modules: { locationJournal: locationJournal },
+  modules: { locationJournal: locationJournal, user: userModule },
   state: initialState(),
   mutations: index_cjs_min_2(initialState(), config),
   actions: {},

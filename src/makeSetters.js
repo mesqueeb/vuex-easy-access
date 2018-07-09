@@ -93,7 +93,7 @@ function createSetterModule (targetState, moduleNS = '', store, conf = {}) {
       // Avoid making setters for private props
       if (conf.ignorePrivateProps && stateProp[0] === '_') return carry
       // Avoid making setters for child module props in parent
-      if (store._modulesNamespaceMap[stateProp + '/']) return carry
+      if (store._modulesNamespaceMap[moduleNS + stateProp + '/']) return carry
       const propPath = (_propPath)
         ? _propPath + '.' + stateProp
         : stateProp

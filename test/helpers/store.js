@@ -33,9 +33,15 @@ const locationJournal = {
   mutations: defaultMutations(moduleState, config),
   modules: { gymData }
 }
+const userState = { user: null }
+const userModule = {
+  namespaced: true,
+  state: userState,
+  mutations: defaultMutations(userState, config)
+}
 
 export default {
-  modules: { locationJournal },
+  modules: { locationJournal, user: userModule },
   state: initialState(),
   mutations: defaultMutations(initialState(), config),
   actions: {},

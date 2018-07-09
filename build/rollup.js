@@ -15,7 +15,7 @@ import { terser } from 'rollup-plugin-terser'
 // ------------------------------------------------------------------------------------------
 const indexFileName = 'index'
 const formats = ['cjs', 'es', 'iife', 'umd']
-const extraBuildFileNames = ['../test/setup/index']
+const extraBuildFileNames = ['../test/helpers/index']
 const extraBuildFormats = ['cjs']
 const minify = true
 const sourcemap = true

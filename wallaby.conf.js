@@ -2,23 +2,22 @@ module.exports = function (wallaby) {
   return {
     files: [
       'src/**/*.js',
+      'dist/**/*.js'
     ],
     tests: [
-      'test/*.js'
+      'test/**/*.js'
     ],
-    testFramework: 'ava',
     env: {
-			type: 'node',
-			runner: 'node'
-		},
-    compilers: {
-      '**/*.js': wallaby.compilers.babel({
-        presets: ['@ava/babel-preset-env']
-      }),
-      '*.js': wallaby.compilers.babel({
-        presets: ['@ava/babel-preset-env']
-      }),
+      type: 'node',
+      runner: 'node'
     },
-    workers: {restart: true}
+    compilers: {
+      '+(src|test)/**/*.js': wallaby.compilers.babel({
+        presets: ['env', '@ava/babel-preset-stage-4'],
+        plugins: ['babel-plugin-transform-object-rest-spread']
+      })
+    },
+    testFramework: 'ava',
+    debug: true
   }
 }

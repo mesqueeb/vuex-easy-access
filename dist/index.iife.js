@@ -317,7 +317,7 @@ var VuexEasyAccess = (function (exports,isWhat) {
         // Avoid making setters for private props
         if (conf.ignorePrivateProps && stateProp[0] === '_') return carry;
         // Avoid making setters for child module props in parent
-        if (store._modulesNamespaceMap[stateProp + '/']) return carry;
+        if (store._modulesNamespaceMap[moduleNS + stateProp + '/']) return carry;
         var propPath = _propPath ? _propPath + '.' + stateProp : stateProp;
         var fullPath = moduleNS + propPath;
         carry[propPath] = function (context, payload) {
