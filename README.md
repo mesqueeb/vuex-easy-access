@@ -246,18 +246,30 @@ Now instead of the `get` `set` keywords, you will only be able to use `store.get
 
 ### Ignore private state props
 
-Vuex Easy Access will ignore any props **starting with an underscore** by *default*.<br>
-Eg.
+Vuex Easy Access will ignore (and not make mutations/setters) any props that:
+
+- start with an underscore (*default*)
+- are added to the `ignoreProps: []` config
 
 ```js
+// in the config
+const easyAccess = createEasyAccess({
+  ignoreProps: ['normalProp.secretProp'] // true is the default
+})
+// The module's state
 const state = {
-  _privateProp: '...', // this prop is not touched at all!
-  normalProp: '...'
+  _privateProp: null, // this prop is not touched at all!
+  normalProp: {
+    secretProp: null // this prop is not touched at all!
+  }
 }
 const store = {
   state,
   mutations: {
-    ...defaultMutations(state)
+    // and in the defaultMutations
+    ...defaultMutations(state, {
+      ignoreProps: ['normalProp.secretProp']
+    })
   },
 }
 ```
@@ -267,9 +279,9 @@ This will create only the mutation and dispatch setter for 'normalProp':
 - `mutate('SET_NORMALPROP', newVal)`
 - `dispatch('set/normalProp', newVal)`
 
-And none will be set for '_privateProp'.
+And none will be set for '_privateProp' and 'secretProp'!
 
-To disable this functionality you need to do:
+To disable ignoring the ones with an underscore (`_privateProp`) you need to do:
 
 ```js
 // in the config

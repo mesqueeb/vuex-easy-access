@@ -90,17 +90,21 @@ function createSetterModule (targetState, moduleNS = '', store, conf = {}) {
   conf = Object.assign({}, defaultConf, conf)
   function getSetters (_targetState, _propPath = '') {
     return Object.keys(_targetState).reduce((carry, stateProp) => {
-      // Avoid making setters for private props
-      if (conf.ignorePrivateProps && stateProp[0] === '_') return carry
-      // Avoid making setters for child module props in parent
-      if (store._modulesNamespaceMap[moduleNS + stateProp + '/']) return carry
+      // Get the path info up until this point
       const propPath = (_propPath)
         ? _propPath + '.' + stateProp
         : stateProp
       const fullPath = moduleNS + propPath
+      // Avoid making setters for private props
+      if (conf.ignorePrivateProps && stateProp[0] === '_') return carry
+      if (conf.ignoreProps.includes(fullPath)) return carry
+      // Avoid making setters for props which are an entire module on its own
+      if (store._modulesNamespaceMap[fullPath + '/']) return carry
+      // All good, make the action!
       carry[propPath] = (context, payload) => {
         return defaultSetter(fullPath, payload, store, conf)
       }
+      // BTW, check if the value of this prop was an object, if so, let's do it's children as well!
       let propVal = _targetState[stateProp]
       if (isObject(propVal) && Object.keys(propVal).length) {
         const childrenSetters = getSetters(propVal, propPath)
