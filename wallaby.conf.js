@@ -2,6 +2,7 @@ module.exports = function (wallaby) {
   return {
     files: [
       'src/**/*.js',
+      'dist/**/*.js'
     ],
     tests: [
       'test/**/*.js'
@@ -11,9 +12,9 @@ module.exports = function (wallaby) {
       runner: 'node'
     },
     compilers: {
-      '**/*.js': wallaby.compilers.babel({
-        // Tell Wallaby to use Ava's Babel preset, necessary if your project doesn't use Babel otherwise.
-        presets: ['@ava/babel-preset-stage-4']
+      '+(src|test)/**/*.js': wallaby.compilers.babel({
+        presets: ['env', '@ava/babel-preset-stage-4'],
+        plugins: ['babel-plugin-transform-object-rest-spread']
       })
     },
     testFramework: 'ava',
