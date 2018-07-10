@@ -230,6 +230,8 @@ const easyAccess = createEasyAccess({vuexEasyFirestore: true})
 
 This will make sure that whenever you set a value in a module that's auto-synced to firestore through Vuex Easy Firestore, it will trigger the sync properly. Please see the [Vuex Easy Firestore documentation](https://github.com/mesqueeb/VuexEasyFirestore) for more information on how to set up auto-sync with firestore.
 
+Vuex Easy Firestore comes with a special setter for adding items to your module ánd database. However, it is important to pass the 'vuex-easy-firestore' plugin first, and the 'easyAccess' second for it to work properly.
+
 ### get() set() function names
 
 If for some reason you want to change the default function names for `store.get()` and `store.set()`, you can do so by passing an object to `createEasyAccess()` like so:

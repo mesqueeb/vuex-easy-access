@@ -77,10 +77,9 @@ Object.defineProperty(exports, "__esModule", { value: !0 });var defaultConf = { 
   var a = arguments.length > 3 && void 0 !== arguments[3] ? arguments[3] : {};a = Object.assign({}, defaultConf, a);var n = e.split("/"),
       s = n.pop(),
       o = n.length ? n.join("/") + "/" : "",
-      i = o + ("simple" === a.pattern ? s : "set" + s[0].toUpperCase() + s.substring(1));if (r._actions[i]) return r.dispatch(i, t);if (a.vuexEasyFirestore) {
-    var u = r._modulesNamespaceMap[e + "/"],
-        p = u ? e + "/set" : o + "set",
-        c = u ? t : {};if (u || (c[s] = t), r._actions[p]) return r.dispatch(p, c);
+      i = o + ("simple" === a.pattern ? s : "set" + s[0].toUpperCase() + s.substring(1));if (r._actions[i]) return r.dispatch(i, t);var u = r._modulesNamespaceMap[e + "/"];if (a.vuexEasyFirestore && u) {
+    var p = e + "/set",
+        c = t;if (r._actions[p]) return r.dispatch(p, c);
   }var l = "simple" === a.pattern ? s : "SET_" + s.toUpperCase(),
       f = o + l;if (r._mutations[f]) return r.commit(f, t);console.error("There is no mutation set for '" + f + "'.\n    Please add a mutation like so in the correct module:\n\n    mutations: {\n      '" + l + "': ({state}, payload) => {\n        state." + s + " = payload\n      }\n    }\n\n    You can also add mutations automatically with vuex-easy-access.\n    See the documentation here:\n      https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property");
 }function createSetterModule(e) {

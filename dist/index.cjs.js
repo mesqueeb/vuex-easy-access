@@ -279,29 +279,31 @@ function defaultSetter(path, payload, store) {
   var pArr = path.split('/');
   // ['info', 'user', 'favColours.primary']
   var props = pArr.pop();
-  // 'favColours.primary'
+  // props = 'favColours.primary'
   var modulePath = pArr.length ? pArr.join('/') + '/' : '';
   // 'info/user/'
   var actionName = conf.pattern === 'simple' ? props : 'set' + props[0].toUpperCase() + props.substring(1);
-  // 'setFavColours.primary'
+  // 'favColours.primary' or 'setFavColours.primary'
   var actionPath = modulePath + actionName;
   // 'info/user/setFavColours.primary'
   var actionExists = store._actions[actionPath];
   if (actionExists) {
     return store.dispatch(actionPath, payload);
   }
-  if (conf.vuexEasyFirestore) {
+  // vuex-easy-firestore integration!
+  var pathIsModule = store._modulesNamespaceMap[path + '/'];
+  // only if the full path is actually a module
+  if (conf.vuexEasyFirestore && pathIsModule) {
     // 'info/user/set', {favColours: {primary: payload}}'
-    var pathIsModule = store._modulesNamespaceMap[path + '/'];
-    var firestoreActionPath = pathIsModule ? path + '/set' : modulePath + 'set';
-    var newPayload = pathIsModule ? payload : {};
-    if (!pathIsModule) newPayload[props] = payload;
+    var firestoreActionPath = path + '/set';
+    var newPayload = payload;
     var firestoreActionExists = store._actions[firestoreActionPath];
     if (firestoreActionExists) {
       return store.dispatch(firestoreActionPath, newPayload);
     }
   }
   var mutationName = conf.pattern === 'simple' ? props : 'SET_' + props.toUpperCase();
+  // 'favColours.primary' or 'SET_FAVCOLOURS.PRIMARY'
   var mutationPath = modulePath + mutationName;
   var mutationExists = store._mutations[mutationPath];
   if (mutationExists) {
