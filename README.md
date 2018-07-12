@@ -4,9 +4,6 @@ The Vuex Easy Access plugin does two things:
 1. Add a global getter/setter for each state property
 2. Automatically generate mutations for each state property
 
-<!-- Todo -->
-<!-- 1. Make it so it doesn't matter if the user uses `/` or `.` -->
-
 ### Table of contents
 
 <!-- TOC -->
@@ -369,7 +366,15 @@ mutations: {
 
 Do you have questions, comments, suggestions or feedback? Or any feature that's missing that you'd love to have? Feel free to open an issue! ♥
 
-Also check out the sister vuex-plugin for Firebase: [Vuex Easy Firestore](https://github.com/mesqueeb/VuexEasyFirestore)!
+Planned future features:
+
+- Make a blog post
+- Improve setting nested props of items with ID's
+  - Maybe something like `set('items/${id}.field', newVal)`
+- Improve error handling
+  - Explain to developer possible path mistakes: ` / vs . `
+
+Also be sure to check out the sister vuex-plugin for Firebase: [Vuex Easy Firestore](https://github.com/mesqueeb/VuexEasyFirestore)!
 
 --
 
