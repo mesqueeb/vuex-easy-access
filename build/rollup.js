@@ -1,6 +1,8 @@
+// npm i -D babel-core babel-plugin-external-helpers babel-plugin-transform-object-rest-spread babel-preset-env rollup rollup-plugin-babel rollup-plugin-commonjs rollup-plugin-node-resolve rollup-plugin-terser
 import babel from 'rollup-plugin-babel'
 import commonjs from 'rollup-plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
+// import resolve from 'rollup-plugin-node-resolve'
 
 // ------------------------------------------------------------------------------------------
 // formats
