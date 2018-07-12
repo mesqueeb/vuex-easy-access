@@ -16,11 +16,13 @@ import { terser } from 'rollup-plugin-terser'
 // setup
 // ------------------------------------------------------------------------------------------
 const indexFileName = 'index'
-const formats = ['cjs', 'es', 'iife', 'umd']
+const formats = ['cjs', 'es']
+const exportFolder = 'dist'
 const extraBuildFileNames = ['../test/helpers/index']
 const extraBuildFormats = ['cjs']
-const minify = true
-const sourcemap = true
+const extraExportFolder = ''
+const minify = false
+const sourcemap = false
 const _plugins = [
   babel({
     exclude: 'node_modules/**' // only transpile our source code
@@ -37,12 +39,16 @@ const external = Object.keys(pkg.dependencies || [])
 // build helpers
 // ------------------------------------------------------------------------------------------
 function output (targetFileName, ext, format) {
+  let _exportFolder = extraBuildFileNames.includes(targetFileName)
+    ? extraExportFolder
+    : exportFolder
+  if (_exportFolder) _exportFolder = _exportFolder + '/'
   targetFileName = targetFileName.replace(/^\.\.\//, '')
   return {
     name: className,
     sourcemap,
     exports: 'named',
-    file: `dist/${targetFileName}.${ext}`,
+    file: `${_exportFolder}${targetFileName}.${ext}`,
     format
   }
 }
