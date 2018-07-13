@@ -164,6 +164,7 @@ var toConsumableArray = function (arr) {
  */
 function makeMutationsForAllProps(propParent, path) {
   var conf = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var infoNS = arguments[3];
 
   conf = Object.assign({}, defaultConf, conf);
   if (!isWhat.isObject(propParent)) return {};
@@ -174,12 +175,14 @@ function makeMutationsForAllProps(propParent, path) {
     var name = conf.pattern === 'simple' ? propPath : 'SET_' + propPath.toUpperCase();
     // Avoid making setters for private props
     if (conf.ignorePrivateProps && prop[0] === '_') return mutations;
-    if (conf.ignoreProps
-    // replace 'module/submodule/prop.subprop' with 'prop.subprop'
-    // because: moduleNS is not knowns when this is called
-    .map(function (p) {
-      return p.replace(/(.*?)\/([^\/]*?)$/, '$2');
-    }).includes(propPath)) {
+    if (conf.ignoreProps.some(function (ignPropFull) {
+      // replace 'module/submodule/prop.subprop' with 'prop.subprop'
+      // because: moduleNS is not knowns when this is called
+      var separatePropFromNS = /(.*?)\/([^\/]*?)$/.exec(ignPropFull);
+      var ignPropNS = separatePropFromNS ? separatePropFromNS[1] + '/' : '';
+      var ignProp = separatePropFromNS ? separatePropFromNS[2] : ignPropFull;
+      return !infoNS && ignProp === propPath || infoNS && infoNS.moduleNamespace == ignPropNS && ignProp === propPath;
+    })) {
       return mutations;
     }
     // All good, make the action!
@@ -230,9 +233,10 @@ function makeMutationsForAllProps(propParent, path) {
  */
 function defaultMutations(initialState) {
   var conf = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var infoNS = arguments[2];
 
   conf = Object.assign({}, defaultConf, conf);
-  return makeMutationsForAllProps(initialState, null, conf);
+  return makeMutationsForAllProps(initialState, null, conf, infoNS);
 }
 
 /**
@@ -279,29 +283,31 @@ function defaultSetter(path, payload, store) {
   var pArr = path.split('/');
   // ['info', 'user', 'favColours.primary']
   var props = pArr.pop();
-  // 'favColours.primary'
+  // props = 'favColours.primary'
   var modulePath = pArr.length ? pArr.join('/') + '/' : '';
   // 'info/user/'
   var actionName = conf.pattern === 'simple' ? props : 'set' + props[0].toUpperCase() + props.substring(1);
-  // 'setFavColours.primary'
+  // 'favColours.primary' or 'setFavColours.primary'
   var actionPath = modulePath + actionName;
   // 'info/user/setFavColours.primary'
   var actionExists = store._actions[actionPath];
   if (actionExists) {
     return store.dispatch(actionPath, payload);
   }
-  if (conf.vuexEasyFirestore) {
+  // vuex-easy-firestore integration!
+  var pathIsModule = store._modulesNamespaceMap[path + '/'];
+  // only if the full path is actually a module
+  if (conf.vuexEasyFirestore && pathIsModule) {
     // 'info/user/set', {favColours: {primary: payload}}'
-    var pathIsModule = store._modulesNamespaceMap[path + '/'];
-    var firestoreActionPath = pathIsModule ? path + '/set' : modulePath + 'set';
-    var newPayload = pathIsModule ? payload : {};
-    if (!pathIsModule) newPayload[props] = payload;
+    var firestoreActionPath = path + '/set';
+    var newPayload = payload;
     var firestoreActionExists = store._actions[firestoreActionPath];
     if (firestoreActionExists) {
       return store.dispatch(firestoreActionPath, newPayload);
     }
   }
   var mutationName = conf.pattern === 'simple' ? props : 'SET_' + props.toUpperCase();
+  // 'favColours.primary' or 'SET_FAVCOLOURS.PRIMARY'
   var mutationPath = modulePath + mutationName;
   var mutationExists = store._mutations[mutationPath];
   if (mutationExists) {
@@ -411,4 +417,3 @@ exports.defaultSetter = defaultSetter;
 exports.defaultGetter = defaultGetter;
 exports.getDeepRef = getDeepRef;
 exports.getKeysFromPath = getKeysFromPath;
-//# sourceMappingURL=index.cjs.js.map

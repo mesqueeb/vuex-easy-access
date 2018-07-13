@@ -24,7 +24,7 @@ function defaultSetter (path, payload, store, conf = {}) {
   const pArr = path.split('/')
   // ['info', 'user', 'favColours.primary']
   const props = pArr.pop()
-  // 'favColours.primary'
+  // props = 'favColours.primary'
   const modulePath = (pArr.length)
     ? pArr.join('/') + '/'
     : ''
@@ -32,23 +32,20 @@ function defaultSetter (path, payload, store, conf = {}) {
   const actionName = (conf.pattern === 'simple')
     ? props
     : 'set' + props[0].toUpperCase() + props.substring(1)
-  // 'setFavColours.primary'
+  // 'favColours.primary' or 'setFavColours.primary'
   const actionPath = modulePath + actionName
   // 'info/user/setFavColours.primary'
   const actionExists = store._actions[actionPath]
   if (actionExists) {
     return store.dispatch(actionPath, payload)
   }
-  if (conf.vuexEasyFirestore) {
+  // vuex-easy-firestore integration!
+  const pathIsModule = store._modulesNamespaceMap[path + '/']
+  // only if the full path is actually a module
+  if (conf.vuexEasyFirestore && pathIsModule) {
     // 'info/user/set', {favColours: {primary: payload}}'
-    const pathIsModule = store._modulesNamespaceMap[path + '/']
-    const firestoreActionPath = (pathIsModule)
-      ? path + '/set'
-      : modulePath + 'set'
-    const newPayload = (pathIsModule)
-      ? payload
-      : {}
-    if (!pathIsModule) newPayload[props] = payload
+    const firestoreActionPath = path + '/set'
+    const newPayload = payload
     const firestoreActionExists = store._actions[firestoreActionPath]
     if (firestoreActionExists) {
       return store.dispatch(firestoreActionPath, newPayload)
@@ -57,6 +54,7 @@ function defaultSetter (path, payload, store, conf = {}) {
   const mutationName = (conf.pattern === 'simple')
     ? props
     : 'SET_' + props.toUpperCase()
+  // 'favColours.primary' or 'SET_FAVCOLOURS.PRIMARY'
   const mutationPath = modulePath + mutationName
   const mutationExists = store._mutations[mutationPath]
   if (mutationExists) {

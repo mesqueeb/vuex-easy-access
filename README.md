@@ -4,9 +4,6 @@ The Vuex Easy Access plugin does two things:
 1. Add a global getter/setter for each state property
 2. Automatically generate mutations for each state property
 
-<!-- Todo -->
-<!-- 1. Make it so it doesn't matter if the user uses `/` or `.` -->
-
 ### Table of contents
 
 <!-- TOC -->
@@ -230,6 +227,8 @@ const easyAccess = createEasyAccess({vuexEasyFirestore: true})
 
 This will make sure that whenever you set a value in a module that's auto-synced to firestore through Vuex Easy Firestore, it will trigger the sync properly. Please see the [Vuex Easy Firestore documentation](https://github.com/mesqueeb/VuexEasyFirestore) for more information on how to set up auto-sync with firestore.
 
+Vuex Easy Firestore comes with a special setter for adding items to your module ánd database. However, it is important to pass the 'vuex-easy-firestore' plugin first, and the 'easyAccess' second for it to work properly.
+
 ### get() set() function names
 
 If for some reason you want to change the default function names for `store.get()` and `store.set()`, you can do so by passing an object to `createEasyAccess()` like so:
@@ -256,7 +255,6 @@ Vuex Easy Access will ignore (and not make mutations/setters) any props that:
 const easyAccess = createEasyAccess({
   ignoreProps: ['normalProp.secretProp'] // true is the default
 })
-// The module's state
 const state = {
   _privateProp: null, // this prop is not touched at all!
   normalProp: {
@@ -294,7 +292,26 @@ mutations: {
 }
 ```
 
-(if you have any requests for more customisation of this functionality, please let me know in an issue!)
+Please note that when passing a prop to `ignoreProps` it will be ignored in all modules regardless of the module namespace. This is because 'defaultMutations' doesn't know the exact namespace of the module when it's initiated. You can be specific about the prop to ignore in just the namespace you want by passing the 'moduleNamespace' as third prop to the 'defaultMutations'. See the example below:
+
+```js
+// We will use the prop ignoreMeInUser in both the store root and the user module
+// But we will only ignore it in user
+const config = { ignoreProps: ['user/ignoreMeInUser'] }
+const easyAccess = createEasyAccess(config) // add config
+const rootAndUserState = { ignoreMeInUser: null }
+const userModule = {
+  state: rootAndUserState,
+  mutations: defaultMutations(rootAndUserState, config, {moduleNamespace: 'user/'}) // add config and moduleNamespace
+}
+const store = {
+  modules: { user: userModule },
+  state: rootAndUserState,
+  mutations: defaultMutations(rootAndUserState, config, {moduleNamespace: ''}) // add config and moduleNamespace
+}
+```
+
+If you have any requests for more customisation of this functionality, please let me know in an issue!
 
 ### Setter patterns
 
@@ -367,7 +384,15 @@ mutations: {
 
 Do you have questions, comments, suggestions or feedback? Or any feature that's missing that you'd love to have? Feel free to open an issue! ♥
 
-Also check out the sister vuex-plugin for Firebase: [Vuex Easy Firestore](https://github.com/mesqueeb/VuexEasyFirestore)!
+Planned future features:
+
+- Make a blog post
+- Improve setting nested props of items with ID's
+  - Maybe something like `set('items/${id}.field', newVal)`
+- Improve error handling
+  - Explain to developer possible path mistakes: ` / vs . `
+
+Also be sure to check out the sister vuex-plugin for Firebase: [Vuex Easy Firestore](https://github.com/mesqueeb/VuexEasyFirestore)!
 
 --
 

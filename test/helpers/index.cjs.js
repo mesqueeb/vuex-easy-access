@@ -1,4 +1,12 @@
-import { isArray, isObject } from 'is-what';
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var isWhat = require('is-what');
+var Vue = _interopDefault(require('vue'));
+var Vuex = _interopDefault(require('vuex'));
 
 var defaultConf = {
   setter: 'set',
@@ -85,7 +93,7 @@ function setDeepValue(target, path, value) {
  */
 function popDeepValue(target, path) {
   var deepRef = getDeepRef(target, path);
-  if (!isArray(deepRef)) return;
+  if (!isWhat.isArray(deepRef)) return;
   return deepRef.pop();
 }
 
@@ -100,7 +108,7 @@ function popDeepValue(target, path) {
  */
 function pushDeepValue(target, path, value) {
   var deepRef = getDeepRef(target, path);
-  if (!isArray(deepRef)) return;
+  if (!isWhat.isArray(deepRef)) return;
   return deepRef.push(value);
 }
 
@@ -121,7 +129,7 @@ function spliceDeepValue(target, path) {
   var value = arguments[4];
 
   var deepRef = getDeepRef(target, path);
-  if (!isArray(deepRef)) return;
+  if (!isWhat.isArray(deepRef)) return;
   return deepRef.splice(index, deleteCount, value);
 }
 
@@ -163,7 +171,7 @@ function makeMutationsForAllProps(propParent, path) {
   var infoNS = arguments[3];
 
   conf = Object.assign({}, defaultConf, conf);
-  if (!isObject(propParent)) return {};
+  if (!isWhat.isObject(propParent)) return {};
   return Object.keys(propParent).reduce(function (mutations, prop) {
     // Get the path info up until this point
     var propPath = !path ? prop : path + '.' + prop;
@@ -187,12 +195,12 @@ function makeMutationsForAllProps(propParent, path) {
     };
     // BTW, check if the value of this prop was an object, if so, let's do it's children as well!
     var propValue = propParent[prop];
-    if (isObject(propValue)) {
+    if (isWhat.isObject(propValue)) {
       var childrenMutations = makeMutationsForAllProps(propValue, propPath, conf);
       mutations = _extends({}, mutations, childrenMutations);
     }
     // If the prop is an array, make array mutations as well
-    if (isArray(propValue)) {
+    if (isWhat.isArray(propValue)) {
       // mutation name
       var pop = conf.pattern === 'simple' ? propPath + '.pop' : 'POP_' + propPath.toUpperCase();
       mutations[pop] = function (state) {
@@ -345,7 +353,7 @@ function createSetterModule(targetState) {
       };
       // BTW, check if the value of this prop was an object, if so, let's do it's children as well!
       var propVal = _targetState[stateProp];
-      if (isObject(propVal) && Object.keys(propVal).length) {
+      if (isWhat.isObject(propVal) && Object.keys(propVal).length) {
         var childrenSetters = getSetters(propVal, propPath);
         Object.assign(carry, childrenSetters);
       }
@@ -406,5 +414,74 @@ function createEasyAccess(userConfig) {
   };
 }
 
-export default createEasyAccess;
-export { createEasyAccess, defaultMutations, defaultSetter, defaultGetter, getDeepRef, getKeysFromPath };
+var config = {
+  pattern: 'simple',
+  ignoreProps: ['user/importedData', 'user/user.secretProp', 'wallet']
+};
+
+// MODULE: gymData
+var gymDataState = {
+  defeated: {
+    palletTown: false
+  }
+};
+var gymData = {
+  namespaced: true,
+  state: gymDataState,
+  mutations: defaultMutations(gymDataState, config, { moduleNamespace: 'locationJournal/gymData/' })
+
+  // MODULE: locationJournal
+};var locationJournalState = {
+  visitedPlaces: {
+    palletTown: true,
+    gym: false
+  }
+};
+var locationJournal = {
+  namespaced: true,
+  state: locationJournalState,
+  mutations: defaultMutations(locationJournalState, config, { moduleNamespace: 'locationJournal' }),
+  modules: { gymData: gymData }
+};
+
+// MODULE: user
+var userState = {
+  user: { secretProp: [] },
+  importedData: [],
+  wallet: []
+};
+var user = {
+  namespaced: true,
+  state: userState,
+  mutations: defaultMutations(userState, config, { moduleNamespace: 'user/' })
+};
+
+// Store root state
+function initialState() {
+  return {
+    pokemonBox: {
+      waterPokemon: ['squirtle'],
+      items: [],
+      _secrets: []
+    },
+    wallet: []
+  };
+}
+
+// export store
+var storeObj = {
+  modules: { locationJournal: locationJournal, user: user },
+  state: initialState(),
+  mutations: defaultMutations(initialState(), config, { moduleNamespace: '' }),
+  actions: {},
+  getters: {}
+};
+
+// set plugin
+var easyAccess = createEasyAccess(config);
+storeObj.plugins = [easyAccess];
+// create store
+Vue.use(Vuex);
+var store = new Vuex.Store(storeObj);
+
+exports.default = store;

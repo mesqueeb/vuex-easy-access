@@ -14,7 +14,8 @@ import defaultConf from './defaultConfig'
 function makeMutationsForAllProps(
   propParent,
   path,
-  conf = {}
+  conf = {},
+  infoNS,
 ) {
   conf = Object.assign({}, defaultConf, conf)
   if (!isObject(propParent)) return {}
@@ -30,12 +31,15 @@ function makeMutationsForAllProps(
       : 'SET_' + propPath.toUpperCase()
     // Avoid making setters for private props
     if (conf.ignorePrivateProps && prop[0] === '_') return mutations
-    if (conf.ignoreProps
-      // replace 'module/submodule/prop.subprop' with 'prop.subprop'
-      // because: moduleNS is not knowns when this is called
-      .map(p => p.replace(/(.*?)\/([^\/]*?)$/, '$2'))
-      .includes(propPath)
-    ) {
+    if (conf.ignoreProps.some(ignPropFull => {
+      const separatePropFromNS = /(.*?)\/([^\/]*?)$/.exec(ignPropFull)
+      const ignPropNS = (separatePropFromNS) ? separatePropFromNS[1] + '/' : ''
+      const ignProp = (separatePropFromNS) ? separatePropFromNS[2] : ignPropFull
+      return (
+        !infoNS && ignProp === propPath ||
+        infoNS && infoNS.moduleNamespace == ignPropNS && ignProp === propPath
+      )
+    })) {
       return mutations
     }
     // All good, make the action!
@@ -90,9 +94,9 @@ function makeMutationsForAllProps(
  *
  * @returns {object}                all mutations for the state
  */
-function defaultMutations (initialState, conf = {}) {
+function defaultMutations (initialState, conf = {}, infoNS) {
   conf = Object.assign({}, defaultConf, conf)
-  return makeMutationsForAllProps(initialState, null, conf)
+  return makeMutationsForAllProps(initialState, null, conf, infoNS)
 }
 
 export { defaultMutations }

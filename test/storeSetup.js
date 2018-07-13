@@ -1,5 +1,5 @@
 import test from 'ava'
-import store from '../dist/test/helpers/index.cjs.js'
+import store from './helpers/index.cjs.js'
 
 test('makeMutations', t => {
   const mutations = store._mutations

@@ -1,4 +1,4 @@
-import createEasyAccess from '../../dist/index.cjs.min'
+import createEasyAccess from '../../src/index'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import storeObj from './store'
