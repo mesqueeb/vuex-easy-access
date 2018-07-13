@@ -29,9 +29,9 @@ function defaultSetter (path, payload, store, conf = {}) {
     ? pArr.join('/') + '/'
     : ''
   // 'info/user/'
-  const actionName = (conf.pattern === 'simple')
-    ? props
-    : 'set' + props[0].toUpperCase() + props.substring(1)
+  const actionName = (conf.pattern === 'traditional')
+    ? 'set' + props[0].toUpperCase() + props.substring(1)
+    : props
   // 'favColours.primary' or 'setFavColours.primary'
   const actionPath = modulePath + actionName
   // 'info/user/setFavColours.primary'
@@ -51,9 +51,9 @@ function defaultSetter (path, payload, store, conf = {}) {
       return store.dispatch(firestoreActionPath, newPayload)
     }
   }
-  const mutationName = (conf.pattern === 'simple')
-    ? props
-    : 'SET_' + props.toUpperCase()
+  const mutationName = (conf.pattern === 'traditional')
+    ? 'SET_' + props.toUpperCase()
+    : props
   // 'favColours.primary' or 'SET_FAVCOLOURS.PRIMARY'
   const mutationPath = modulePath + mutationName
   const mutationExists = store._mutations[mutationPath]

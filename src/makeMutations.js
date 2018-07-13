@@ -26,9 +26,9 @@ function makeMutationsForAllProps(
       ? prop
       : path + '.' + prop
     // mutation name
-    let name = (conf.pattern === 'simple')
-      ? propPath
-      : 'SET_' + propPath.toUpperCase()
+    let name = (conf.pattern === 'traditional')
+      ? 'SET_' + propPath.toUpperCase()
+      : propPath
     // Avoid making setters for private props
     if (conf.ignorePrivateProps && prop[0] === '_') return mutations
     if (conf.ignoreProps.some(ignPropFull => {
@@ -55,23 +55,23 @@ function makeMutationsForAllProps(
     // If the prop is an array, make array mutations as well
     if (isArray(propValue)) {
       // mutation name
-      let pop = (conf.pattern === 'simple')
-        ? propPath + '.pop'
-        : 'POP_' + propPath.toUpperCase()
+      let pop = (conf.pattern === 'traditional')
+        ? 'POP_' + propPath.toUpperCase()
+        : propPath + '.pop'
       mutations[pop] = (state) => {
         return popDeepValue(state, propPath)
       }
       // mutation name
-      let push = (conf.pattern === 'simple')
-        ? propPath + '.push'
-        : 'PUSH_' + propPath.toUpperCase()
+      let push = (conf.pattern === 'traditional')
+        ? 'PUSH_' + propPath.toUpperCase()
+        : propPath + '.push'
       mutations[push] = (state, value) => {
         return pushDeepValue(state, propPath, value)
       }
       // mutation name
-      let splice = (conf.pattern === 'simple')
-        ? propPath + '.splice'
-        : 'SPLICE_' + propPath.toUpperCase()
+      let splice = (conf.pattern === 'traditional')
+        ? 'SPLICE_' + propPath.toUpperCase()
+        : propPath + '.splice'
       mutations[splice] = (state, array) => {
         return spliceDeepValue(state, propPath, ...array)
       }

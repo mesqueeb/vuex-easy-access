@@ -5,5 +5,5 @@ export default {
   vuexEasyFirestore: false,
   ignorePrivateProps: true,
   ignoreProps: [],
-  pattern: 'standard'
+  pattern: 'simple'
 }

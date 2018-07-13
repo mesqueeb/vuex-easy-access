@@ -4,6 +4,24 @@ The Vuex Easy Access plugin does two things:
 1. Add a global getter/setter for each state property
 2. Automatically generate mutations for each state property
 
+## Overview
+
+### 👎😓 Traditional vuex: bothersome to set up
+
+- | Getter | Setter
+--|--|--
+Usage in<br>Vue component | `$store.getters['user/pokemon']` | `$store.dispatch('user/setPokemon', newVal)`
+Required<br>setup | <small>getters:</small><br>`'pokemon': (state, getters) => { return state.pokemon }` | <small>actions:</small><br>`'setPokemon: ({commit}, newVal) => { commit('SET_POKEMON', newVal) }'`<br><small>mutations:</small><br>`'SET_POKEMON: (state, newVal) => { state.pokemon = newVal }'`
+Overwrite<br>Getter/Setter | Change the above to something else | Change the above to something else
+
+### 👍😀 Vuex Easy Access: 0 set up!
+
+- | Getter | Setter
+--|--|--
+Usage in<br>Vue component | `$store.get('user/pokemon')` | `$store.set('user/pokemon', newVal)`
+Required<br>Setup | No setup<br><small>returns `state.user.pokemon` by default</small> | No setup<br><small>updates `state.user.pokemon` through a mutation by default</small>
+Overwrite<br>default | <small>getters:</small><br>`'pokemon': () => { return state.pokemon }` | <small>actions:</small><br>`'pokemon: ({commit}, newVal) => { commit('pokemon', newVal) }'`
+
 ### Table of contents
 
 <!-- TOC -->
@@ -41,7 +59,7 @@ npm i --save vuex-easy-access
 
 ### What you can do
 
-You can access and set anything in your store through `get()` and `set()` methods:
+As you can see in the [overview](#overview), you can access and set anything in your store through `get()` and `set()` methods:
 
 - `get(path)` will automatically look for a getter, if none it will return the state
 - `set(path, val)` will automatically look for an action, if none it will make a mutation
@@ -50,8 +68,6 @@ The `path` syntax is: `module/submodule/stateVal.subProp`.<br>
 `/` for modules and `.` for sub properties when the state value is an object.
 
 The get() and set() syntax is streamlined and easy to use! (unlike vuex's default syntax mess)
-
-In the example below we'll see some example uses:
 
 #### Use case: get/set in vue component
 
@@ -113,16 +129,17 @@ Now we want to make an api call to the server every time the user updates this v
 ```js
 // in the user/theme module
 actions: {
-  'setColors.primary': ({state, commit, dispatch}, newColor) => {
+  'colors.primary': ({state, commit, dispatch}, newColor) => {
     dispatch('patchToServer', state.colors.primary, {root: true})
-    return commit('SET_COLORS.PRIMARY', newColor) // you have to commit manually when overwriting
+    // do not forget to commit manually when overwriting the setter:
+    return commit('colors.primary', newColor)
   }
 }
 ```
 
 Now inside your entire app, whenever `set('user/theme/colors.primary')` is called, the action above will be triggered and the color is synced to the server.
 
-The `set()` method of Vuex Easy Access checks to see if an action with the syntax `setProp` exist. If it exists it will dispatch this action, if not it will just make a default mutation: `commit('user/theme/SET_COLORS.PRIMARY', newColor)`.
+The `set()` method of Vuex Easy Access checks to see if an action with the same path exist. If it exists it will dispatch this action, if not it will just make a default mutation: `commit('user/theme/colors.primary', newColor)`.
 
 However, if the mutation does not exist it will give an error and tell you how to add the mutation in the console. But luckily, you can also add all mutations for each single state prop **automatically**. See [chapter 2](#2-automatically-generate-mutations-for-each-state-property) how to set up.
 
@@ -160,15 +177,17 @@ In line with the examples above:<br>
 The module path is: `user/theme`<br>
 `state: {colors: {primary: 'blue', secondary: 'white'}}`
 
-Vuex Easy Access will then automatically generate these mutations:
+Vuex Easy Access will then automatically generate these mutations for you to use:
 
 ```js
-store.commit('user/theme/SET_COLORS', newValue)
-store.commit('user/theme/SET_COLORS.PRIMARY', newValue)
-store.commit('user/theme/SET_COLORS.SECONDARY', newValue)
+commit('user/theme/colors', newValue)
+commit('user/theme/colors.primary', newValue)
+commit('user/theme/colors.secondary', newValue)
 ```
 
 And Vuex Easy Access does all this in just 2 lines. Say goodbye to boilerplating. Don't let it be a roadblock in order to do best practices!
+
+`SET_PROP` syntax: You can also opt in for the mutations to be in the traditional syntax (as per the vuex documentation). For this please read [Setter patterns](#-setter-patterns) down below.
 
 ### Usage
 
@@ -190,11 +209,11 @@ Will become:
 
 ```js
 // you caught a new pokemon:
-store.commit('PUSH_POKEMON', newPokemon)
+commit('pokemon.push', newPokemon)
 // you don't need that last pokemon anymore:
-store.commit('POP_POKEMON')
+commit('pokemon.pop')
 // you change your first pokemon for a new one
-store.commit('SPLICE_POKEMON', [0, 1, newPokemon])
+commit('pokemon.splice', [0, 1, newPokemon])
 ```
 
 All these mutations are set up for you, automatically. You only need to write your state. Please note that the second parameter of 'splice' has to be an array with the 3 arguments just like the regular splice method.
@@ -205,16 +224,10 @@ When you create your easyAccess plugin, you can make some configuration through 
 
 ```js
 import createEasyAccess from 'vuex-easy-access'
-const configuration = {/* your configuration */}
-const easyAccess = createEasyAccess(configuration)
-// and include as plugin in your vuex store:
-store: {
-  // ... your store
-  plugins: [easyAccess]
-}
+const easyAccess = createEasyAccess({/* your configuration */})
 ```
 
-All possible values for `configuration` are explained here:
+All possible values for the configuration are explained here:
 
 ### Vuex Easy Firestore integration for Google firebase
 
@@ -222,7 +235,6 @@ You can add compatibility for the amazing sister plugin: [Vuex Easy Firestore](h
 
 ```js
 const easyAccess = createEasyAccess({vuexEasyFirestore: true})
-// and include as plugin in vuex as shown above
 ```
 
 This will make sure that whenever you set a value in a module that's auto-synced to firestore through Vuex Easy Firestore, it will trigger the sync properly. Please see the [Vuex Easy Firestore documentation](https://github.com/mesqueeb/VuexEasyFirestore) for more information on how to set up auto-sync with firestore.
@@ -235,13 +247,12 @@ If for some reason you want to change the default function names for `store.get(
 
 ```js
 const easyAccess = createEasyAccess({
-  getter: 'getIt',
-  setter: 'setIt'
+  getter: 'GET',
+  setter: 'SET'
 })
-// and include as plugin in vuex as shown above
 ```
 
-Now instead of the `get` `set` keywords, you will only be able to use `store.getIt()` and `store.setIt()` and for dispatches `dispatch(setIt/prop)`.
+Now instead of the `get` `set` keywords, you will only be able to use `store.GET()` and `store.SET()` and for dispatches `dispatch('SET/prop', val)`.
 
 ### Ignore private state props
 
@@ -274,7 +285,7 @@ const store = {
 
 This will create only the mutation and dispatch setter for 'normalProp':
 
-- `mutate('SET_NORMALPROP', newVal)`
+- `mutate('normalProp', newVal)`
 - `dispatch('set/normalProp', newVal)`
 
 And none will be set for '_privateProp' and 'secretProp'!
@@ -328,18 +339,11 @@ $store.set('pokemonBox/water', newVal)
 dispatch('set/pokemonBox/water', newVal)
 ```
 
-You can choose two setups for mutations: `standard` or `simple`.
+You can choose two setups for mutation syntax: `simple` (default) or `traditional`.
 
 This matters when you want to **overwrite the setter actions**:
 
 ```js
-// 'standard' uses 'set' in front of actions and 'SET_' in front of mutations:
-actions: {
-  'setPokemonBox.water': ({commit}, newVal) => {
-    // do something extra
-    commit('SET_POKEMONBOX.WATER', newVal) // you have to commit when overwriting
-  }
-}
 // 'simple' uses just the property name:
 actions: {
   'pokemonBox.water': ({commit}, newVal) => {
@@ -347,34 +351,41 @@ actions: {
     commit('pokemonBox.water', newVal) // you have to commit when overwriting
   }
 }
+// 'traditional' uses 'set' in front of actions and 'SET_' in front of mutations:
+actions: {
+  'setPokemonBox.water': ({commit}, newVal) => {
+    // do something extra
+    commit('SET_POKEMONBOX.WATER', newVal) // you have to commit when overwriting
+  }
+}
 ```
 
 And the underlying mutations it uses:
 
 ```js
-// 'standard':
-commit('SET_POKEMONBOX', newVal)
-commit('SET_POKEMONBOX.WATER', newVal)
-commit('PUSH_POKEMONBOX.WATER', newVal)
-commit('POP_POKEMONBOX.WATER', newVal)
-commit('SPLICE_POKEMONBOX.WATER', newVal)
-// 'simple':
+// 'simple' (default):
 commit('pokemon', newVal)
 commit('pokemonBox.water', newVal)
 commit('pokemonBox.water.push', newVal)
 commit('pokemonBox.water.pop', newVal)
 commit('pokemonBox.water.splice', newVal)
+// 'traditional':
+commit('SET_POKEMONBOX', newVal)
+commit('SET_POKEMONBOX.WATER', newVal)
+commit('PUSH_POKEMONBOX.WATER', newVal)
+commit('POP_POKEMONBOX.WATER', newVal)
+commit('SPLICE_POKEMONBOX.WATER', newVal)
 ```
 
 You can choose your preferred pattern like this:
 
 ```js
 const easyAccess = createEasyAccess({
-  pattern: 'simple', // or 'standard' → 'standard' is the default
+  pattern: 'traditional', // or 'simple'
 })
 // and in your modules:
 mutations: {
-  ...defaultMutations(state, {pattern: 'simple'}) // or 'standard'
+  ...defaultMutations(state, {pattern: 'traditional'}) // or 'simple'
 }
 ```
 

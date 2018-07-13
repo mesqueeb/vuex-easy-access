@@ -6,7 +6,7 @@ var defaultConf = {
   vuexEasyFirestore: false,
   ignorePrivateProps: true,
   ignoreProps: [],
-  pattern: 'standard'
+  pattern: 'simple'
 };
 
 /**
@@ -168,12 +168,10 @@ function makeMutationsForAllProps(propParent, path) {
     // Get the path info up until this point
     var propPath = !path ? prop : path + '.' + prop;
     // mutation name
-    var name = conf.pattern === 'simple' ? propPath : 'SET_' + propPath.toUpperCase();
+    var name = conf.pattern === 'traditional' ? 'SET_' + propPath.toUpperCase() : propPath;
     // Avoid making setters for private props
     if (conf.ignorePrivateProps && prop[0] === '_') return mutations;
     if (conf.ignoreProps.some(function (ignPropFull) {
-      // replace 'module/submodule/prop.subprop' with 'prop.subprop'
-      // because: moduleNS is not knowns when this is called
       var separatePropFromNS = /(.*?)\/([^\/]*?)$/.exec(ignPropFull);
       var ignPropNS = separatePropFromNS ? separatePropFromNS[1] + '/' : '';
       var ignProp = separatePropFromNS ? separatePropFromNS[2] : ignPropFull;
@@ -194,17 +192,17 @@ function makeMutationsForAllProps(propParent, path) {
     // If the prop is an array, make array mutations as well
     if (isArray(propValue)) {
       // mutation name
-      var pop = conf.pattern === 'simple' ? propPath + '.pop' : 'POP_' + propPath.toUpperCase();
+      var pop = conf.pattern === 'traditional' ? 'POP_' + propPath.toUpperCase() : propPath + '.pop';
       mutations[pop] = function (state) {
         return popDeepValue(state, propPath);
       };
       // mutation name
-      var push = conf.pattern === 'simple' ? propPath + '.push' : 'PUSH_' + propPath.toUpperCase();
+      var push = conf.pattern === 'traditional' ? 'PUSH_' + propPath.toUpperCase() : propPath + '.push';
       mutations[push] = function (state, value) {
         return pushDeepValue(state, propPath, value);
       };
       // mutation name
-      var splice = conf.pattern === 'simple' ? propPath + '.splice' : 'SPLICE_' + propPath.toUpperCase();
+      var splice = conf.pattern === 'traditional' ? 'SPLICE_' + propPath.toUpperCase() : propPath + '.splice';
       mutations[splice] = function (state, array) {
         return spliceDeepValue.apply(undefined, [state, propPath].concat(toConsumableArray(array)));
       };
@@ -282,7 +280,7 @@ function defaultSetter(path, payload, store) {
   // props = 'favColours.primary'
   var modulePath = pArr.length ? pArr.join('/') + '/' : '';
   // 'info/user/'
-  var actionName = conf.pattern === 'simple' ? props : 'set' + props[0].toUpperCase() + props.substring(1);
+  var actionName = conf.pattern === 'traditional' ? 'set' + props[0].toUpperCase() + props.substring(1) : props;
   // 'favColours.primary' or 'setFavColours.primary'
   var actionPath = modulePath + actionName;
   // 'info/user/setFavColours.primary'
@@ -302,7 +300,7 @@ function defaultSetter(path, payload, store) {
       return store.dispatch(firestoreActionPath, newPayload);
     }
   }
-  var mutationName = conf.pattern === 'simple' ? props : 'SET_' + props.toUpperCase();
+  var mutationName = conf.pattern === 'traditional' ? 'SET_' + props.toUpperCase() : props;
   // 'favColours.primary' or 'SET_FAVCOLOURS.PRIMARY'
   var mutationPath = modulePath + mutationName;
   var mutationExists = store._mutations[mutationPath];
