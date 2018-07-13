@@ -5,19 +5,23 @@ test('setters', t => {
   const actions = store._actions
   const mutations = store._mutations
   console.log('store → ', store)
-  const props = [
-    'user/importedData',
-    '_secrets',
-    'user/user.secretProp'
+  const checkProps = [
+    {module: '', prop: '_secrets', ignored: true},
+    {module: '', prop: 'wallet', ignored: true},
+    {module: 'user/', prop: 'wallet', ignored: false},
+    {module: 'user/', prop: 'importedData', ignored: true},
+    {module: 'user/', prop: 'user.secretProp', ignored: true},
   ]
-  props.forEach(p => {
-    t.falsy(mutations[p])
-    t.falsy(mutations[p + '.pop'])
-    t.falsy(mutations[p + '.push'])
-    t.falsy(mutations[p + '.splice'])
-    t.falsy(actions['set/' + p])
-    t.falsy(actions['set/' + p + '.pop'])
-    t.falsy(actions['set/' + p + '.push'])
-    t.falsy(actions['set/' + p + '.splice'])
+  checkProps.forEach(p => {
+    const checkFor = (p.ignored) ? 'falsy' : 'truthy'
+    t[checkFor](mutations[`${p.module}${p.prop}`])
+    t[checkFor](mutations[`${p.module}${p.prop}.pop`])
+    t[checkFor](mutations[`${p.module}${p.prop}.push`])
+    t[checkFor](mutations[`${p.module}${p.prop}.splice`])
+    t[checkFor](actions[`${p.module}set/${p.prop}`])
+    // NOT YET IMPLEMENTED:
+    // t[checkFor](actions[`${p.module}set/${p.prop}.pop`])
+    // t[checkFor](actions[`${p.module}set/${p.prop}.push`])
+    // t[checkFor](actions[`${p.module}set/${p.prop}.splice`])
   })
 })

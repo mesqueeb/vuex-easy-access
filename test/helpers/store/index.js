@@ -1,7 +1,7 @@
-import { defaultMutations } from '../../src/index'
-import config from './config'
-import locationJournal from './modules/locationJournal'
-import user from './modules/user'
+import { defaultMutations } from '../../../src/index'
+import config from '../config'
+import locationJournal from './locationJournal'
+import user from './user'
 
 // Store root state
 function initialState () {
@@ -11,7 +11,7 @@ function initialState () {
       items: [],
       _secrets: []
     },
-    wallet: 0,
+    wallet: [],
   }
 }
 
@@ -19,7 +19,7 @@ function initialState () {
 export default {
   modules: { locationJournal, user },
   state: initialState(),
-  mutations: defaultMutations(initialState(), config),
+  mutations: defaultMutations(initialState(), config, {moduleNamespace: ''}),
   actions: {},
   getters: {}
 }

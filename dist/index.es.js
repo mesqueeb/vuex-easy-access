@@ -160,6 +160,7 @@ var toConsumableArray = function (arr) {
  */
 function makeMutationsForAllProps(propParent, path) {
   var conf = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var infoNS = arguments[3];
 
   conf = Object.assign({}, defaultConf, conf);
   if (!isObject(propParent)) return {};
@@ -170,12 +171,14 @@ function makeMutationsForAllProps(propParent, path) {
     var name = conf.pattern === 'simple' ? propPath : 'SET_' + propPath.toUpperCase();
     // Avoid making setters for private props
     if (conf.ignorePrivateProps && prop[0] === '_') return mutations;
-    if (conf.ignoreProps
-    // replace 'module/submodule/prop.subprop' with 'prop.subprop'
-    // because: moduleNS is not knowns when this is called
-    .map(function (p) {
-      return p.replace(/(.*?)\/([^\/]*?)$/, '$2');
-    }).includes(propPath)) {
+    if (conf.ignoreProps.some(function (ignPropFull) {
+      // replace 'module/submodule/prop.subprop' with 'prop.subprop'
+      // because: moduleNS is not knowns when this is called
+      var separatePropFromNS = /(.*?)\/([^\/]*?)$/.exec(ignPropFull);
+      var ignPropNS = separatePropFromNS ? separatePropFromNS[1] + '/' : '';
+      var ignProp = separatePropFromNS ? separatePropFromNS[2] : ignPropFull;
+      return !infoNS && ignProp === propPath || infoNS && infoNS.moduleNamespace == ignPropNS && ignProp === propPath;
+    })) {
       return mutations;
     }
     // All good, make the action!
@@ -226,9 +229,10 @@ function makeMutationsForAllProps(propParent, path) {
  */
 function defaultMutations(initialState) {
   var conf = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var infoNS = arguments[2];
 
   conf = Object.assign({}, defaultConf, conf);
-  return makeMutationsForAllProps(initialState, null, conf);
+  return makeMutationsForAllProps(initialState, null, conf, infoNS);
 }
 
 /**

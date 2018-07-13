@@ -168,6 +168,7 @@ var toConsumableArray = function (arr) {
  */
 function makeMutationsForAllProps(propParent, path) {
   var conf = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var infoNS = arguments[3];
 
   conf = Object.assign({}, defaultConf, conf);
   if (!isWhat.isObject(propParent)) return {};
@@ -178,12 +179,14 @@ function makeMutationsForAllProps(propParent, path) {
     var name = conf.pattern === 'simple' ? propPath : 'SET_' + propPath.toUpperCase();
     // Avoid making setters for private props
     if (conf.ignorePrivateProps && prop[0] === '_') return mutations;
-    if (conf.ignoreProps
-    // replace 'module/submodule/prop.subprop' with 'prop.subprop'
-    // because: moduleNS is not knowns when this is called
-    .map(function (p) {
-      return p.replace(/(.*?)\/([^\/]*?)$/, '$2');
-    }).includes(propPath)) {
+    if (conf.ignoreProps.some(function (ignPropFull) {
+      // replace 'module/submodule/prop.subprop' with 'prop.subprop'
+      // because: moduleNS is not knowns when this is called
+      var separatePropFromNS = /(.*?)\/([^\/]*?)$/.exec(ignPropFull);
+      var ignPropNS = separatePropFromNS ? separatePropFromNS[1] + '/' : '';
+      var ignProp = separatePropFromNS ? separatePropFromNS[2] : ignPropFull;
+      return !infoNS && ignProp === propPath || infoNS && infoNS.moduleNamespace == ignPropNS && ignProp === propPath;
+    })) {
       return mutations;
     }
     // All good, make the action!
@@ -234,9 +237,10 @@ function makeMutationsForAllProps(propParent, path) {
  */
 function defaultMutations(initialState) {
   var conf = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var infoNS = arguments[2];
 
   conf = Object.assign({}, defaultConf, conf);
-  return makeMutationsForAllProps(initialState, null, conf);
+  return makeMutationsForAllProps(initialState, null, conf, infoNS);
 }
 
 /**
@@ -424,7 +428,7 @@ var gymDataState = {
 var gymData = {
   namespaced: true,
   state: gymDataState,
-  mutations: defaultMutations(gymDataState, config)
+  mutations: defaultMutations(gymDataState, config, { moduleNamespace: 'locationJournal/gymData/' })
 
   // MODULE: locationJournal
 };var locationJournalState = {
@@ -436,20 +440,20 @@ var gymData = {
 var locationJournal = {
   namespaced: true,
   state: locationJournalState,
-  mutations: defaultMutations(locationJournalState, config),
+  mutations: defaultMutations(locationJournalState, config, { moduleNamespace: 'locationJournal' }),
   modules: { gymData: gymData }
 };
 
 // MODULE: user
 var userState = {
-  user: { secretProp: null },
+  user: { secretProp: [] },
   importedData: [],
-  wallet: 0
+  wallet: []
 };
 var user = {
   namespaced: true,
   state: userState,
-  mutations: defaultMutations(userState, config)
+  mutations: defaultMutations(userState, config, { moduleNamespace: 'user/' })
 };
 
 // Store root state
@@ -460,7 +464,7 @@ function initialState() {
       items: [],
       _secrets: []
     },
-    wallet: 0
+    wallet: []
   };
 }
 
@@ -468,7 +472,7 @@ function initialState() {
 var storeObj = {
   modules: { locationJournal: locationJournal, user: user },
   state: initialState(),
-  mutations: defaultMutations(initialState(), config),
+  mutations: defaultMutations(initialState(), config, { moduleNamespace: '' }),
   actions: {},
   getters: {}
 };

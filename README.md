@@ -255,7 +255,6 @@ Vuex Easy Access will ignore (and not make mutations/setters) any props that:
 const easyAccess = createEasyAccess({
   ignoreProps: ['normalProp.secretProp'] // true is the default
 })
-// The module's state
 const state = {
   _privateProp: null, // this prop is not touched at all!
   normalProp: {
@@ -293,7 +292,26 @@ mutations: {
 }
 ```
 
-(if you have any requests for more customisation of this functionality, please let me know in an issue!)
+Please note that when passing a prop to `ignoreProps` it will be ignored in all modules regardless of the module namespace. This is because 'defaultMutations' doesn't know the exact namespace of the module when it's initiated. You can be specific about the prop to ignore in just the namespace you want by passing the 'moduleNamespace' as third prop to the 'defaultMutations'. See the example below:
+
+```js
+// We will use the prop ignoreMeInUser in both the store root and the user module
+// But we will only ignore it in user
+const config = { ignoreProps: ['user/ignoreMeInUser'] }
+const easyAccess = createEasyAccess(config) // add config
+const rootAndUserState = { ignoreMeInUser: null }
+const userModule = {
+  state: rootAndUserState,
+  mutations: defaultMutations(rootAndUserState, config, {moduleNamespace: 'user/'}) // add config and moduleNamespace
+}
+const store = {
+  modules: { user: userModule },
+  state: rootAndUserState,
+  mutations: defaultMutations(rootAndUserState, config, {moduleNamespace: ''}) // add config and moduleNamespace
+}
+```
+
+If you have any requests for more customisation of this functionality, please let me know in an issue!
 
 ### Setter patterns
 

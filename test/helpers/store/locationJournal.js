@@ -10,7 +10,7 @@ const gymDataState = {
 const gymData = {
   namespaced: true,
   state: gymDataState,
-  mutations: defaultMutations(gymDataState, config)
+  mutations: defaultMutations(gymDataState, config, {moduleNamespace: 'locationJournal/gymData/'})
 }
 
 // MODULE: locationJournal
@@ -23,7 +23,7 @@ const locationJournalState = {
 const locationJournal = {
   namespaced: true,
   state: locationJournalState,
-  mutations: defaultMutations(locationJournalState, config),
+  mutations: defaultMutations(locationJournalState, config, {moduleNamespace: 'locationJournal'}),
   modules: { gymData }
 }
 

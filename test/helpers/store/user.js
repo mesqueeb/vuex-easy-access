@@ -3,14 +3,14 @@ import config from '../config'
 
 // MODULE: user
 const userState = {
-  user: {secretProp: null},
+  user: {secretProp: []},
   importedData: [],
-  wallet: 0
+  wallet: []
 }
 const user = {
   namespaced: true,
   state: userState,
-  mutations: defaultMutations(userState, config)
+  mutations: defaultMutations(userState, config, {moduleNamespace: 'user/'})
 }
 
 export default user
