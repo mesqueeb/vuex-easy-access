@@ -6,7 +6,7 @@ The Vuex Easy Access plugin does two things:
 
 ## Overview
 
-### 👎😓 Traditional vuex: bothersome to set up
+### 👎😓 Traditional vuex -- bothersome to set up
 
 - | Getter | Setter
 --|--|--
@@ -14,12 +14,12 @@ Usage in<br>Vue component | `$store.getters['user/pokemon']` | `$store.dispatch(
 Required<br>setup | <small>getters:</small><br>`'pokemon': (state, getters) => { return state.pokemon }` | <small>actions:</small><br>`'setPokemon: ({commit}, newVal) => { commit('SET_POKEMON', newVal) }'`<br><small>mutations:</small><br>`'SET_POKEMON: (state, newVal) => { state.pokemon = newVal }'`
 Overwrite<br>Getter/Setter | Change the above to something else | Change the above to something else
 
-### 👍😀 Vuex Easy Access: 0 set up!
+### 👍😀 Vuex Easy Access -- 0 set up!
 
 - | Getter | Setter
 --|--|--
 Usage in<br>Vue component | `$store.get('user/pokemon')` | `$store.set('user/pokemon', newVal)`
-Required<br>Setup | No setup<br><small>returns `state.user.pokemon` by default</small> | No setup<br><small>updates `state.user.pokemon` through a mutation by default</small>
+Required<br>Setup | **No setup**<br><small>returns `state.user.pokemon` by default</small> | **No setup**<br><small>updates `state.user.pokemon` through a mutation by default</small>
 Overwrite<br>default | <small>getters:</small><br>`'pokemon': () => { return state.pokemon }` | <small>actions:</small><br>`'pokemon: ({commit}, newVal) => { commit('pokemon', newVal) }'`
 
 ### Table of contents
@@ -243,7 +243,7 @@ Vuex Easy Firestore comes with a special setter for adding items to your module 
 
 ### get() set() function names
 
-If for some reason you want to change the default function names for `store.get()` and `store.set()`, you can do so by passing an object to `createEasyAccess()` like so:
+If for some reason you want to change the default function names for `get()` and `set()` to something else (eg. capitalising to `GET()` and `SET()`), you can do so by passing an object to `createEasyAccess()` like so:
 
 ```js
 const easyAccess = createEasyAccess({
@@ -397,11 +397,15 @@ Do you have questions, comments, suggestions or feedback? Or any feature that's 
 
 Planned future features:
 
-- Make a blog post
-- Improve setting nested props of items with ID's
+- v2: Improve setting nested props of items with ID's
   - Maybe something like `set('items/${id}.field', newVal)`
+- Add `shift()` support
+- Make a blog post
 - Improve error handling
-  - Explain to developer possible path mistakes: ` / vs . `
+  - Explain to dev possible path mistakes ` / vs . ` when no mutation is found
+  - Warn about ignoredProps appearing in two modules
+  - Warn when there is a module called 'set'
+  - Warn when there already is a 'set' prop on the store
 
 Also be sure to check out the sister vuex-plugin for Firebase: [Vuex Easy Firestore](https://github.com/mesqueeb/VuexEasyFirestore)!
 

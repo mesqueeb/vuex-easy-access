@@ -287,18 +287,26 @@ function defaultSetter(path, payload, store) {
   var actionName = conf.pattern === 'traditional' ? 'set' + props[0].toUpperCase() + props.substring(1) : props;
   // 'favColours.primary' or 'setFavColours.primary'
   var actionPath = modulePath + actionName;
-  // 'info/user/setFavColours.primary'
   var actionExists = store._actions[actionPath];
   if (actionExists) {
     return store.dispatch(actionPath, payload);
   }
   // vuex-easy-firestore integration!
-  var pathIsModule = store._modulesNamespaceMap[path + '/'];
-  // only if the full path is actually a module
-  if (conf.vuexEasyFirestore && pathIsModule) {
+  // check if it's a firestore module
+  var _module = store._modulesNamespaceMap[modulePath];
+  var firestoreConf = !_module ? null : _module.state._conf;
+  if (conf.vuexEasyFirestore && firestoreConf) {
     // 'info/user/set', {favColours: {primary: payload}}'
-    var firestoreActionPath = path + '/set';
-    var newPayload = payload;
+    var newPayload = {};
+    if (!props) newPayload = payload;
+    if (props) {
+      props.split('.').reduce(function (carry, _prop, index, array) {
+        var container = index === array.length - 1 ? payload : {};
+        carry[_prop] = container;
+        return container;
+      }, newPayload);
+    }
+    var firestoreActionPath = modulePath + 'set';
     var firestoreActionExists = store._actions[firestoreActionPath];
     if (firestoreActionExists) {
       return store.dispatch(firestoreActionPath, newPayload);
