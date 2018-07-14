@@ -17,7 +17,7 @@ function getKeysFromPath (path) {
  * @param {object} target an object to wherefrom to retrieve the deep reference of
  * @param {string} path   'path/to.prop'
  *
- * @returns {object} the property which was requested
+ * @returns {object} the last prop in the path
  */
 function getDeepRef (target = {}, path) {
   let keys = getKeysFromPath(path)
@@ -64,9 +64,24 @@ function setDeepValue (target, path, value) {
 }
 
 /**
+ * Pushes a value in an array which is a deep property in an object, based on a path to that property
+ *
+ * @param   {object} target   the Object to push the value on
+ * @param   {string} path     'path/to.sub.prop'
+ * @param   {*}      value    the value to push
+ *
+ * @returns {number}          the new length of the array
+ */
+function pushDeepValue (target, path, value) {
+  const deepRef = getDeepRef(target, path)
+  if (!isArray(deepRef)) return
+  return deepRef.push(value)
+}
+
+/**
  * Pops a value of an array which is a deep property in an object, based on a path to that property
  *
- * @param   {object} target   the Object to set the value on
+ * @param   {object} target   the Object to pop the value of
  * @param   {string} path     'path.to.sub.prop'
  *
  * @returns {*}               the popped value
@@ -78,24 +93,23 @@ function popDeepValue (target, path) {
 }
 
 /**
- * Pushes a value in an array which is a deep property in an object, based on a path to that property
+ * Shift a value of an array which is a deep property in an object, based on a path to that property
  *
- * @param   {object} target   the Object to set the value on
- * @param   {string} path     'path/to.sub.prop'
- * @param   {*}      value    the value to set
+ * @param   {object} target   the Object to shift the value of
+ * @param   {string} path     'path.to.sub.prop'
  *
- * @returns {number}          the new length of the array
+ * @returns {*}               the shifted value
  */
-function pushDeepValue (target, path, value) {
+function shiftDeepValue (target, path) {
   const deepRef = getDeepRef(target, path)
   if (!isArray(deepRef)) return
-  return deepRef.push(value)
+  return deepRef.shift()
 }
 
 /**
  * Splice into an array which is a deep property in an object, based on a path to that property
  *
- * @param   {object} target       the Object to set the value on
+ * @param   {object} target       the Object to splice the value of
  * @param   {string} path         'path/to.sub.prop'
  * @param   {*}      value        the value to splice in
  * @param   {number} index        the index to splice in the value, defaults to 0
@@ -109,4 +123,4 @@ function spliceDeepValue (target, path, index = 0, deleteCount = 0, value) {
   return deepRef.splice(index, deleteCount, value)
 }
 
-export { getDeepRef, getKeysFromPath, setDeepValue, getDeepValue, popDeepValue, pushDeepValue, spliceDeepValue }
+export { getDeepRef, getKeysFromPath, setDeepValue, getDeepValue, pushDeepValue, popDeepValue, shiftDeepValue, spliceDeepValue }

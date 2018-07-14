@@ -2,6 +2,7 @@ import { defaultMutations } from '../../../src/index'
 import config from '../config'
 import locationJournal from './locationJournal'
 import user from './user'
+import dex from './dex'
 
 // Store root state
 function initialState () {
@@ -17,7 +18,7 @@ function initialState () {
 
 // export store
 export default {
-  modules: { locationJournal, user },
+  modules: { locationJournal, user, dex },
   state: initialState(),
   mutations: defaultMutations(initialState(), config, {moduleNamespace: ''}),
   actions: {},

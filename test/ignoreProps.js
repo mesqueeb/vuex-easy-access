@@ -4,7 +4,7 @@ import store from './helpers/index.cjs.js'
 test('setters', t => {
   const actions = store._actions
   const mutations = store._mutations
-  console.log('store → ', store)
+  // console.log('store → ', store)
   const checkProps = [
     {module: '', prop: '_secrets', ignored: true},
     {module: '', prop: 'wallet', ignored: true},
