@@ -420,12 +420,13 @@ function defaultDeletor(path, payload, store) {
     // DOC: 'info/user/favColours', 'primary'
     // COLLECTION: 'items', '123'
     if (isWhat.isString(payload)) {
-      target = payload;
+      target = props ? props + '.' + payload // 'favColours.primary'
+      : payload; // 123
     }
     // DOC: 'info/user/favColours.*', {id: 'primary'}
     // COLLECTION: 'items/*', {id: '123'}
     if (isWhat.isObject(payload) && payload.id) {
-      target = payload.id;
+      target = props.replace('*', payload.id);
     }
     if (target) return store.dispatch(modulePath + 'delete', target);
   }
