@@ -113,12 +113,16 @@ function createSetterModule (targetState, moduleNS = '', store, conf = {}) {
       carry[propPath] = (context, payload) => {
         return defaultSetter(fullPath, payload, store, conf)
       }
-      // BTW, check if the value of this prop was an object, if so, let's do it's children as well!
+      // Get the value of the prop
       let propVal = _targetState[stateProp]
+      // if (propVal === object) let's do it's children as well!
       if (isObject(propVal) && Object.keys(propVal).length) {
         const childrenSetters = getSetters(propVal, propPath)
         Object.assign(carry, childrenSetters)
       }
+      // if (propVal === object) let's create a wildcard setter
+      // if (isObject(propVal) && !Object.keys(propVal).length) {
+      // }
       return carry
     }, {})
   }

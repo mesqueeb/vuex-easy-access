@@ -1,4 +1,4 @@
-import { setDeepValue, popDeepValue, pushDeepValue, spliceDeepValue } from './objectDeepValueUtils'
+import { setDeepValue, pushDeepValue, popDeepValue, shiftDeepValue, spliceDeepValue } from './objectDeepValueUtils'
 import { isObject, isArray } from 'is-what'
 import defaultConf from './defaultConfig'
 
@@ -20,64 +20,71 @@ function makeMutationsForAllProps(
   conf = Object.assign({}, defaultConf, conf)
   if (!isObject(propParent)) return {}
   return Object.keys(propParent)
-  .reduce((mutations, prop) => {
-    // Get the path info up until this point
-    let propPath = (!path)
-      ? prop
-      : path + '.' + prop
-    // mutation name
-    let name = (conf.pattern === 'traditional')
-      ? 'SET_' + propPath.toUpperCase()
-      : propPath
-    // Avoid making setters for private props
-    if (conf.ignorePrivateProps && prop[0] === '_') return mutations
-    if (conf.ignoreProps.some(ignPropFull => {
-      const separatePropFromNS = /(.*?)\/([^\/]*?)$/.exec(ignPropFull)
-      const ignPropNS = (separatePropFromNS) ? separatePropFromNS[1] + '/' : ''
-      const ignProp = (separatePropFromNS) ? separatePropFromNS[2] : ignPropFull
-      return (
-        !infoNS && ignProp === propPath ||
-        infoNS && infoNS.moduleNamespace == ignPropNS && ignProp === propPath
-      )
-    })) {
+    .reduce((mutations, prop) => {
+      // Get the path info up until this point
+      const propPath = (!path)
+        ? prop
+        : path + '.' + prop
+      // mutation name
+      const name = (conf.pattern === 'traditional')
+        ? 'SET_' + propPath.toUpperCase()
+        : propPath
+      // Avoid making setters for private props
+      if (conf.ignorePrivateProps && prop[0] === '_') return mutations
+      if (conf.ignoreProps.some(ignPropFull => {
+        const separatePropFromNS = /(.*?)\/([^\/]*?)$/.exec(ignPropFull)
+        const ignPropNS = (separatePropFromNS) ? separatePropFromNS[1] + '/' : ''
+        const ignProp = (separatePropFromNS) ? separatePropFromNS[2] : ignPropFull
+        return (
+          !infoNS && ignProp === propPath ||
+          infoNS && infoNS.moduleNamespace == ignPropNS && ignProp === propPath
+        )
+      })) {
+        return mutations
+      }
+      // All good, make the action!
+      mutations[name] = (state, newVal) => {
+        return setDeepValue(state, propPath, newVal)
+      }
+      // BTW, check if the value of this prop was an object, if so, let's do it's children as well!
+      const propValue = propParent[prop]
+      if (isObject(propValue)) {
+        const childrenMutations = makeMutationsForAllProps(propValue, propPath, conf)
+        mutations = {...mutations, ...childrenMutations}
+      }
+      // If the prop is an array, make array mutations as well
+      if (isArray(propValue)) {
+        // PUSH mutation name
+        const push = (conf.pattern === 'traditional')
+          ? 'PUSH_' + propPath.toUpperCase()
+          : propPath + '.push'
+        mutations[push] = (state, value) => {
+          return pushDeepValue(state, propPath, value)
+        }
+        // POP mutation name
+        const pop = (conf.pattern === 'traditional')
+          ? 'POP_' + propPath.toUpperCase()
+          : propPath + '.pop'
+        mutations[pop] = (state) => {
+          return popDeepValue(state, propPath)
+        }
+        // SHIFT mutation name
+        const shift = (conf.pattern === 'traditional')
+          ? 'SHIFT_' + propPath.toUpperCase()
+          : propPath + '.shift'
+        mutations[shift] = (state, value) => {
+          return shiftDeepValue(state, propPath, value)
+        }
+        // SPLICE mutation name
+        const splice = (conf.pattern === 'traditional')
+          ? 'SPLICE_' + propPath.toUpperCase()
+          : propPath + '.splice'
+        mutations[splice] = (state, array) => {
+          return spliceDeepValue(state, propPath, ...array)
+        }
+      }
       return mutations
-    }
-    // All good, make the action!
-    mutations[name] = (state, newVal) => {
-      return setDeepValue(state, propPath, newVal)
-    }
-    // BTW, check if the value of this prop was an object, if so, let's do it's children as well!
-    let propValue = propParent[prop]
-    if (isObject(propValue)) {
-      let childrenMutations = makeMutationsForAllProps(propValue, propPath, conf)
-      mutations = {...mutations, ...childrenMutations}
-    }
-    // If the prop is an array, make array mutations as well
-    if (isArray(propValue)) {
-      // mutation name
-      let pop = (conf.pattern === 'traditional')
-        ? 'POP_' + propPath.toUpperCase()
-        : propPath + '.pop'
-      mutations[pop] = (state) => {
-        return popDeepValue(state, propPath)
-      }
-      // mutation name
-      let push = (conf.pattern === 'traditional')
-        ? 'PUSH_' + propPath.toUpperCase()
-        : propPath + '.push'
-      mutations[push] = (state, value) => {
-        return pushDeepValue(state, propPath, value)
-      }
-      // mutation name
-      let splice = (conf.pattern === 'traditional')
-        ? 'SPLICE_' + propPath.toUpperCase()
-        : propPath + '.splice'
-      mutations[splice] = (state, array) => {
-        return spliceDeepValue(state, propPath, ...array)
-      }
-    }
-    return mutations
-  }, {})
+    }, {})
 }
 
 /**
