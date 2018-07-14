@@ -17,7 +17,11 @@ test('makeMutations', t => {
     'locationJournal/visitedPlaces.palletTown',
     'locationJournal/visitedPlaces.gym',
     'locationJournal/gymData/defeated',
-    'locationJournal/gymData/defeated.palletTown'
+    'locationJournal/gymData/defeated.palletTown',
+    'dex/pokemonById',
+    'dex/pokemonById.*',
+    'dex/-pokemonById',
+    'dex/-pokemonById.*',
   ]
   expectedMutations.forEach(m => t.truthy(mutations[m]))
 })
@@ -33,7 +37,11 @@ test('makeActions', t => {
     'set/pokemonBox',
     'set/pokemonBox.waterPokemon',
     'set/pokemonBox.items',
-    'user/set/user'
+    'user/set/user',
+    'dex/set/pokemonById',
+    'dex/set/pokemonById.*',
+    'dex/delete/pokemonById',
+    'dex/delete/pokemonById.*',
   ]
   expectedActions.forEach(a => t.truthy(actions[a]))
 })
@@ -44,7 +52,9 @@ test('makeSetterModules', t => {
     'user/set/',
     'locationJournal/set/',
     'locationJournal/gymData/set/',
-    'set/'
+    'dex/set/',
+    'dex/delete/',
+    'set/',
   ]
   expectedModules.forEach(m => t.truthy(modules[m]))
 })

@@ -1,7 +1,8 @@
-import { setDeepValue, pushDeepValue, popDeepValue, shiftDeepValue, spliceDeepValue } from './objectDeepValueUtils'
+import { setDeepValue, getDeepRef, pushDeepValue, popDeepValue, shiftDeepValue, spliceDeepValue } from './objectDeepValueUtils'
 import { isObject, isArray } from 'is-what'
 import defaultConf from './defaultConfig'
-
+import error from './errors'
+import Vue from 'vue'
 /**
  * Creates the mutations for each property of the object passed recursively
  *
@@ -42,15 +43,47 @@ function makeMutationsForAllProps(
       })) {
         return mutations
       }
-      // All good, make the action!
+      // All good, make the mutation!
       mutations[name] = (state, newVal) => {
         return setDeepValue(state, propPath, newVal)
       }
-      // BTW, check if the value of this prop was an object, if so, let's do it's children as well!
+      // Get the value of the prop
       const propValue = propParent[prop]
-      if (isObject(propValue)) {
+      // let's do it's children as well!
+      if (isObject(propValue) && Object.keys(propValue).length) {
         const childrenMutations = makeMutationsForAllProps(propValue, propPath, conf)
-        mutations = {...mutations, ...childrenMutations}
+        Object.assign(mutations, childrenMutations)
+      }
+      // let's create a wildcard & deletion mutations
+      if (isObject(propValue) && !Object.keys(propValue).length) {
+        // wildcard
+        mutations[name + '.*'] = (state, newVal) => {
+          if (!newVal.id) return error('mutationSetterWildcard')
+          const ref = getDeepRef(state, propPath)
+          Vue.set(ref, newVal.id, newVal)
+        }
+        // deletion
+        const deleteName = (conf.pattern === 'traditional')
+          ? 'DELETE_' + propPath.toUpperCase()
+          : '-' + propPath
+        mutations[deleteName] = (state, id) => {
+          if (id) {
+            const ref = getDeepRef(state, propPath)
+            return Vue.delete(ref, id)
+          }
+          const propArr = propPath.split('.')
+          id = propArr.pop()
+          if (!propArr.length) {
+            return Vue.delete(state, id)
+          }
+          const ref = getDeepRef(state, propArr.join('.'))
+          return Vue.delete(ref, id)
+        }
+        mutations[deleteName + '.*'] = (state, {id}) => {
+          if (!id) return error('mutationDeleteWildcard')
+          const ref = getDeepRef(state, propPath)
+          return Vue.delete(ref, id)
+        }
       }
       // If the prop is an array, make array mutations as well
       if (isArray(propValue)) {

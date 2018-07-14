@@ -17,7 +17,7 @@ function getKeysFromPath (path) {
  * @param {object} target an object to wherefrom to retrieve the deep reference of
  * @param {string} path   'path/to.prop'
  *
- * @returns {object} the property which was requested
+ * @returns {object} the last prop in the path
  */
 function getDeepRef (target = {}, path) {
   let keys = getKeysFromPath(path)
@@ -123,4 +123,4 @@ function spliceDeepValue (target, path, index = 0, deleteCount = 0, value) {
   return deepRef.splice(index, deleteCount, value)
 }
 
-export { getDeepRef, getKeysFromPath, setDeepValue, getDeepValue, popDeepValue, pushDeepValue, spliceDeepValue }
+export { getDeepRef, getKeysFromPath, setDeepValue, getDeepValue, pushDeepValue, popDeepValue, shiftDeepValue, spliceDeepValue }
