@@ -433,6 +433,7 @@ Planned future features:
   - Warn about ignoredProps appearing in two modules
   - Warn when there is a module called 'set'
   - Warn when there already is a 'set' prop on the store
+- Add array mutation specific modules (to be able to set with dispatch)
 
 Also be sure to check out the sister vuex-plugin for Firebase: [Vuex Easy Firestore](https://github.com/mesqueeb/VuexEasyFirestore)!
 

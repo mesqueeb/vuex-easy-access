@@ -3,12 +3,14 @@ import { isObject, isArray } from 'is-what'
 import defaultConf from './defaultConfig'
 import error from './errors'
 import Vue from 'vue'
+
 /**
  * Creates the mutations for each property of the object passed recursively
  *
  * @param   {object} propParent an Object of which all props will get a mutation
  * @param   {string} path       the path taken until the current propParent instance
  * @param   {object} conf       user config
+ * @param   {string} infoNS     (optional) module namespace in light of ignoreProps config
  *
  * @returns {object}            all mutations for each property.
  */
@@ -58,7 +60,7 @@ function makeMutationsForAllProps(
       if (isObject(propValue) && !Object.keys(propValue).length) {
         // wildcard
         mutations[name + '.*'] = (state, newVal) => {
-          if (!newVal.id) return error('mutationSetterWildcard')
+          if (!newVal.id) return error('mutationSetterNoId', conf)
           const ref = getDeepRef(state, propPath)
           Vue.set(ref, newVal.id, newVal)
         }
@@ -67,20 +69,12 @@ function makeMutationsForAllProps(
           ? 'DELETE_' + propPath.toUpperCase()
           : '-' + propPath
         mutations[deleteName] = (state, id) => {
-          if (id) {
-            const ref = getDeepRef(state, propPath)
-            return Vue.delete(ref, id)
-          }
-          const propArr = propPath.split('.')
-          id = propArr.pop()
-          if (!propArr.length) {
-            return Vue.delete(state, id)
-          }
-          const ref = getDeepRef(state, propArr.join('.'))
+          if (!id) return error('mutationDeleteNoId', conf)
+          const ref = getDeepRef(state, propPath)
           return Vue.delete(ref, id)
         }
         mutations[deleteName + '.*'] = (state, {id}) => {
-          if (!id) return error('mutationDeleteWildcard')
+          if (!id) return error('mutationDeleteNoId', conf)
           const ref = getDeepRef(state, propPath)
           return Vue.delete(ref, id)
         }

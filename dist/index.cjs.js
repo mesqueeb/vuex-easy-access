@@ -147,13 +147,24 @@ function spliceDeepValue(target, path) {
   return deepRef.splice(index, deleteCount, value);
 }
 
-function error (error) {
-  if (error === 'mutationSetterWildcard') {
-    console.error('[vuex-easy-access] The payload needs to be an object with an ID field.\n      Correct usage example:\n        commit(\'items/*\', {id: \'123\', name: \'the best item\'})\n    ');
-  }
-  if (error === 'mutationDeleteWildcard') {
-    return console.error('[vuex-easy-access] The payload needs to be an object with an ID field.\n      Correct usage example:\n        commit(\'-items/*\', {id: \'123\'})\n        // or\n        commit(\'-items\', \'123\')\n    ');
-  }
+function getErrors(conf, mutationPath, mutationName, props) {
+  var setter = conf.setter;
+  var deletor = conf.deletor;
+  var prop = conf.pattern === 'traditional' ? 'ITEMS' : 'items';
+  var deleteSign = conf.pattern === 'traditional' ? 'DELETE_' : '-';
+  return {
+    mutationSetterNoId: 'The payload needs to be an object with an ID field.\n      Correct usage examples:\n      ' + setter + '(\'' + prop + '.*\', {id: \'123\', name: \'the best item\'})\n      // or\n      dispatch(\'' + setter + '/' + prop + '.*\', {id: \'123\', name: \'the best item\'})\n      // or\n      commit(\'' + prop + '.*\', {id: \'123\', name: \'the best item\'})\n    ',
+    mutationDeleteNoId: 'The payload needs to be an object with an ID field.\n      Correct usage examples:\n      ' + deletor + '(\'' + prop + '/*\', {id: \'123\'})\n      // or\n      ' + deletor + '(\'' + prop + '\', \'123\')\n      // or\n      dispatch(\'' + deletor + '/' + prop + '/*\', {id: \'123\'})\n      // or\n      dispatch(\'' + deletor + '/' + prop + '\', \'123\')\n      // or\n      commit(\'' + deleteSign + prop + '/*\', {id: \'123\'})\n      // or\n      commit(\'' + deleteSign + prop + '\', \'123\')\n    ',
+    missingDeleteMutation: 'There is no mutation set for \'' + mutationPath + '\'.\n      Please enable auto-mutations with vuex-easy-access.\n      See the documentation here (very easy):\n        https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property\n\n      // OR manually add a mutation like so in the correct module (not recommended):\n      mutations: {\n        \'' + mutationName + '\': (state, payload) => {\n          this._vm.$delete(state.' + props + ')\n        }\n      }\n    ',
+    missingSetterMutation: 'There is no mutation set for \'' + mutationPath + '\'.\n      Please enable auto-mutations with vuex-easy-access.\n      See the documentation here (very easy):\n        https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property\n\n      // OR manually add a mutation like so in the correct module (not recommended):\n      mutations: {\n        \'' + mutationName + '\': (state, payload) => {\n          state.' + props + ' = payload\n        }\n      }\n    '
+  };
+}
+
+function error (error, conf, mutationPath, mutationName, props) {
+  var errorMessages = getErrors(conf, mutationPath, mutationName, props);
+  console.error('[vuex-easy-access] Error!');
+  console.error(errorMessages[error]);
+  return error;
 }
 
 var toConsumableArray = function (arr) {
@@ -172,6 +183,7 @@ var toConsumableArray = function (arr) {
  * @param   {object} propParent an Object of which all props will get a mutation
  * @param   {string} path       the path taken until the current propParent instance
  * @param   {object} conf       user config
+ * @param   {string} infoNS     (optional) module namespace in light of ignoreProps config
  *
  * @returns {object}            all mutations for each property.
  */
@@ -211,29 +223,21 @@ function makeMutationsForAllProps(propParent, path) {
     if (isWhat.isObject(propValue) && !Object.keys(propValue).length) {
       // wildcard
       mutations[name + '.*'] = function (state, newVal) {
-        if (!newVal.id) return error('mutationSetterWildcard');
+        if (!newVal.id) return error('mutationSetterNoId', conf);
         var ref = getDeepRef(state, propPath);
         Vue.set(ref, newVal.id, newVal);
       };
       // deletion
       var deleteName = conf.pattern === 'traditional' ? 'DELETE_' + propPath.toUpperCase() : '-' + propPath;
       mutations[deleteName] = function (state, id) {
-        if (id) {
-          var _ref = getDeepRef(state, propPath);
-          return Vue.delete(_ref, id);
-        }
-        var propArr = propPath.split('.');
-        id = propArr.pop();
-        if (!propArr.length) {
-          return Vue.delete(state, id);
-        }
-        var ref = getDeepRef(state, propArr.join('.'));
+        if (!id) return error('mutationDeleteNoId', conf);
+        var ref = getDeepRef(state, propPath);
         return Vue.delete(ref, id);
       };
-      mutations[deleteName + '.*'] = function (state, _ref2) {
-        var id = _ref2.id;
+      mutations[deleteName + '.*'] = function (state, _ref) {
+        var id = _ref.id;
 
-        if (!id) return error('mutationDeleteWildcard');
+        if (!id) return error('mutationDeleteNoId', conf);
         var ref = getDeepRef(state, propPath);
         return Vue.delete(ref, id);
       };
@@ -371,13 +375,12 @@ function defaultSetter(path, payload, store) {
   if (mutationExists) {
     return store.commit(mutationPath, payload);
   }
-  console.error('[vuex-easy-access] There is no mutation set for \'' + mutationPath + '\'.\n    Please add a mutation like so in the correct module:\n\n    mutations: {\n      \'' + mutationName + '\': (state, payload) => {\n        state.' + props + ' = payload\n      }\n    }\n\n    You can also add mutations automatically with vuex-easy-access.\n    See the documentation here:\n      https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property');
+  error('missingSetterMutation', conf, mutationPath, mutationName, props);
 }
 
 /**
  * Creates a delete function in the store to delete any prop from a value
  * Usage:
- * `delete('module/path/path.to.prop')` will delete prop
  * `delete('module/path/path.to.prop', id)` will delete prop[id]
  * `delete('module/path/path.to.prop.*', {id})` will delete prop[id]
  * it will check first for existence of: `dispatch('module/path/-path.to.prop')` or `dispatch('module/path/-path.to.prop.*')`
@@ -411,10 +414,20 @@ function defaultDeletor(path, payload, store) {
   // [vuex-easy-firestore] check if it's a firestore module
   var _module = store._modulesNamespaceMap[modulePath];
   var firestoreConf = !_module ? null : _module.state._conf;
-  if (conf.vuexEasyFirestore && firestoreConf) ;
-  // 'info/user/delete', {favColours: {primary: payload}}'
-  // 'info/user/delete.favColours.primary', payload'
-
+  if (conf.vuexEasyFirestore && firestoreConf) {
+    var target = void 0;
+    // DOC: 'info/user/favColours', 'primary'
+    // COLLECTION: 'items', '123'
+    if (isWhat.isString(payload)) {
+      target = payload;
+    }
+    // DOC: 'info/user/favColours.*', {id: 'primary'}
+    // COLLECTION: 'items/*', {id: '123'}
+    if (isWhat.isObject(payload) && payload.id) {
+      target = payload.id;
+    }
+    if (target) return store.dispatch(modulePath + 'delete', target);
+  }
   // Trigger the mutation!
   var mutationName = conf.pattern === 'traditional' ? 'DELETE_' + props.toUpperCase() // 'DELETE_FAVCOLOURS.PRIMARY'
   : '-' + props; // '-favColours.primary'
@@ -423,7 +436,7 @@ function defaultDeletor(path, payload, store) {
   if (mutationExists) {
     return store.commit(mutationPath, payload);
   }
-  console.error('[vuex-easy-access] There is no mutation set for \'' + mutationPath + '\'.\n    Please add a mutation like so in the correct module:\n\n    mutations: {\n      \'' + mutationName + '\': (state, payload) => {\n        this._vm.$delete(state.' + props + ')\n      }\n    }\n\n    You can also add mutations automatically with vuex-easy-access.\n    See the documentation here:\n      https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property');
+  error('missingDeleteMutation', conf, mutationPath, mutationName, props);
 }
 
 /**
@@ -499,27 +512,26 @@ function createDeleteModule(targetState) {
       // Get the path info up until this point
       var propPath = _propPath ? _propPath + '.' + stateProp : stateProp;
       var fullPath = moduleNS + propPath;
-      // Avoid making setters for private props
+      // Avoid making deletor for private props
       if (conf.ignorePrivateProps && stateProp[0] === '_') return carry;
       if (conf.ignoreProps.includes(fullPath)) return carry;
-      // Avoid making setters for props which are an entire module on its own
+      // Avoid making deletor for props which are an entire module on its own
       if (store._modulesNamespaceMap[fullPath + '/']) return carry;
-      // All good, make the action!
-      carry[propPath] = function (context, payload) {
-        return defaultDeletor(fullPath, payload, store, conf);
-      };
       // Get the value of the prop
       var propValue = _targetState[stateProp];
-      // let's do it's children as well!
-      if (isWhat.isObject(propValue) && Object.keys(propValue).length) {
-        var childrenSetters = getDeletors(propValue, propPath);
-        Object.assign(carry, childrenSetters);
-      }
-      // let's create a wildcard setter
+      // let's create the deletors
       if (isWhat.isObject(propValue) && !Object.keys(propValue).length) {
+        carry[propPath] = function (context, payload) {
+          return defaultDeletor(fullPath, payload, store, conf);
+        };
         carry[propPath + '.*'] = function (context, payload) {
           return defaultDeletor(fullPath + '.*', payload, store, conf);
         };
+      }
+      // let's do it's children as well!
+      if (isWhat.isObject(propValue) && Object.keys(propValue).length) {
+        var childrenDeletors = getDeletors(propValue, propPath);
+        Object.assign(carry, childrenDeletors);
       }
       return carry;
     }, {});
