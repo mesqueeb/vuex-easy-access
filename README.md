@@ -8,19 +8,19 @@ The Vuex Easy Access plugin does two things:
 
 ### 👎😓 Traditional vuex -- bothersome to set up
 
-- | Getter | Setter
+_ | Getter | Setter
 --|--|--
 Usage in<br>Vue component | `$store.getters['user/pokemon']` | `$store.dispatch('user/setPokemon', newVal)`
-Required<br>setup | <small>getters:</small><br>`'pokemon': (state, getters) => { return state.pokemon }` | <small>actions:</small><br>`'setPokemon: ({commit}, newVal) => { commit('SET_POKEMON', newVal) }'`<br><small>mutations:</small><br>`'SET_POKEMON: (state, newVal) => { state.pokemon = newVal }'`
+Required<br>setup | <small>getters:</small><br>`pokemon: (state, getters) => { return state.pokemon }` | <small>actions:</small><br>`setPokemon: ({commit}, newVal) => { commit('SET_POKEMON', newVal) }`<br><small>mutations:</small><br>`SET_POKEMON: (state, newVal) => { state.pokemon = newVal }`
 Overwrite<br>Getter/Setter | Change the above to something else | Change the above to something else
 
 ### 👍😀 Vuex Easy Access -- 0 set up!
 
-- | Getter | Setter
+_ | Getter | Setter
 --|--|--
 Usage in<br>Vue component | `$store.get('user/pokemon')` | `$store.set('user/pokemon', newVal)`
 Required<br>Setup | **No setup**<br><small>returns `state.user.pokemon` by default</small> | **No setup**<br><small>updates `state.user.pokemon` through a mutation by default</small>
-Overwrite<br>default | <small>getters:</small><br>`'pokemon': () => { return state.pokemon }` | <small>actions:</small><br>`'pokemon: ({commit}, newVal) => { commit('pokemon', newVal) }'`
+Overwrite<br>default | <small>getters:</small><br>`pokemon: () => { return state.pokemon }` | <small>actions:</small><br>`pokemon: ({commit}, newVal) => { commit('pokemon', newVal) }`
 
 ### Table of contents
 
@@ -30,10 +30,14 @@ Overwrite<br>default | <small>getters:</small><br>`'pokemon': () => { return sta
 - [Installation](#installation)
 - [1. Add a global getter/setter for each state property](#1-add-a-global-gettersetter-for-each-state-property)
     - [What you can do](#what-you-can-do)
+        - [Use case: get/set in vue component](#use-case-getset-in-vue-component)
+        - [Use case: set in vuex module](#use-case-set-in-vuex-module)
+        - [Use case: set with ID wildcard](#use-case-set-with-id-wildcard)
     - [Overwriting get/set with custom logic](#overwriting-getset-with-custom-logic)
     - [Usage](#usage)
 - [2. Automatically generate mutations for each state property](#2-automatically-generate-mutations-for-each-state-property)
     - [What's all this then?](#whats-all-this-then)
+        - [What really happens?](#what-really-happens)
     - [Usage](#usage-1)
     - [Bonus: Array mutations!](#bonus-array-mutations)
 - [3. Advanced configuration](#3-advanced-configuration)
