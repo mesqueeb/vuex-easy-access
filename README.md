@@ -138,6 +138,19 @@ state: {
 }
 ```
 
+In this case we also get a special method to delete the prop again!
+
+```js
+// in Vue components
+$store.delete('pokeDex/byId.*', {id: '151'})
+// or
+$store.delete('pokeDex/byId', '151')
+// in the Vuex store
+dispatch('pokeDex/delete/byId.*', {id: '151'})
+// or
+dispatch('pokeDex/delete/byId', '151')
+```
+
 ### Overwriting get/set with custom logic
 
 #### Overwrite get
@@ -283,14 +296,15 @@ This will make sure that whenever you set a value in a module that's auto-synced
 
 Vuex Easy Firestore comes with a special setter for adding items to your module ánd database. However, it is important to pass the 'vuex-easy-firestore' plugin first, and the 'easyAccess' second for it to work properly.
 
-### get() set() function names
+### Change get() set() function names
 
-If for some reason you want to change the default function names for `get()` and `set()` to something else (eg. capitalising to `GET()` and `SET()`), you can do so by passing an object to `createEasyAccess()` like so:
+If for some reason you want to change the default function names for `get()` and `set()` (or `delete()`) to something else (eg. capitalising to `GET()` and `SET()`), you can do so by passing an object to `createEasyAccess()` like so:
 
 ```js
 const easyAccess = createEasyAccess({
   getter: 'GET',
-  setter: 'SET'
+  setter: 'SET',
+  deletor: 'DELETE', // See 'Use case: set with ID wildcard'
 })
 ```
 
@@ -433,6 +447,7 @@ Planned future features:
   - Warn about ignoredProps appearing in two modules
   - Warn when there is a module called 'set'
   - Warn when there already is a 'set' prop on the store
+- Add array mutation specific modules (to be able to set with dispatch)
 
 Also be sure to check out the sister vuex-plugin for Firebase: [Vuex Easy Firestore](https://github.com/mesqueeb/VuexEasyFirestore)!
 

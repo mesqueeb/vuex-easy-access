@@ -1,6 +1,7 @@
 import { getKeysFromPath, setDeepValue, getDeepRef } from './objectDeepValueUtils'
-import { isObject } from 'is-what'
+import { isObject, isString } from 'is-what'
 import defaultConf from './defaultConfig'
+import error from './errors'
 
 /**
  * Creates a setter function in the store to set any state value
@@ -70,25 +71,12 @@ function defaultSetter (path, payload, store, conf = {}) {
   if (mutationExists) {
     return store.commit(mutationPath, payload)
   }
-  console.error(`[vuex-easy-access] There is no mutation set for '${mutationPath}'.
-    Please add a mutation like so in the correct module:
-
-    mutations: {
-      '${mutationName}': (state, payload) => {
-        state.${props} = payload
-      }
-    }
-
-    You can also add mutations automatically with vuex-easy-access.
-    See the documentation here:
-      https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property`
-  )
+  error('missingSetterMutation', conf, mutationPath, mutationName, props)
 }
 
 /**
  * Creates a delete function in the store to delete any prop from a value
  * Usage:
- * `delete('module/path/path.to.prop')` will delete prop
  * `delete('module/path/path.to.prop', id)` will delete prop[id]
  * `delete('module/path/path.to.prop.*', {id})` will delete prop[id]
  * it will check first for existence of: `dispatch('module/path/-path.to.prop')` or `dispatch('module/path/-path.to.prop.*')`
@@ -123,8 +111,18 @@ function defaultDeletor (path, payload, store, conf = {}) {
   const _module = store._modulesNamespaceMap[modulePath]
   const firestoreConf = (!_module) ? null : _module.state._conf
   if (conf.vuexEasyFirestore && firestoreConf) {
-    // 'info/user/delete', {favColours: {primary: payload}}'
-    // 'info/user/delete.favColours.primary', payload'
+    let target
+    // DOC: 'info/user/favColours', 'primary'
+    // COLLECTION: 'items', '123'
+    if (isString(payload)) {
+      target = payload
+    }
+    // DOC: 'info/user/favColours.*', {id: 'primary'}
+    // COLLECTION: 'items/*', {id: '123'}
+    if (isObject(payload) && payload.id) {
+      target = payload.id
+    }
+    if (target) return store.dispatch(modulePath + 'delete', target)
   }
   // Trigger the mutation!
   const mutationName = (conf.pattern === 'traditional')
@@ -135,19 +133,7 @@ function defaultDeletor (path, payload, store, conf = {}) {
   if (mutationExists) {
     return store.commit(mutationPath, payload)
   }
-  console.error(`[vuex-easy-access] There is no mutation set for '${mutationPath}'.
-    Please add a mutation like so in the correct module:
-
-    mutations: {
-      '${mutationName}': (state, payload) => {
-        this._vm.$delete(state.${props})
-      }
-    }
-
-    You can also add mutations automatically with vuex-easy-access.
-    See the documentation here:
-      https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property`
-  )
+  error('missingDeleteMutation', conf, mutationPath, mutationName, props)
 }
 
 /**
@@ -215,27 +201,26 @@ function createDeleteModule (targetState, moduleNS = '', store, conf = {}) {
         ? _propPath + '.' + stateProp
         : stateProp
       const fullPath = moduleNS + propPath
-      // Avoid making setters for private props
+      // Avoid making deletor for private props
       if (conf.ignorePrivateProps && stateProp[0] === '_') return carry
       if (conf.ignoreProps.includes(fullPath)) return carry
-      // Avoid making setters for props which are an entire module on its own
+      // Avoid making deletor for props which are an entire module on its own
       if (store._modulesNamespaceMap[fullPath + '/']) return carry
-      // All good, make the action!
-      carry[propPath] = (context, payload) => {
-        return defaultDeletor(fullPath, payload, store, conf)
-      }
       // Get the value of the prop
       let propValue = _targetState[stateProp]
-      // let's do it's children as well!
-      if (isObject(propValue) && Object.keys(propValue).length) {
-        const childrenSetters = getDeletors(propValue, propPath)
-        Object.assign(carry, childrenSetters)
-      }
-      // let's create a wildcard setter
+      // let's create the deletors
       if (isObject(propValue) && !Object.keys(propValue).length) {
+        carry[propPath] = (context, payload) => {
+          return defaultDeletor(fullPath, payload, store, conf)
+        }
         carry[propPath + '.*'] = (context, payload) => {
           return defaultDeletor(fullPath + '.*', payload, store, conf)
         }
+      }
+      // let's do it's children as well!
+      if (isObject(propValue) && Object.keys(propValue).length) {
+        const childrenDeletors = getDeletors(propValue, propPath)
+        Object.assign(carry, childrenDeletors)
       }
       return carry
     }, {})
