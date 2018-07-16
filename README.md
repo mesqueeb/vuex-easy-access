@@ -40,6 +40,7 @@ Enter vuex-easy-access! Easy to use actions & mutations with 0 set up required!<
 
 ### In Vue components: `get() set()` functions on `$store` object
 
+|||
 --|--
 Getter | `$store.get('user/pokemon')`
 Setter | `$store.set('user/pokemon', pokemon)`<br><small>Will use a mutation</small>
@@ -48,6 +49,7 @@ Overwriting defaults | You can overwrite the getter by adding a `pokemon` getter
 
 ### In the Vuex store: auto generated actions & mutations!
 
+|||
 --|--
 Action<br><small>(sub-module)</small> | `dispatch('user/set/pokemon', pokemon)`
 Mutation | `commit('user/pokemon', pokemon)`
