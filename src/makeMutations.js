@@ -3,6 +3,7 @@ import { isObject, isArray } from 'is-what'
 import defaultConf from './defaultConfig'
 import error from './errors'
 import Vue from 'vue'
+import merge from 'nanomerge'
 
 /**
  * Creates the mutations for each property of the object passed recursively
@@ -28,10 +29,6 @@ function makeMutationsForAllProps(
       const propPath = (!path)
         ? prop
         : path + '.' + prop
-      // mutation name
-      const name = (conf.pattern === 'traditional')
-        ? 'SET_' + propPath.toUpperCase()
-        : propPath
       // Avoid making setters for private props
       if (conf.ignorePrivateProps && prop[0] === '_') return mutations
       if (conf.ignoreProps.some(ignPropFull => {
@@ -45,40 +42,73 @@ function makeMutationsForAllProps(
       })) {
         return mutations
       }
-      // All good, make the mutation!
-      mutations[name] = (state, newVal) => {
-        return setDeepValue(state, propPath, newVal)
-      }
       // Get the value of the prop
       const propValue = propParent[prop]
-      // let's do it's children as well!
-      if (isObject(propValue) && Object.keys(propValue).length) {
-        const childrenMutations = makeMutationsForAllProps(propValue, propPath, conf)
-        Object.assign(mutations, childrenMutations)
+      let wildcardDefaultValues
+      // define possible functions
+      function setProp (state, newVal) {
+        return setDeepValue(state, propPath, newVal)
       }
+      function setWildcardProp (state, newVal) {
+        const id = newVal.id
+        if (!id) return error('mutationSetterNoId', conf)
+        const ref = getDeepRef(state, propPath)
+        if (isObject(propValue)) newVal = merge(propValue, newVal)
+        return Vue.set(ref, id, newVal)
+      }
+      function setPropWithWildcardPath (state, payload) {
+        if (!payload.val) return error('mutationSetterPropPathWildcardMissingVal', conf)
+        const id = payload.id
+        if (!id) return error('mutationSetterPropPathWildcardMissingId', conf)
+        const pathUntilPool = propPath.substr(0, propPath.indexOf('*'))
+        const pool = getDeepRef(state, pathUntilPool)
+        console.log('pool → ', pool)
+        console.log('pool[id] → ', pool[id])
+        console.log('pool[id].gym → ', pool[id].gym)
+        if (!pool[id]) return error('mutationSetterPropPathWildcardMissingItemDoesntExist', conf)
+        console.log('propPath.replace(\'*\', id) → ', propPath.replace('*', id))
+        setDeepValue(state, propPath.replace('*', id), payload.val)
+        console.log('pool[id].gym → ', pool[id].gym)
+      }
+      function deleteProp (state, val) {
+        const id = val.id
+        if (!id) return error('mutationDeleteNoId', conf)
+        const ref = getDeepRef(state, propPath)
+        return Vue.delete(ref, id)
+      }
+      // =================================================>
+      //   NORMAL MUTATION
+      // =================================================>
+      // mutation name
+      const name = (conf.pattern === 'traditional')
+        ? 'SET_' + propPath.toUpperCase()
+        : propPath
+      // All good, make the mutation!
+      if (!propPath.includes('*')) {
+        mutations[name] = setProp
+      } else if (prop !== '*') {
+        // path includes wildcard, but prop is not a wildcard
+        mutations[name] = setPropWithWildcardPath
+      }
+      // =================================================>
+      //   WILDCARD MUTATIONS
+      // =================================================>
       // let's create a wildcard & deletion mutations
-      if (isObject(propValue) && !Object.keys(propValue).length) {
-        // wildcard
-        mutations[name + '.*'] = (state, newVal) => {
-          if (!newVal.id) return error('mutationSetterNoId', conf)
-          const ref = getDeepRef(state, propPath)
-          Vue.set(ref, newVal.id, newVal)
-        }
-        // deletion
-        const deleteName = (conf.pattern === 'traditional')
-          ? 'DELETE_' + propPath.toUpperCase()
-          : '-' + propPath
-        mutations[deleteName] = (state, id) => {
-          if (!id) return error('mutationDeleteNoId', conf)
-          const ref = getDeepRef(state, propPath)
-          return Vue.delete(ref, id)
-        }
-        mutations[deleteName + '.*'] = (state, {id}) => {
-          if (!id) return error('mutationDeleteNoId', conf)
-          const ref = getDeepRef(state, propPath)
-          return Vue.delete(ref, id)
-        }
+      // deletion
+      const deleteName = (conf.pattern === 'traditional')
+      ? 'DELETE_' + propPath.toUpperCase()
+      : '-' + propPath
+      if (prop === '*') {
+        mutations[name] = setWildcardProp
+        mutations[deleteName] = deleteProp
       }
+      if (isObject(propValue) && !Object.keys(propValue).length) {
+        mutations[name + '.*'] = setWildcardProp
+        mutations[deleteName + '.*'] = deleteProp
+      }
+      // =================================================>
+      //   ARRAY MUTATIONS
+      // =================================================>
       // If the prop is an array, make array mutations as well
       if (isArray(propValue)) {
         // PUSH mutation name
@@ -99,8 +129,8 @@ function makeMutationsForAllProps(
         const shift = (conf.pattern === 'traditional')
           ? 'SHIFT_' + propPath.toUpperCase()
           : propPath + '.shift'
-        mutations[shift] = (state, value) => {
-          return shiftDeepValue(state, propPath, value)
+        mutations[shift] = (state) => {
+          return shiftDeepValue(state, propPath)
         }
         // SPLICE mutation name
         const splice = (conf.pattern === 'traditional')
@@ -109,6 +139,14 @@ function makeMutationsForAllProps(
         mutations[splice] = (state, array) => {
           return spliceDeepValue(state, propPath, ...array)
         }
+      }
+      // =================================================>
+      //   CHILDREN MUTATIONS
+      // =================================================>
+      // let's do it's children as well!
+      if (isObject(propValue) && Object.keys(propValue).length) {
+        const childrenMutations = makeMutationsForAllProps(propValue, propPath, conf)
+        Object.assign(mutations, childrenMutations)
       }
       return mutations
     }, {})

@@ -1,5 +1,5 @@
-import { getKeysFromPath, setDeepValue, getDeepRef } from './objectDeepValueUtils'
-import { isObject, isString } from 'is-what'
+import { getKeysFromPath, setDeepValue, getDeepRef, pushDeepValue, popDeepValue, shiftDeepValue, spliceDeepValue } from './objectDeepValueUtils'
+import { isObject, isString, isArray } from 'is-what'
 import defaultConf from './defaultConfig'
 import error from './errors'
 
@@ -163,22 +163,57 @@ function createSetterModule (targetState, moduleNS = '', store, conf = {}) {
       if (conf.ignoreProps.includes(fullPath)) return carry
       // Avoid making setters for props which are an entire module on its own
       if (store._modulesNamespaceMap[fullPath + '/']) return carry
+      // =================================================>
+      //   NORMAL SETTER
+      // =================================================>
       // All good, make the action!
       carry[propPath] = (context, payload) => {
         return defaultSetter(fullPath, payload, store, conf)
       }
       // Get the value of the prop
       let propValue = _targetState[stateProp]
-      // let's do it's children as well!
-      if (isObject(propValue) && Object.keys(propValue).length) {
-        const childrenSetters = getSetters(propValue, propPath)
-        Object.assign(carry, childrenSetters)
-      }
+      // =================================================>
+      //   WILDCARDS SETTERS
+      // =================================================>
       // let's create a wildcard setter
+      if (stateProp === '*') {
+        carry[propPath] = (context, payload) => {
+          return defaultSetter(fullPath, payload, store, conf)
+        }
+      }
       if (isObject(propValue) && !Object.keys(propValue).length) {
         carry[propPath + '.*'] = (context, payload) => {
           return defaultSetter(fullPath + '.*', payload, store, conf)
         }
+      }
+      // =================================================>
+      //   ARRAY SETTERS
+      // =================================================>
+      if (isArray(propValue)) {
+        carry[propPath + '.push'] = ({rootState}, value) => {
+          const ref = getDeepRef(rootState, moduleNS)
+          return pushDeepValue(ref, propPath, value)
+        }
+        carry[propPath + '.pop'] = ({rootState}) => {
+          const ref = getDeepRef(rootState, moduleNS)
+          return popDeepValue(ref, propPath)
+        }
+        carry[propPath + '.shift'] = ({rootState}) => {
+          const ref = getDeepRef(rootState, moduleNS)
+          return shiftDeepValue(ref, propPath)
+        }
+        carry[propPath + '.splice'] = ({rootState}, array) => {
+          const ref = getDeepRef(rootState, moduleNS)
+          return spliceDeepValue(ref, propPath, ...array)
+        }
+      }
+      // =================================================>
+      //   CHILDREN SETTERS
+      // =================================================>
+      // let's do it's children as well!
+      if (isObject(propValue) && Object.keys(propValue).length) {
+        const childrenSetters = getSetters(propValue, propPath)
+        Object.assign(carry, childrenSetters)
       }
       return carry
     }, {})
@@ -213,10 +248,12 @@ function createDeleteModule (targetState, moduleNS = '', store, conf = {}) {
       // Get the value of the prop
       let propValue = _targetState[stateProp]
       // let's create the deletors
-      if (isObject(propValue) && !Object.keys(propValue).length) {
+      if (stateProp === '*') {
         carry[propPath] = (context, payload) => {
           return defaultDeletor(fullPath, payload, store, conf)
         }
+      }
+      if (isObject(propValue) && !Object.keys(propValue).length) {
         carry[propPath + '.*'] = (context, payload) => {
           return defaultDeletor(fullPath + '.*', payload, store, conf)
         }
