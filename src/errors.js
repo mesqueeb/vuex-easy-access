@@ -5,27 +5,50 @@ function getErrors (conf, mutationPath, mutationName, props) {
   const prop = (conf.pattern === 'traditional') ? 'ITEMS' : 'items'
   const deleteSign = (conf.pattern === 'traditional') ? 'DELETE_' : '-'
   return {
-    mutationSetterNoId: `The payload needs to be an object with an ID field.
-      Correct usage examples:
+    mutationSetterNoId: `The payload needs to be an object with an \`id\` field.
+      // Correct usage examples:
       ${setter}('${prop}.*', {id: '123', name: 'the best item'})
       // or
       dispatch('${setter}/${prop}.*', {id: '123', name: 'the best item'})
       // or
       commit('${prop}.*', {id: '123', name: 'the best item'})
     `,
-    mutationDeleteNoId: `The payload needs to be an object with an ID field.
-      Correct usage examples:
-      ${deletor}('${prop}/*', {id: '123'})
+    mutationSetterPropPathWildcardMissingId: `The payload needs to be an object with an \`id\` field.
+      // Make sure you first set the item:
+      ${setter}('${prop}.*', {id: '123', name: 'the best item'})
       // or
-      ${deletor}('${prop}', '123')
+      dispatch('${setter}/${prop}.*', {id: '123', name: 'the best item'})
+
+      // Then you can overwrite a specific prop like so:
+      ${setter}('${prop}.*.name', {id: '123', val: 'new name for the prop \`name\`'})
+      // or
+      dispatch('${setter}/${prop}.*.name', {id: '123', val: 'new name for the prop \`name\`'})
+      // or
+      commit('${prop}.*.name', {id: '123', val: 'new name for the prop \`name\`'})
+    `,
+    mutationSetterPropPathWildcardMissingVal: `The payload needs to be an object with an \`id\` and \`val\` field.
+      // Correct usage:
+      ${setter}('${prop}.*.name', {id: '123', val: 'new name for the prop \`name\`'})
+      // or
+      dispatch('${setter}/${prop}.*.name', {id: '123', val: 'new name for the prop \`name\`'})
+      // or
+      commit('${prop}.*.name', {id: '123', val: 'new name for the prop \`name\`'})
+    `,
+    mutationSetterPropPathWildcardMissingItemDoesntExist: `The item does not exist!
+    // Make sure you first set the item:
+    ${setter}('${prop}.*', {id: '123', name: 'the best item'})
+    // or
+    dispatch('${setter}/${prop}.*', {id: '123', name: 'the best item'})
+    // or
+    commit('${prop}.*', {id: '123', name: 'the best item'})
+    `,
+    mutationDeleteNoId: `The payload needs to be an object with an \`id\` field.
+      // Correct usage examples:
+      ${deletor}('${prop}/*', {id: '123'})
       // or
       dispatch('${deletor}/${prop}/*', {id: '123'})
       // or
-      dispatch('${deletor}/${prop}', '123')
-      // or
       commit('${deleteSign}${prop}/*', {id: '123'})
-      // or
-      commit('${deleteSign}${prop}', '123')
     `,
     missingDeleteMutation: `There is no mutation set for '${mutationPath}'.
       Please enable auto-mutations with vuex-easy-access.
@@ -56,7 +79,6 @@ function getErrors (conf, mutationPath, mutationName, props) {
 
 export default function (error, conf, mutationPath, mutationName, props) {
   const errorMessages = getErrors(conf, mutationPath, mutationName, props)
-  console.error('[vuex-easy-access] Error!')
-  console.error(errorMessages[error])
+  console.error('[vuex-easy-access] Error!', errorMessages[error])
   return error
 }

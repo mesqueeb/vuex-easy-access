@@ -1,48 +1,106 @@
 # Vuex Easy Access
 
-The Vuex Easy Access plugin does two things:
-1. Add a global getter/setter for each state property
-2. Automatically generate mutations for each state property
+The Vuex Easy Access plugin gives you two things:
+
+1. Easy to use `get() set()` for any state property!
+2. Automatically generate `actions` and `mutations` for each state property!<br>→ Extra support for arrays, wildcard setters etc!
 
 ## Overview
 
 ### 👎😓 Traditional vuex -- bothersome to set up
 
-_ | Getter | Setter
---|--|--
-Usage in<br>Vue component | `$store.getters['user/pokemon']` | `$store.dispatch('user/setPokemon', newVal)`
-Required<br>setup | <small>getters:</small><br>`pokemon: (state, getters) => { return state.pokemon }` | <small>actions:</small><br>`setPokemon: ({commit}, newVal) => { commit('SET_POKEMON', newVal) }`<br><small>mutations:</small><br>`SET_POKEMON: (state, newVal) => { state.pokemon = newVal }`
-Overwrite<br>Getter/Setter | Change the above to something else | Change the above to something else
+Full manual setup required:
+
+```js
+// Module: `user`
+state: {
+  pokemon: {},
+  items: []
+}
+getters: {
+  pokemon: (state, getters) => { return state.pokemon }
+  items: (state, getters) => { return state.items }
+}
+actions: {
+  setPokemon: ({commit}, pokemon) => { commit('SET_POKEMON', pokemon) }
+  addItem: ({commit}, item) => { commit('PUSH_ITEM', item) }
+}
+mutations: {
+  SET_POKEMON: (state, pokemon) => { state.pokemon = pokemon }
+  PUSH_ITEM: (state, item) => { state.items.push(item) }
+}
+```
+
+Especially setting up specific actions/mutations for working with arrays, items with ID's (wildcards paths), deletion of props etc. can be extremely tedious!
 
 ### 👍😀 Vuex Easy Access -- 0 set up!
 
-_ | Getter | Setter
---|--|--
-Usage in<br>Vue component | `$store.get('user/pokemon')` | `$store.set('user/pokemon', newVal)`
-Required<br>Setup | **No setup**<br><small>returns `state.user.pokemon` by default</small> | **No setup**<br><small>updates `state.user.pokemon` through a mutation by default</small>
-Overwrite<br>default | <small>getters:</small><br>`pokemon: () => { return state.pokemon }` | <small>actions:</small><br>`pokemon: ({commit}, newVal) => { commit('pokemon', newVal) }`
+Enter vuex-easy-access! Easy to use actions & mutations with 0 set up required!<br>
+　　Everything below is auto-generated! 🎉
 
-### Table of contents
+### In Vue components: `get() set()` functions on `$store` object
+
+--|--
+Getter | `$store.get('user/pokemon')`
+Setter | `$store.set('user/pokemon', pokemon)`<br><small>Will use a mutation</small>
+Sub-props<br><small>Use `.` between props</small> | `$store.set('user/prop.subProp', newVal)`
+Overwriting defaults | You can overwrite the getter by adding a `pokemon` getter.<br>And the setter by adding a `pokemon` action.<br>In case of the action you need to execute the `mutation` manually (see below).
+
+### In the Vuex store: auto generated actions & mutations!
+
+--|--
+Action<br><small>(sub-module)</small> | `dispatch('user/set/pokemon', pokemon)`
+Mutation | `commit('user/pokemon', pokemon)`
+Sub-props | `dispatch('user/set/prop.subProp', newVal)`<br>`commit('user/prop.subProp', newVal)`
+Array actions<br><small>(sub-module)</small> | `dispatch('user/set/items.push', item)`<br>`dispatch('user/set/items.shift')`<br>`dispatch('user/set/items.pop')`<br>`dispatch('user/set/items.splice', [0, 1, item])`
+Array mutations | `commit('user/items.push', item)`<br>`commit('user/items.shift')`<br>`commit('user/items.pop')`<br>`commit('user/items.splice', [0, 1, item])`
+Overwriting defaults | Even when you use `dispatch(set/something, val)` everywhere in your store,<br>the moment you add an action called `something: () => {}`,<br>`dispatch(set/something, val)` will automatically execute that one instead!
+
+### Easy working with wildcards! 🃏
+
+Just add `'*'` as prop in your state and you will have super powers 💪🏻!
+
+```js
+state = {
+  pokeDex: {
+    '*': {name: '', seen: false}
+    // '*' indicates that pokeDex will have items with ID's
+    // `name` and `seen` will be default values for items added
+  }
+}
+```
+
+Let's add an example Pokémon to our store:
+`const pokemon = {id: 001, name: 'bulbasaur'}`
+
+- Bulbasaur will be added at `pokeDex['001']`
+- Bulbasaur will have `seen: false` as **default prop**!
+
+_ | Vue components | Vuex store
+--|--|--
+Insert with id | `$store.set('pokeDex.*', pokemon)` | `dispatch('set/pokeDex.*', pokemon)`<br>`commit('pokeDex.*', pokemon)`
+Overwrite<br>multiple values | `$store.set('pokeDex.*', {id: '001', name: 'BULBA', seen: true})` | `dispatch('set/pokeDex.*', {id: '001', name: 'BULBA', seen: true})`
+Overwrite<br>single values | `$store.set('pokeDex.*.seen', {id: '001', val: true})` | `dispatch('set/pokeDex.*.seen', {id: '001', val: true})`
+Delete<br>with id | `$store.delete('pokeDex.*', {id: '001'})` | `dispatch('delete/pokeDex.*', {id: '001'})`<br>`commit('-pokeDex.*', {id: '001'})`
+
+## Table of contents
 
 <!-- TOC -->
 
+- [Overview](#overview)
 - [Motivation](#motivation)
 - [Installation](#installation)
+- [Setup](#setup)
 - [1. Add a global getter/setter for each state property](#1-add-a-global-gettersetter-for-each-state-property)
-    - [What you can do](#what-you-can-do)
-        - [Use case: get/set in vue component](#use-case-getset-in-vue-component)
-        - [Use case: set in vuex module](#use-case-set-in-vuex-module)
-        - [Use case: set with ID wildcard](#use-case-set-with-id-wildcard)
-    - [Overwriting get/set with custom logic](#overwriting-getset-with-custom-logic)
-    - [Usage](#usage)
-- [2. Automatically generate mutations for each state property](#2-automatically-generate-mutations-for-each-state-property)
-    - [What's all this then?](#whats-all-this-then)
-        - [What really happens?](#what-really-happens)
-    - [Usage](#usage-1)
-    - [Bonus: Array mutations!](#bonus-array-mutations)
+    - [get() set() in Vue components](#get-set-in-vue-components)
+    - [set() in the Vuex store](#set-in-the-vuex-store)
+    - [Set items with an ID wildcard](#set-items-with-an-id-wildcard)
+    - [Overwriting default get()](#overwriting-default-get)
+    - [Overwriting default set()](#overwriting-default-set)
+- [2. Overview of all automatically generated setters / actions / mutations](#2-overview-of-all-automatically-generated-setters--actions--mutations)
 - [3. Advanced configuration](#3-advanced-configuration)
     - [Vuex Easy Firestore integration for Google firebase](#vuex-easy-firestore-integration-for-google-firebase)
-    - [get() set() function names](#get-set-function-names)
+    - [Change get() set() function names](#change-get-set-function-names)
     - [Ignore private state props](#ignore-private-state-props)
     - [Setter patterns](#setter-patterns)
 - [Feedback](#feedback)
@@ -59,9 +117,36 @@ There are several vuex plugins available making boilerplating etc easier for you
 npm i --save vuex-easy-access
 ```
 
-## 1. Add a global getter/setter for each state property
+## Setup
 
-### What you can do
+Add as vuex store plugin
+
+```js
+import createEasyAccess from 'vuex-easy-access'
+// do the magic 🧙🏻‍♂️
+const easyAccess = createEasyAccess()
+// and include as plugin in your vuex store:
+store: {
+  // ... your store
+  plugins: [easyAccess]
+}
+```
+
+Add as per module in the mutations
+
+```js
+import { defaultMutations } from 'vuex-easy-access'
+// in the root or a module's mutations:
+mutations: {
+  // your other mutations
+  ...defaultMutations(state)
+    // pass your state object
+}
+```
+
+That's it!! Simple and clean. ♫
+
+## 1. Add a global getter/setter for each state property
 
 As you can see in the [overview](#overview), you can access and set anything in your store through `get()` and `set()` methods:
 
@@ -73,7 +158,7 @@ The `path` syntax is: `module/submodule/stateVal.subProp`.<br>
 
 The get() and set() syntax is streamlined and easy to use! (unlike vuex's default syntax mess)
 
-#### Use case: get/set in vue component
+### get() set() in Vue components
 
 To keep everything fun we're gonna explain things with the example of a Pokémon app. 🐞
 
@@ -93,7 +178,7 @@ Now we need a page with an option to swap the primary Pokémon:
 
 Nothing required inside your Vue component methods! Very clean! 🏄🏼‍
 
-#### Use case: set in vuex module
+### set() in the Vuex store
 
 Besides `set()` on the store object, there is also a special setter created for each prop as an action you can dispatch!
 
@@ -114,51 +199,52 @@ The sub-module `set/` with the action `primary` are automatically created and co
 
 Please note: This requires your modules to be namespaced to work properly!
 
-#### Use case: set with ID wildcard
+### Set items with an ID wildcard
 
-I also got you covered when you need to set a property with an ID. Let's say there's an empty PokéDEX that gets information assigned as your character progresses!
-
-- module: `pokeDex/`<br>
-- state: `{byId: {}}`
-
-In this case our PokéDEX is an empty object when the store initialises. Whenever the player captures a Pokémon you can add that Pokémon to his PokéDEX by ID by ending the setter path with an asterisk:
+I also got you covered when you need to set a property with an ID. Let's say there's an empty PokéDEX that gets information assigned as your character progresses! We need methods to quickly add new Pokémon to our PokéDEX!<br>Welcome to vuex-easy-access wildcard paths!
 
 ```js
-const newPokemon = {id: '151', name: 'mew', captured: true}
-// in Vue components
-$store.set('pokeDex/byId.*', newPokemon)
-// in the Vuex store
-dispatch('pokeDex/set/byId.*', newPokemon)
-
-// your `pokeDex/` state will update to:
+// Module: `pokeDex/`
 state: {
+  byId: {} // empty object indicates this will receive wildcard paths '*'
+  // OR
   byId: {
-    '151': {id: '151', name: 'mew', captured: true}
+    '*': {captured: true} // '*' does the same! And in this case you can assign default values in this object!
   }
 }
 ```
 
-In this case we also get a special method to delete the prop again!
+The setup above makes it possible to **very easy** add objects with a specific ID.<br>Let's look at all the things you can do:
 
 ```js
+// the player captured Mew!
+const newPokemon = {id: '151', name: 'mew'}
+
+// You can easily add it to the pokeDex with:
 // in Vue components
-$store.delete('pokeDex/byId.*', {id: '151'})
-// or
-$store.delete('pokeDex/byId', '151')
+  $store.set('pokeDex/byId.*', newPokemon)
 // in the Vuex store
-dispatch('pokeDex/delete/byId.*', {id: '151'})
-// or
-dispatch('pokeDex/delete/byId', '151')
+  dispatch('pokeDex/set/byId.*', newPokemon)
+
+// Now your `pokeDex.state` will update to:
+  byId: {
+    '151': {id: '151', name: 'mew', captured: true}
+    // Captured is a default value which was set up in the state above
+  }
+
+// We can also easily delete it again:
+// in Vue components
+  $store.delete('pokeDex/byId.*', {id: '151'})
+// in the Vuex store
+  dispatch('pokeDex/delete/byId.*', {id: '151'})
 ```
 
-### Overwriting get/set with custom logic
-
-#### Overwrite get
+### Overwriting default get()
 
 Say that we want to make the first letter of our primary Pokémon always show up with a capital letter. For this we can overwrite the default `get('character/party.primary')` getter like so:
 
 ```js
-// in the `character/` module
+// Module: `character/`
 getters: {
   // create a getter with the prop name you want to overwrite:
   'party.primary': (state) => {
@@ -173,14 +259,14 @@ Now automatically in your whole app where you used `get('character/party.primary
 
 The `get()` method of Vuex Easy Access first checks if a getter with the syntax like above exists. If it does it will return the getter, if not it will just return the state property: `state.character.party.primary`.
 
-#### Overwrite set
+### Overwriting default set()
 
 Say we want a side effect to our setter. Instead of creating a new setter and changing all our Vue components, we can easily overwrite the default `set()` action to do extra stuff.
 
 Let's notify the user each time the primary Pokémon was changed:
 
 ```js
-// in the `character/` module
+// Module: `character/`
 actions: {
   // create an action with the prop name you want to overwrite:
   'party.primary': ({commit, dispatch}, newPokemon) => {
@@ -196,82 +282,64 @@ The `set()` method of Vuex Easy Access checks to see if an action with the same 
 **Firebase API**:<br>
 In cases you want to sync your vuex store automatically with Firebase's Firestore see [chapter 3](#3-advanced-configuration).
 
-### Usage
+## 2. Overview of all automatically generated setters / actions / mutations
+
+Vuex Easy Access creates one setter / action / mutation for every single property in your store! All AUTOMATICALLY!
+
+Here is the overview of an example store and everything that will be auto generated:
 
 ```js
-import createEasyAccess from 'vuex-easy-access'
-// do the magic 🧙🏻‍♂️
-const easyAccess = createEasyAccess()
-// and include as plugin in your vuex store:
-store: {
-  // ... your store
-  plugins: [easyAccess]
+// Module: `character/`
+state: {
+  party: {
+    primary: ''
+  },
+  pokeBox: [],
+  pokeDex: {
+    '*': {name: '', captured: false, seen: false}
+  },
 }
-```
 
-That's it!! Simple and clean. ♫
+// Setters you can use from Vue components
+$store.set('character/party', newParty)
+$store.set('character/party.primary', newPokemon) // sub-prop with `.`
+$store.set('character/pokeBox.push', newPokemon)
+$store.set('character/pokeBox.pop')
+$store.set('character/pokeBox.shift')
+$store.set('character/pokeBox.splice', [0, 1, newPokemon]) // second argument is an array
+$store.set('character/pokeDex.*', newPokemon) // needs `id` field
+$store.set('character/pokeDex.*.seen', {id: '', val: true}) // needs `id` and `val` fields
+$store.delete('character/pokeDex.*', newPokemon) // needs `id` field
 
-## 2. Automatically generate mutations for each state property
+// Actions you can use (from `set/` sub-module)
+dispatch('character/set/party', newParty)
+dispatch('character/set/party.primary', newPokemon)
+dispatch('character/set/pokeBox.push', newPokemon)
+dispatch('character/set/pokeBox.pop')
+dispatch('character/set/pokeBox.shift')
+dispatch('character/set/pokeBox.splice', [0, 1, newPokemon])
+dispatch('character/set/pokeDex.*', newPokemon)
+dispatch('character/set/pokeDex.*.seen', {id: '', val: true})
+dispatch('character/delete/pokeDex.*', newPokemon) // from `delete/` sub-module
 
-### What's all this then?
-
-Since a vuex store is really easy to debug based on the commit history, it's best practice to have one single mutation for each property in the store.
-
-But do you know the pain of setting up one single mutation for each single state property in your store? No more!
-
-Vuex Easy Access creates one mutation for every single property in your store! All AUTOMATICALLY!
-
-#### What really happens?
-
-Vuex Easy Access will automatically generate a mutation **per state prop**!
-
-- module: `character/`<br>
-- state: `{party: {primary: 'bulbasaur'}}`
-
-This gives you these mutations:
-
-```js
+// Mutations you can use
 commit('character/party', newParty)
 commit('character/party.primary', newPokemon)
+commit('character/pokeBox.push', newPokemon)
+commit('character/pokeBox.pop')
+commit('character/pokeBox.shift')
+commit('character/pokeBox.splice', [0, 1, newPokemon])
+commit('character/pokeDex.*', newPokemon)
+commit('character/pokeDex.*.seen', {id: '', val: true})
+commit('character/-pokeDex.*', newPokemon) // with `-` in front
+
+// Getters you can use
+$store.get('any/path/as.seen.above')
 ```
 
-And Vuex Easy Access does all this in just 2 lines. Say goodbye to boilerplating. Don't let it be a roadblock in order to do best practices!
+And Vuex Easy Access does all this in just 2 lines... All you have to do is write your state! That's it!<br>Say goodbye to boilerplating. Don't let it be a roadblock in order to do best practices!
 
 *Side note on the traditional `SET_PROP` syntax:*<br>You can also opt in for the mutations to be in the traditional syntax (as per the vuex documentation). For this please read [Setter patterns](#-setter-patterns) down below.
-
-### Usage
-
-```js
-import { defaultMutations } from 'vuex-easy-access'
-// in the root or a module's mutations:
-mutations: {
-  // your other mutations
-  ...defaultMutations(state)
-    // pass your state object
-}
-```
-
-### Bonus: Array mutations!
-
-Yes, yes, I know. The fun just doesn't end. We also have them array mutations set for you!
-
-Say you have a Pokémon box saved as array:<br>`state: {pokemonBox: []}`<br>
-When you add an empty array to the initial state, you will get 4 extra mutations, so it will be possible to do these:
-
-```js
-// add a pokemon:
-commit('pokemonBox.push', newPokemon)
-// don't need that last pokemon anymore:
-commit('pokemonBox.pop')
-// don't need that first pokemon anymore:
-commit('pokemonBox.shift')
-// change your first pokemon for a new one
-commit('pokemonBox.splice', [0, 1, newPokemon])
-```
-
-All these mutations are set up for you, automatically. You only need to write your state.
-
-Please note that the second parameter of 'splice' has to be an array with the 3 arguments just like the regular splice method.
 
 ## 3. Advanced configuration
 
@@ -447,7 +515,6 @@ Planned future features:
   - Warn about ignoredProps appearing in two modules
   - Warn when there is a module called 'set'
   - Warn when there already is a 'set' prop on the store
-- Add array mutation specific modules (to be able to set with dispatch)
 
 Also be sure to check out the sister vuex-plugin for Firebase: [Vuex Easy Firestore](https://github.com/mesqueeb/VuexEasyFirestore)!
 

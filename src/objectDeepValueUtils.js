@@ -8,7 +8,7 @@ import { isArray } from 'is-what'
  */
 function getKeysFromPath (path) {
   if (!path) return []
-  return path.match(/\w+/g)
+  return path.match(/[^\/^\.^\*]+/g)
 }
 
 /**
@@ -56,7 +56,7 @@ function getDeepValue (target, path) {
 function setDeepValue (target, path, value) {
   const keys = getKeysFromPath(path)
   const lastKey = keys.pop()
-  const deepRef = getDeepRef(target, keys.join())
+  const deepRef = getDeepRef(target, keys.join('.'))
   if (deepRef && deepRef.hasOwnProperty(lastKey)) {
     deepRef[lastKey] = value
   }

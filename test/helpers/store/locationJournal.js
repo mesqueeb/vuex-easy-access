@@ -4,6 +4,7 @@ import config from '../config'
 // MODULE: gymData
 const gymDataState = {
   defeated: {
+    '*': false,
     palletTown: false,
   }
 }
@@ -16,8 +17,15 @@ const gymData = {
 // MODULE: locationJournal
 const locationJournalState = {
   visitedPlaces: {
-    palletTown: true,
-    gym: false
+    '*': {
+      visited: false,
+      gym: false,
+      pokecentre: false,
+    },
+    palletTown: {
+      visited: true,
+      gym: false,
+    }
   }
 }
 const locationJournal = {
