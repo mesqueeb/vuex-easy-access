@@ -7,6 +7,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 var isWhat = require('is-what');
 var Vue = _interopDefault(require('vue'));
 var merge = _interopDefault(require('nanomerge'));
+var util = require('util');
 var Vuex = _interopDefault(require('vuex'));
 
 var defaultConf = {
@@ -214,77 +215,80 @@ function makeMutationsForAllProps(propParent, path) {
     // Get the value of the prop
     var propValue = propParent[prop];
     // define possible functions
-    function setProp(state, newVal) {
-      return setDeepValue(state, propPath, newVal);
+    function setProp(state, payload) {
+      return setDeepValue(state, propPath, payload);
     }
-    function setWildcardProp(state, newVal) {
-      if (!newVal.id) return error('mutationSetterNoId', conf);
-      var ids = !isWhat.isArray(newVal.id) ? [newVal.id] : newVal.id;
-      var idCount = propPath.match(/\*/g).length;
-      if (ids.length !== idCount) return error('mutationSetterPropPathWildcardIdCount', conf);
-      var pathWithIds = propPath;
-      var lastId = void 0;
+    function checkIdWildcardRatio(ids, path) {
+      var idCount = path.match(/\*/g).length;
+      if (ids.length === idCount) return true;
+      error('mutationSetterPropPathWildcardIdCount', conf);
+      return false;
+    }
+    function fillinPathWildcards(ids, path, state) {
       ids.forEach(function (_id, _index, _array) {
-        var idIndex = pathWithIds.indexOf('*');
-        var pathUntilPool = pathWithIds.substr(0, idIndex);
+        var idIndex = path.indexOf('*');
+        var pathUntilPool = path.substr(0, idIndex);
         var pool = getDeepRef(state, pathUntilPool);
-        // stop and get out
-        if (_index + 1 === _array.length) return lastId = _id;
-        if (!pool[_id]) return error('mutationSetterPropPathWildcardMissingItemDoesntExist', conf);
-        pathWithIds = pathWithIds.split('').map(function (char, ind) {
+        if (pool[_id] === undefined) return error('mutationSetterPropPathWildcardMissingItemDoesntExist', conf);
+        path = path.split('').map(function (char, ind) {
           return ind === idIndex ? _id : char;
         }).join('');
       });
-      newVal.id = lastId;
+      return path;
+    }
+    function getId(payload) {
+      if (isWhat.isObject(payload)) {
+        if (payload.id) return payload.id;
+        if (Object.keys(payload).length === 1) return Object.keys(payload)[0];
+      }
+      if (util.isString(payload)) return payload;
+      error('wildcardFormatWrong');
+      return false;
+    }
+    function getValue(payload) {
+      if (isWhat.isObject(payload) && !payload.id && Object.keys(payload).length === 1) {
+        return Object.values(payload)[0];
+      }
+      return payload;
+    }
+    function setWildcardProp(state, payload) {
+      if (!isWhat.isArray(payload)) payload = [payload];
+      var ids = payload.map(function (_payload) {
+        return getId(_payload);
+      });
+      if (!checkIdWildcardRatio(ids, propPath)) return;
+      var lastId = ids.pop();
+      var propPathWithoutLast = propPath.slice(0, -1);
+      var pathWithIds = fillinPathWildcards(ids, propPathWithoutLast, state);
       var ref = getDeepRef(state, pathWithIds);
-      if (isWhat.isObject(propValue)) newVal = merge(propValue, newVal);
-      return Vue.set(ref, lastId, newVal);
-
-      setDeepValue(state, pathWithIds, payload.val);
+      var newValue = getValue(payload.pop());
+      if (isWhat.isObject(newValue)) newValue.id = lastId;
+      if (isWhat.isObject(propValue)) newValue = merge(propValue, newValue);
+      return Vue.set(ref, lastId, newValue);
     }
     function setPropWithWildcardPath(state, payload) {
-      if (!payload.val) return error('mutationSetterPropPathWildcardMissingVal', conf);
-      if (!payload.id) return error('mutationSetterPropPathWildcardMissingId', conf);
-      var ids = !isWhat.isArray(payload.id) ? [payload.id] : payload.id;
-      var idCount = propPath.match(/\*/g).length;
-      if (ids.length !== idCount) return error('mutationSetterPropPathWildcardIdCount', conf);
-      var pathWithIds = propPath;
-      ids.forEach(function (_id) {
-        var idIndex = pathWithIds.indexOf('*');
-        var pathUntilPool = pathWithIds.substr(0, idIndex);
-        var pool = getDeepRef(state, pathUntilPool);
-        if (!pool[_id]) return error('mutationSetterPropPathWildcardMissingItemDoesntExist', conf);
-        pathWithIds = pathWithIds.split('').map(function (char, ind) {
-          return ind === idIndex ? _id : char;
-        }).join('');
+      if (!isWhat.isArray(payload)) payload = [payload];
+      var ids = payload.map(function (_payload) {
+        return getId(_payload);
       });
-      setDeepValue(state, pathWithIds, payload.val);
+      if (!checkIdWildcardRatio(ids, propPath)) return;
+      var pathWithIds = fillinPathWildcards(ids, propPath, state);
+      var newValue = getValue(payload.pop());
+      setDeepValue(state, pathWithIds, newValue);
     }
-    function deleteProp(state, val) {
-      if (!val.id) return error('mutationDeleteNoId', conf);
-      var ids = !isWhat.isArray(val.id) ? [val.id] : val.id;
-      var idCount = propPath.match(/\*/g).length;
-      if (ids.length !== idCount) return error('mutationSetterPropPathWildcardIdCount', conf);
-      var pathWithIds = propPath;
-      var lastId = void 0;
-      ids.forEach(function (_id, _index, _array) {
-        var idIndex = pathWithIds.indexOf('*');
-        var pathUntilPool = pathWithIds.substr(0, idIndex);
-        var pool = getDeepRef(state, pathUntilPool);
-        // stop and get out
-        if (_index + 1 === _array.length) return lastId = _id;
-        if (!pool[_id]) return error('mutationSetterPropPathWildcardMissingItemDoesntExist', conf);
-        pathWithIds = pathWithIds.split('').map(function (char, ind) {
-          return ind === idIndex ? _id : char;
-        }).join('');
-      });
+    function deleteProp(state, id) {
+      if (!id) return error('mutationDeleteNoId', conf);
+      var ids = !isWhat.isArray(id) ? [id] : id;
+      if (!checkIdWildcardRatio(ids, propPath)) return;
+      var lastId = ids.pop();
+      var propPathWithoutLast = propPath.replace(lastId, '');
+      var pathWithIds = fillinPathWildcards(ids, propPathWithoutLast, state);
       var ref = getDeepRef(state, pathWithIds);
       return Vue.delete(ref, lastId);
     }
     // =================================================>
     //   NORMAL MUTATION
     // =================================================>
-    // mutation name
     var name = conf.pattern === 'traditional' ? 'SET_' + propPath.toUpperCase() : propPath;
     // All good, make the mutation!
     if (!propPath.includes('*')) {
@@ -296,8 +300,6 @@ function makeMutationsForAllProps(propParent, path) {
     // =================================================>
     //   WILDCARD MUTATIONS
     // =================================================>
-    // let's create a wildcard & deletion mutations
-    // deletion
     var deleteName = conf.pattern === 'traditional' ? 'DELETE_' + propPath.toUpperCase() : '-' + propPath;
     if (prop === '*') {
       mutations[name] = setWildcardProp;
@@ -310,7 +312,6 @@ function makeMutationsForAllProps(propParent, path) {
     // =================================================>
     //   ARRAY MUTATIONS
     // =================================================>
-    // If the prop is an array, make array mutations as well
     if (isWhat.isArray(propValue)) {
       // PUSH mutation name
       var push = conf.pattern === 'traditional' ? 'PUSH_' + propPath.toUpperCase() : propPath + '.push';
@@ -336,7 +337,6 @@ function makeMutationsForAllProps(propParent, path) {
     // =================================================>
     //   CHILDREN MUTATIONS
     // =================================================>
-    // let's do it's children as well!
     if (isWhat.isObject(propValue) && Object.keys(propValue).length) {
       var childrenMutations = makeMutationsForAllProps(propValue, propPath, conf);
       Object.assign(mutations, childrenMutations);

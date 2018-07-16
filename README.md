@@ -40,6 +40,7 @@ Enter vuex-easy-access! Easy to use actions & mutations with 0 set up required!<
 
 ### In Vue components: `get() set()` functions on `$store` object
 
+|||
 --|--
 Getter | `$store.get('user/pokemon')`
 Setter | `$store.set('user/pokemon', pokemon)`<br><small>Will use a mutation</small>
@@ -48,12 +49,10 @@ Overwriting defaults | You can overwrite the getter by adding a `pokemon` getter
 
 ### In the Vuex store: auto generated actions & mutations!
 
+|||
 --|--
-Action<br><small>(sub-module)</small> | `dispatch('user/set/pokemon', pokemon)`
-Mutation | `commit('user/pokemon', pokemon)`
-Sub-props | `dispatch('user/set/prop.subProp', newVal)`<br>`commit('user/prop.subProp', newVal)`
-Array actions<br><small>(sub-module)</small> | `dispatch('user/set/items.push', item)`<br>`dispatch('user/set/items.shift')`<br>`dispatch('user/set/items.pop')`<br>`dispatch('user/set/items.splice', [0, 1, item])`
-Array mutations | `commit('user/items.push', item)`<br>`commit('user/items.shift')`<br>`commit('user/items.pop')`<br>`commit('user/items.splice', [0, 1, item])`
+Actions<br><small>Auto-generated<br>sub-module</small> | `dispatch('user/set/pokemon', pokemon)`<br><small>With sub-prop:</small><br>`dispatch('user/set/prop.subProp', newVal)`<br><small>Special for arrays:</small><br>`dispatch('user/set/items.push', item)`<br>`dispatch('user/set/items.shift')`<br>`dispatch('user/set/items.pop')`<br>`dispatch('user/set/items.splice', [0, 1, item])`
+Mutations<br><small>Used by actions<br>behind the scenes</small> | `commit('user/pokemon', pokemon)`<br>`commit('user/prop.subProp', newVal)`<br>`commit('user/items.push', item)`<br>`commit('user/items.shift')`<br>`commit('user/items.pop')`<br>`commit('user/items.splice', [0, 1, item])`
 Overwriting defaults | Even when you use `dispatch(set/something, val)` everywhere in your store,<br>the moment you add an action called `something: () => {}`,<br>`dispatch(set/something, val)` will automatically execute that one instead!
 
 ### Easy working with wildcards! 🃏
@@ -70,18 +69,22 @@ state = {
 }
 ```
 
-Let's add an example Pokémon to our store:
-`const pokemon = {id: 001, name: 'bulbasaur'}`
+Let's add Bulbasaur to our PokéDex:
 
-- Bulbasaur will be added at `pokeDex['001']`
+- Bulbasaur is to be added at `pokeDex['001']`
 - Bulbasaur will have `seen: false` as **default prop**!
 
-_ | Vue components | Vuex store
---|--|--
-Insert with id | `$store.set('pokeDex.*', pokemon)` | `dispatch('set/pokeDex.*', pokemon)`<br>`commit('pokeDex.*', pokemon)`
-Overwrite<br>multiple values | `$store.set('pokeDex.*', {id: '001', name: 'BULBA', seen: true})` | `dispatch('set/pokeDex.*', {id: '001', name: 'BULBA', seen: true})`
-Overwrite<br>single values | `$store.set('pokeDex.*.seen', {id: '001', val: true})` | `dispatch('set/pokeDex.*.seen', {id: '001', val: true})`
-Delete<br>with id | `$store.delete('pokeDex.*', {id: '001'})` | `dispatch('delete/pokeDex.*', {id: '001'})`<br>`commit('-pokeDex.*', {id: '001'})`
+_ | in Vue components
+--|--
+Insert / overwrite | Object with a `{[id]: value}` pair:<br>`$store.set('pokeDex.*', {'001': {name: 'Bulbasaur'}})`<br>Or object that has an `id` field:<br>`$store.set('pokeDex.*', {id: '001', name: 'Bulbasaur'})`
+Overwrite single values | `seen` will be set to `true`:<br>`store.set('pokeDex.*.seen', {'001': true})`
+Delete with id | Only pass `id`:<br>`$store.delete('pokeDex.*', '001')`
+Multiple wildcards | Must pass array, where first value is first id:<br>`$store.set('pokeDex.*.tags.*', ['001', {fire: true}])`<br>`$store.delete('pokeDex.*.tags.*', ['001', 'fire'])`
+
+_ | in the Vuex store:<br>Almost same as above
+--|--
+Vue component | `$store.set('pokeDex.*', newPokemon)`<br>`$store.delete('pokeDex.*', '001')`
+Vuex store | becomes:<br>`dispatch('set/pokeDex.*', newPokemon)`<br>`dispatch('delete/pokeDex.*', '001')`
 
 ## Table of contents
 
