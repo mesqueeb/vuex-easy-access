@@ -3,8 +3,16 @@ import config from '../config'
 
 // MODULE: dex
 const state = {
-  pokemonById: {}
+  pokemonById: {
+    '*': {
+      name: '',
+      tags: {
+        '*': true
+      }
+    }
+  }
 }
+
 const dex = {
   namespaced: true,
   state: state,

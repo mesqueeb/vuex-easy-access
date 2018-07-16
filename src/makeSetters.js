@@ -94,15 +94,15 @@ function defaultSetter (path, payload, store, conf = {}) {
  * @returns {function}          dispatch or commit
  */
 function defaultDeletor (path, payload, store, conf = {}) {
-  conf = Object.assign({}, defaultConf, conf) // 'info/user/favColours.primary'
-  const pArr = path.split('/')                // ['info', 'user', 'favColours.primary']
-  const props = pArr.pop()                    // 'favColours.primary'
+  conf = Object.assign({}, defaultConf, conf) // 'user/items.*.tags.*'
+  const pArr = path.split('/')                // ['user', 'items.*.tags.*']
+  const props = pArr.pop()                    // 'items.*.tags.*'
   const modulePath = (pArr.length)
-    ? pArr.join('/') + '/'                    // 'info/user/'
+    ? pArr.join('/') + '/'                    // 'user/'
     : ''
   const actionName = (conf.pattern === 'traditional')
-    ? 'delete' + props[0].toUpperCase() + props.substring(1) // 'deleteFavColours.primary'
-    : '-' + props                                            // '-favColours.primary'
+    ? 'delete' + props[0].toUpperCase() + props.substring(1) // 'deleteItems.*.tags.*'
+    : '-' + props                                            // '-items.*.tags.*'
   // Check if an action exists, if it does, trigger that and return early!
   const actionPath = modulePath + actionName
   const actionExists = store._actions[actionPath]
@@ -114,14 +114,14 @@ function defaultDeletor (path, payload, store, conf = {}) {
   const firestoreConf = (!_module) ? null : _module.state._conf
   if (conf.vuexEasyFirestore && firestoreConf) {
     let target
-    // DOC: 'info/user/favColours', 'primary'
+    // DOC: 'user/favColours', 'primary'
     // COLLECTION: 'items', '123'
     if (isString(payload)) {
       target = (props)
         ? props  + '.' + payload // 'favColours.primary'
         : payload // 123
     }
-    // DOC: 'info/user/favColours.*', {id: 'primary'}
+    // DOC: 'user/favColours.*', {id: 'primary'}
     // COLLECTION: 'items/*', {id: '123'}
     if (isObject(payload) && payload.id) {
       target = props.replace('*', payload.id)
@@ -130,8 +130,8 @@ function defaultDeletor (path, payload, store, conf = {}) {
   }
   // Trigger the mutation!
   const mutationName = (conf.pattern === 'traditional')
-    ? 'DELETE_' + props.toUpperCase() // 'DELETE_FAVCOLOURS.PRIMARY'
-    : '-' + props                     // '-favColours.primary'
+    ? 'DELETE_' + props.toUpperCase() // 'DELETE_ITEMS.*.TAGS.*'
+    : '-' + props                     // '-items.*.tags.*'
   const mutationPath = modulePath + mutationName
   const mutationExists = store._mutations[mutationPath]
   if (mutationExists) {
