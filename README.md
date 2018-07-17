@@ -77,15 +77,14 @@ Let's add Bulbasaur to our PokéDex:
 _ | in Vue components
 --|--
 Insert / overwrite | Object with a `{[id]: value}` pair:<br>`$store.set('pokeDex.*', {'001': {name: 'Bulbasaur'}})`<br>Or object that has an `id` field:<br>`$store.set('pokeDex.*', {id: '001', name: 'Bulbasaur'})`
+Overwrite single values | `seen` of Pokemon with id `'001'` will be set to `true`:<br>`store.set('pokeDex.*.seen', ['001', true])`
 Delete with id | Only pass `id`:<br>`$store.delete('pokeDex.*', '001')`
 Multiple wildcards | Must pass array, where first value is first id:<br>`$store.set('pokeDex.*.tags.*', ['001', {fire: true}])`<br>`$store.delete('pokeDex.*.tags.*', ['001', 'fire'])`
 
-<!-- Overwrite single values | `seen` will be set to `true`:<br>`store.set('pokeDex.*.seen', {'001': true})` -->
 
 _ | in the Vuex store:<br><small>Almost same as above</small>
 --|--
-Vue component | `$store.set('pokeDex.*', newPokemon)`<br>`$store.delete('pokeDex.*', '001')`
-Vuex store | becomes:<br>`dispatch('set/pokeDex.*', newPokemon)`<br>`dispatch('delete/pokeDex.*', '001')`
+Vue component<br><br><br>Vuex store | `$store.set('pokeDex.*', newPokemon)`<br>`$store.delete('pokeDex.*', '001')`<br>becomes:<br>`dispatch('set/pokeDex.*', newPokemon)`<br>`dispatch('delete/pokeDex.*', '001')`
 
 ## Table of contents
 
@@ -186,6 +185,7 @@ $store.set('character/pokeDex.*', {'001': {name: 'Bulbasaur'}}) // {[id]: item} 
 // or
 $store.set('character/pokeDex.*', {id: '001', name: 'Bulbasaur'}) // object with an `id` field. Full object will be added as the item.
 $store.set('character/pokeDex.*.types.*', [id, {'water': true}]) // with 2 wildcards add and array. First id first, second id will be 'water'
+$store.set('character/pokeDex.*.seen', [id, true]) // Array with first the wildcard `id` then the value you want to set to `seen` in this case
 $store.delete('character/pokeDex.*', id) // needs `id` field
 
 // Actions you can use (from `set/` sub-module)
@@ -197,6 +197,7 @@ dispatch('character/set/pokeBox.shift')
 dispatch('character/set/pokeBox.splice', [0, 1, newPokemon])
 dispatch('character/set/pokeDex.*', newPokemon) // see insert method above
 dispatch('character/set/pokeDex.*types.*', [id, {'water': true}])
+dispatch('character/set/pokeDex.*.seen', [id, true])
 dispatch('character/delete/pokeDex.*', id) // from `delete/` sub-module
 
 // Mutations you can use
@@ -207,15 +208,11 @@ commit('character/pokeBox.pop')
 commit('character/pokeBox.shift')
 commit('character/pokeBox.splice', [0, 1, newPokemon])
 commit('character/pokeDex.*', newPokemon) // see insert method above
+commit('character/pokeDex.*.seen', [id, true])
 commit('character/-pokeDex.*', id) // with `-` in front
 
 // Getters you can use
 $store.get('any/path/as.seen.above')
-
-// this is still bugged, will be updated in 24 hours:
-// $store.set('character/pokeDex.*.seen', [id, true])
-// dispatch('character/set/pokeDex.*.seen', [id, true])
-// commit('character/pokeDex.*.seen', [id, true])
 ```
 
 And Vuex Easy Access does all this in just 2 lines... All you have to do is write your state! That's it!<br>Say goodbye to boilerplating. Don't let it be a roadblock in order to do best practices!
