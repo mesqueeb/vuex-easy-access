@@ -21,6 +21,7 @@ const locationJournalState = {
       visited: false,
       gym: false,
       pokecentre: false,
+      tags: {}
     },
     palletTown: {
       visited: true,

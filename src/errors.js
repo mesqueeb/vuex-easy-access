@@ -42,6 +42,14 @@ function getErrors (conf, mutationPath, mutationName, props) {
     // or
     commit('${prop}.*', {id: '123', name: 'the best item'})
     `,
+    mutationSetterPropPathWildcardIdCount: `The amount of ids and wildcards \`'*'\` are not equal.
+    // Correct usage:
+    ${setter}('items.*.tags.*', {id: ['itemId', 'tagId'], name: 'new tag!'})
+    // or
+    dispatch('${setter}/items.*.tags.*', {id: ['itemId', 'tagId'], name: 'new tag!'})
+    // or
+    commit('items.*.tags.*', {id: ['itemId', 'tagId'], name: 'new tag!'})
+    `,
     mutationDeleteNoId: `The payload needs to be an object with an \`id\` field.
       // Correct usage examples:
       ${deletor}('${prop}/*', {id: '123'})
