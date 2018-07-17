@@ -267,12 +267,12 @@ function makeMutationsForAllProps(propParent, path) {
     }
     function setPropWithWildcardPath(state, payload) {
       if (!isWhat.isArray(payload)) payload = [payload];
+      var newValue = payload.pop();
       var ids = payload.map(function (_payload) {
         return getId(_payload);
       });
       if (!checkIdWildcardRatio(ids, propPath)) return;
       var pathWithIds = fillinPathWildcards(ids, propPath, state);
-      var newValue = getValue(payload.pop());
       setDeepValue(state, pathWithIds, newValue);
     }
     function deleteProp(state, id) {

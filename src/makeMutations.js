@@ -102,10 +102,10 @@ function makeMutationsForAllProps(
       }
       function setPropWithWildcardPath (state, payload) {
         if (!isArray(payload)) payload = [payload]
+        const newValue = payload.pop()
         const ids = payload.map(_payload => getId(_payload))
         if (!checkIdWildcardRatio(ids, propPath)) return
         const pathWithIds = fillinPathWildcards(ids, propPath, state)
-        const newValue = getValue(payload.pop())
         setDeepValue(state, pathWithIds, newValue)
       }
       function deleteProp (state, id) {
