@@ -1,4 +1,4 @@
-import { getDeepValue } from './objectDeepValueUtils'
+import { getDeepValue } from './pathUtils'
 
 /**
  * Creates a getter function in the store to set any state value

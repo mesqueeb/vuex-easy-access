@@ -13,10 +13,20 @@ const state = {
   }
 }
 
-const dex = {
+export const dex = {
   namespaced: true,
   state: state,
   mutations: defaultMutations(state, config, {moduleNamespace: 'dex/'})
 }
 
-export default dex
+export const firestoreDex = {
+  // firestore settings
+  firestorePath: 'fakePath',
+  firestoreRefType: 'collection',
+  moduleName: 'dexDB',
+  statePropName: 'pokemonById',
+  // the rest
+  namespaced: true,
+  state: state,
+  mutations: defaultMutations(state, config, {moduleNamespace: 'dexDB/'})
+}

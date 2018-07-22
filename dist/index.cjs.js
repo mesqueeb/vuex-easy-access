@@ -7,9 +7,8 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 var isWhat = require('is-what');
 var Vue = _interopDefault(require('vue'));
 var merge = _interopDefault(require('nanomerge'));
-var util = require('util');
 
-var defaultConf = {
+var defaultConfig = {
   setter: 'set',
   getter: 'get',
   deletor: 'delete',
@@ -19,6 +18,179 @@ var defaultConf = {
   pattern: 'simple'
 };
 
+/* eslint-disable */
+
+function getErrors(conf, path, props) {
+  var originInfo = path || props ? 'problem with prop: `' + props + '` at path: `' + path + '`' : '';
+  var tradPatt = conf.pattern === 'traditional';
+  var setter = conf.setter;
+  var deletor = conf.deletor;
+  var prop = 'items';
+  var mutationNameSet = tradPatt ? 'SET_' + prop.toUpperCase() : prop;
+  var mutationNameDel = tradPatt ? 'DELETE_' + prop.toUpperCase() : prop;
+
+  var exampleSetters__Wildcard = '\n    Correct usage examples:\n    // From Vue-components:\n    ' + setter + '(\'' + prop + '.*\', {\'123\': {name: \'the best item\'}})\n\n    // From the Vuex store:\n    dispatch(\'' + setter + '/' + prop + '.*\', {\'123\': {name: \'the best item\'}})\n    // or\n    commit(\'' + mutationNameSet + '.*\', {\'123\': {name: \'the best item\'}})';
+  var exampleSetters__DoubleWildcard = '\n    Correct usage examples:\n    // From Vue-components:\n    ' + setter + '(\'' + prop + '.*.tags.*\', [\'123\', {water: true}])\n\n    // From the Vuex store:\n    dispatch(\'' + setter + '/' + prop + '.*.tags.*\', [\'123\', {water: true}])\n    // or\n    commit(\'' + mutationNameSet + '.*.tags.*\', [\'123\', {water: true}])';
+  var exampleDeletor = '\n    Correct usage examples:\n    // From Vue-components:\n    ' + deletor + '(\'' + prop + '.*\', \'123\')\n\n    // From the Vuex store:\n    dispatch(\'' + deletor + '/' + prop + '.*\', \'123\')\n    // or\n    commit(\'' + mutationNameDel + '.*\', \'123\')';
+
+  return {
+    mutationSetterNoId: originInfo + '\n      The payload needs to be an object with an `id` field.\n      ' + exampleSetters__Wildcard,
+    mutationSetterPropPathWildcardMissingItemDoesntExist: originInfo + '\n      The item does not exist! Make sure you first set the item.\n      ' + exampleSetters__Wildcard,
+    mutationSetterPropPathWildcardIdCount: originInfo + '\n      The amount of ids and wildcards `\'*\'` are not equal.\n      If you have multiple wildcards you need to pass an array, where each item is an ID and the last is the property you want to set.\n      ' + exampleSetters__DoubleWildcard + '\n      ',
+    mutationDeleteNoId: originInfo + '\n      The payload needs to be an object with an `id` field.\n      ' + exampleDeletor + '\n      ',
+    wildcardFormatWrong: originInfo + '\n      There was something wrong with the payload passed when using a path with wildcards.\n\n      A) Path with wildcard:\n      ' + exampleSetters__Wildcard + '\n\n      B) Path with multiple wildcards:\n      ' + exampleSetters__DoubleWildcard + '\n    ',
+    missingDeleteMutation: '\n      There is no mutation set for \'' + path + '\'.\n      Something went wrong with your vuex-easy-access setup.\n      Did you manually add `...defaultMutations(state)` to your modules?\n      See the documentation here:\n        https://github.com/mesqueeb/VuexEasyAccess#setup\n\n\n      // You can also manually add a mutation like so in the correct module (not recommended!!):\n      mutations: {\n        \'' + (tradPatt ? 'DELETE_' + props.toUpperCase() : '-' + props) + '\': (state, payload) => {\n          this._vm.$delete(state.' + props + ')\n        }\n      }\n    ',
+    missingSetterMutation: '\n      There is no mutation set for \'' + path + '\'.\n      Something went wrong with your vuex-easy-access setup.\n      Did you manually add `...defaultMutations(state)` to your modules?\n      See the documentation here:\n        https://github.com/mesqueeb/VuexEasyAccess#setup\n\n\n      // You can also manually add a mutation like so in the correct module (not recommended!!):\n      mutations: {\n        \'' + (tradPatt ? 'SET_' + props.toUpperCase() : props) + '\': (state, payload) => {\n          state.' + props + ' = payload\n        }\n      }\n    '
+  };
+}
+/**
+ * Error logging
+ *
+ * @export
+ * @param {string} error the error code
+ * @param {object} conf the user config
+ * @param {string} path (optional) the path the error occured in
+ * @param {string} props (optional) the props the error occured with
+ * @returns {string} the error code
+ */
+function error (error) {
+  var conf = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var path = arguments[2];
+  var props = arguments[3];
+
+  conf = Object.assign({}, defaultConfig, conf);
+  var errorMessages = getErrors(conf, path, props);
+  console.error('[vuex-easy-access] Error!', errorMessages[error]);
+  return error;
+}
+
+/**
+ * gets an ID from a single piece of payload.
+ *
+ * @param {object, string} payload
+ * @param {object} conf (optional - for error handling) the vuex-easy-access config
+ * @param {string} path (optional - for error handling) the path called
+ * @param {array|object|string} fullPayload (optional - for error handling) the full payload on which each was `getId()` called
+ * @returns {string} the id
+ */
+function getId(payloadPiece, conf, path, fullPayload) {
+  if (isWhat.isObject(payloadPiece)) {
+    if (payloadPiece.id) return payloadPiece.id;
+    if (Object.keys(payloadPiece).length === 1) return Object.keys(payloadPiece)[0];
+  }
+  if (isWhat.isString(payloadPiece)) return payloadPiece;
+  error('wildcardFormatWrong', conf, path, payloadPiece);
+  return false;
+}
+
+/**
+ * Get all ids from an array payload.
+ *
+ * @param {array[string]} payload
+ * @param {object} conf (optional - for error handling) the vuex-easy-access config
+ * @param {string} path (optional - for error handling) the path called
+ * @returns {array[string]} all ids
+ */
+function getIdsFromPayload(payload, conf, path) {
+  return payload.map(function (payloadPiece) {
+    return getId(payloadPiece, conf, path, payload);
+  });
+}
+
+/**
+ * Returns a value of a payload piece. Eg. {[id]: 'val'} will return 'val'
+ *
+ * @param {*} payloadPiece
+ * @returns {*} the value
+ */
+function getValueFromPayloadPiece(payloadPiece) {
+  if (isWhat.isObject(payloadPiece) && !payloadPiece.id && Object.keys(payloadPiece).length === 1) {
+    return Object.values(payloadPiece)[0];
+  }
+  return payloadPiece;
+}
+
+/**
+ * Checks the ratio between an array of IDs and a path with wildcards
+ *
+ * @param {array} ids
+ * @param {string} path
+ * @param {object} conf (optional - for error handling) the vuex-easy-access config
+ * @returns {Bool} true if no problem. false if the ratio is incorrect
+ */
+function checkIdWildcardRatio(ids, path, conf) {
+  var match = path.match(/\*/g);
+  var idCount = isWhat.isArray(match) ? match.length : 0;
+  if (ids.length === idCount) return true;
+  error('mutationSetterPropPathWildcardIdCount', conf);
+  return false;
+}
+
+/**
+ * Fill in IDs at '*' in a path, based on the IDs received.
+ *
+ * @param {array} ids
+ * @param {string} path 'path.*.with.*.wildcards'
+ * @param {object} state RELATIVE TO PATH START! the state to check if the value actually exists
+ * @param {object} conf (optional - for error handling) the vuex-easy-access config
+ * @returns {string} The path with '*' replaced by IDs
+ */
+function fillinPathWildcards(ids, path, state, conf) {
+  ids.forEach(function (_id, _index, _array) {
+    var idIndex = path.indexOf('*');
+    var pathUntilPool = path.substring(0, idIndex);
+    // check for errors when both state and conf are passed
+    // pathUntilPool can be '' in case the path starts with '*'
+    if (state && conf) {
+      var pool = pathUntilPool ? getDeepRef(state, pathUntilPool) : state;
+      if (pool[_id] === undefined) return error('mutationSetterPropPathWildcardMissingItemDoesntExist', conf, pathUntilPool, _id);
+    }
+    path = path.split('').map(function (char, ind) {
+      return ind === idIndex ? _id : char;
+    }).join('');
+  });
+  return path;
+}
+
+/**
+ * ('/sub.prop', payload) becomes →  {sub: {prop: payload}}
+ *
+ * @param   {string} path     'a/path/like.this'
+ * @param   {*}      payload
+ * @param   {object} state the state to check if the value actually exists
+ * @param   {object} conf (optional - for error handling) the vuex-easy-access config
+ * @returns {object} a nested object re-created based on the path & payload
+ */
+function createObjectFromPath(path, payload, state, conf) {
+  var newValue = payload;
+  if (path.includes('*')) {
+    var idsPayload = !isWhat.isArray(payload) ? [payload] : payload;
+    var ids = getIdsFromPayload(idsPayload, conf, path);
+    // CASE: 'dex/pokemonById.*.tags.*'
+    if (path.endsWith('*')) {
+      var lastId = ids[ids.length - 1];
+      newValue = getValueFromPayloadPiece(idsPayload[idsPayload.length - 1]);
+      if (isWhat.isObject(newValue)) newValue.id = lastId;
+    }
+    // CASE: 'dex/pokemonById.*.tags'
+    if (!path.endsWith('*')) {
+      ids.pop();
+      newValue = idsPayload.pop();
+    }
+    if (!checkIdWildcardRatio(ids, path, conf)) return;
+    var pathWithIds = fillinPathWildcards(ids, path, state, conf);
+    path = pathWithIds;
+  }
+  // important to set the result here and not return the reduce directly!
+  var result = {};
+  path.match(/[^\/^\.]+/g).reduce(function (carry, _prop, index, array) {
+    var container = index === array.length - 1 ? newValue : {};
+    carry[_prop] = container;
+    return container;
+  }, result);
+  return result;
+}
+
 /**
  * Returns the keys of a path
  *
@@ -27,7 +199,7 @@ var defaultConf = {
  */
 function getKeysFromPath(path) {
   if (!path) return [];
-  return path.match(/[^\/^\.^\*]+/g);
+  return path.match(/[^\/^\.]+/g);
 }
 
 /**
@@ -149,29 +321,6 @@ function spliceDeepValue(target, path) {
   return deepRef.splice(index, deleteCount, value);
 }
 
-function getErrors(conf, mutationPath, mutationName, props) {
-  var setter = conf.setter;
-  var deletor = conf.deletor;
-  var prop = conf.pattern === 'traditional' ? 'ITEMS' : 'items';
-  var deleteSign = conf.pattern === 'traditional' ? 'DELETE_' : '-';
-  return {
-    mutationSetterNoId: 'The payload needs to be an object with an `id` field.\n      // Correct usage examples:\n      ' + setter + '(\'' + prop + '.*\', {id: \'123\', name: \'the best item\'})\n      // or\n      dispatch(\'' + setter + '/' + prop + '.*\', {id: \'123\', name: \'the best item\'})\n      // or\n      commit(\'' + prop + '.*\', {id: \'123\', name: \'the best item\'})\n    ',
-    mutationSetterPropPathWildcardMissingId: 'The payload needs to be an object with an `id` field.\n      // Make sure you first set the item:\n      ' + setter + '(\'' + prop + '.*\', {id: \'123\', name: \'the best item\'})\n      // or\n      dispatch(\'' + setter + '/' + prop + '.*\', {id: \'123\', name: \'the best item\'})\n\n      // Then you can overwrite a specific prop like so:\n      ' + setter + '(\'' + prop + '.*.name\', {id: \'123\', val: \'new name for the prop `name`\'})\n      // or\n      dispatch(\'' + setter + '/' + prop + '.*.name\', {id: \'123\', val: \'new name for the prop `name`\'})\n      // or\n      commit(\'' + prop + '.*.name\', {id: \'123\', val: \'new name for the prop `name`\'})\n    ',
-    mutationSetterPropPathWildcardMissingVal: 'The payload needs to be an object with an `id` and `val` field.\n      // Correct usage:\n      ' + setter + '(\'' + prop + '.*.name\', {id: \'123\', val: \'new name for the prop `name`\'})\n      // or\n      dispatch(\'' + setter + '/' + prop + '.*.name\', {id: \'123\', val: \'new name for the prop `name`\'})\n      // or\n      commit(\'' + prop + '.*.name\', {id: \'123\', val: \'new name for the prop `name`\'})\n    ',
-    mutationSetterPropPathWildcardMissingItemDoesntExist: 'The item does not exist!\n    // Make sure you first set the item:\n    ' + setter + '(\'' + prop + '.*\', {id: \'123\', name: \'the best item\'})\n    // or\n    dispatch(\'' + setter + '/' + prop + '.*\', {id: \'123\', name: \'the best item\'})\n    // or\n    commit(\'' + prop + '.*\', {id: \'123\', name: \'the best item\'})\n    ',
-    mutationSetterPropPathWildcardIdCount: 'The amount of ids and wildcards `\'*\'` are not equal.\n    // Correct usage:\n    ' + setter + '(\'items.*.tags.*\', {id: [\'itemId\', \'tagId\'], name: \'new tag!\'})\n    // or\n    dispatch(\'' + setter + '/items.*.tags.*\', {id: [\'itemId\', \'tagId\'], name: \'new tag!\'})\n    // or\n    commit(\'items.*.tags.*\', {id: [\'itemId\', \'tagId\'], name: \'new tag!\'})\n    ',
-    mutationDeleteNoId: 'The payload needs to be an object with an `id` field.\n      // Correct usage examples:\n      ' + deletor + '(\'' + prop + '/*\', {id: \'123\'})\n      // or\n      dispatch(\'' + deletor + '/' + prop + '/*\', {id: \'123\'})\n      // or\n      commit(\'' + deleteSign + prop + '/*\', {id: \'123\'})\n    ',
-    missingDeleteMutation: 'There is no mutation set for \'' + mutationPath + '\'.\n      Please enable auto-mutations with vuex-easy-access.\n      See the documentation here (very easy):\n        https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property\n\n      // OR manually add a mutation like so in the correct module (not recommended):\n      mutations: {\n        \'' + mutationName + '\': (state, payload) => {\n          this._vm.$delete(state.' + props + ')\n        }\n      }\n    ',
-    missingSetterMutation: 'There is no mutation set for \'' + mutationPath + '\'.\n      Please enable auto-mutations with vuex-easy-access.\n      See the documentation here (very easy):\n        https://github.com/mesqueeb/VuexEasyAccess#2-automatically-generate-mutations-for-each-state-property\n\n      // OR manually add a mutation like so in the correct module (not recommended):\n      mutations: {\n        \'' + mutationName + '\': (state, payload) => {\n          state.' + props + ' = payload\n        }\n      }\n    '
-  };
-}
-
-function error (error, conf, mutationPath, mutationName, props) {
-  var errorMessages = getErrors(conf, mutationPath, mutationName, props);
-  console.error('[vuex-easy-access] Error!', errorMessages[error]);
-  return error;
-}
-
 var toConsumableArray = function (arr) {
   if (Array.isArray(arr)) {
     for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
@@ -196,7 +345,7 @@ function makeMutationsForAllProps(propParent, path) {
   var conf = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
   var infoNS = arguments[3];
 
-  conf = Object.assign({}, defaultConf, conf);
+  conf = Object.assign({}, defaultConfig, conf);
   if (!isWhat.isObject(propParent)) return {};
   return Object.keys(propParent).reduce(function (mutations, prop) {
     // Get the path info up until this point
@@ -217,50 +366,15 @@ function makeMutationsForAllProps(propParent, path) {
     function setProp(state, payload) {
       return setDeepValue(state, propPath, payload);
     }
-    function checkIdWildcardRatio(ids, path) {
-      var idCount = path.match(/\*/g).length;
-      if (ids.length === idCount) return true;
-      error('mutationSetterPropPathWildcardIdCount', conf);
-      return false;
-    }
-    function fillinPathWildcards(ids, path, state) {
-      ids.forEach(function (_id, _index, _array) {
-        var idIndex = path.indexOf('*');
-        var pathUntilPool = path.substr(0, idIndex);
-        var pool = getDeepRef(state, pathUntilPool);
-        if (pool[_id] === undefined) return error('mutationSetterPropPathWildcardMissingItemDoesntExist', conf);
-        path = path.split('').map(function (char, ind) {
-          return ind === idIndex ? _id : char;
-        }).join('');
-      });
-      return path;
-    }
-    function getId(payload) {
-      if (isWhat.isObject(payload)) {
-        if (payload.id) return payload.id;
-        if (Object.keys(payload).length === 1) return Object.keys(payload)[0];
-      }
-      if (util.isString(payload)) return payload;
-      error('wildcardFormatWrong');
-      return false;
-    }
-    function getValue(payload) {
-      if (isWhat.isObject(payload) && !payload.id && Object.keys(payload).length === 1) {
-        return Object.values(payload)[0];
-      }
-      return payload;
-    }
     function setWildcardProp(state, payload) {
       if (!isWhat.isArray(payload)) payload = [payload];
-      var ids = payload.map(function (_payload) {
-        return getId(_payload);
-      });
-      if (!checkIdWildcardRatio(ids, propPath)) return;
+      var ids = getIdsFromPayload(payload, conf, propPath);
+      if (!checkIdWildcardRatio(ids, propPath, conf)) return;
       var lastId = ids.pop();
       var propPathWithoutLast = propPath.slice(0, -1);
-      var pathWithIds = fillinPathWildcards(ids, propPathWithoutLast, state);
+      var pathWithIds = fillinPathWildcards(ids, propPathWithoutLast, state, conf);
       var ref = getDeepRef(state, pathWithIds);
-      var newValue = getValue(payload.pop());
+      var newValue = getValueFromPayloadPiece(payload.pop());
       if (isWhat.isObject(newValue)) newValue.id = lastId;
       if (isWhat.isObject(propValue)) newValue = merge(propValue, newValue);
       return Vue.set(ref, lastId, newValue);
@@ -268,20 +382,22 @@ function makeMutationsForAllProps(propParent, path) {
     function setPropWithWildcardPath(state, payload) {
       if (!isWhat.isArray(payload)) payload = [payload];
       var newValue = payload.pop();
-      var ids = payload.map(function (_payload) {
-        return getId(_payload);
-      });
-      if (!checkIdWildcardRatio(ids, propPath)) return;
-      var pathWithIds = fillinPathWildcards(ids, propPath, state);
+      var ids = getIdsFromPayload(payload, conf, propPath);
+      if (!checkIdWildcardRatio(ids, propPath, conf)) return;
+      var pathWithIds = fillinPathWildcards(ids, propPath, state, conf);
       setDeepValue(state, pathWithIds, newValue);
     }
     function deleteProp(state, id) {
-      if (!id) return error('mutationDeleteNoId', conf);
+      if (!id) return error('mutationDeleteNoId', conf, propPath);
       var ids = !isWhat.isArray(id) ? [id] : id;
-      if (!checkIdWildcardRatio(ids, propPath)) return;
+      if (!checkIdWildcardRatio(ids, propPath, conf)) return;
+      console.log('propPath → ', propPath);
       var lastId = ids.pop();
-      var propPathWithoutLast = propPath.replace(lastId, '');
-      var pathWithIds = fillinPathWildcards(ids, propPathWithoutLast, state);
+      var pathWithoutWildcard = propPath.endsWith('*') ? propPath.slice(0, -1) : propPath;
+      console.log('pathWithoutWildcard → ', pathWithoutWildcard);
+      console.log('ids → ', ids);
+      var pathWithIds = fillinPathWildcards(ids, pathWithoutWildcard, state, conf);
+      console.log('pathWithIds → ', pathWithIds);
       var ref = getDeepRef(state, pathWithIds);
       return Vue.delete(ref, lastId);
     }
@@ -362,7 +478,7 @@ function defaultMutations(initialState) {
   var conf = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var infoNS = arguments[2];
 
-  conf = Object.assign({}, defaultConf, conf);
+  conf = Object.assign({}, defaultConfig, conf);
   return makeMutationsForAllProps(initialState, null, conf, infoNS);
 }
 
@@ -405,7 +521,7 @@ function defaultGetter(path, store) {
 function defaultSetter(path, payload, store) {
   var conf = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
-  conf = Object.assign({}, defaultConf, conf); // 'info/user/favColours.primary'
+  conf = Object.assign({}, defaultConfig, conf); // 'info/user/favColours.primary'
   var pArr = path.split('/'); // ['info', 'user', 'favColours.primary']
   var props = pArr.pop(); // 'favColours.primary'
   var modulePath = pArr.length ? pArr.join('/') + '/' // 'info/user/'
@@ -423,19 +539,7 @@ function defaultSetter(path, payload, store) {
   var firestoreConf = !_module ? null : _module.state._conf;
   if (conf.vuexEasyFirestore && firestoreConf) {
     // 'info/user/set', {favColours: {primary: payload}}'
-    var newPayload = {};
-    // if (!props) trigger easy-firestore 'set' with the payload
-    if (!props) newPayload = payload;
-    // if (props) re-nest the props as part of the payload:
-    // eg. ('/sub.prop', payload) becomes →  {sub: {prop: payload}}
-    if (props) {
-      props.split('.').reduce(function (carry, _prop, index, array) {
-        var container = index === array.length - 1 ? payload : {};
-        if (_prop === '*' && payload.id) _prop = payload.id;
-        carry[_prop] = container;
-        return container;
-      }, newPayload);
-    }
+    var newPayload = !props ? payload : createObjectFromPath(props, payload, _module.state, conf);
     var firestoreActionPath = modulePath + 'set';
     var firestoreActionExists = store._actions[firestoreActionPath];
     if (firestoreActionExists) {
@@ -450,7 +554,7 @@ function defaultSetter(path, payload, store) {
   if (mutationExists) {
     return store.commit(mutationPath, payload);
   }
-  error('missingSetterMutation', conf, mutationPath, mutationName, props);
+  return error('missingSetterMutation', conf, mutationPath, props);
 }
 
 /**
@@ -473,7 +577,7 @@ function defaultSetter(path, payload, store) {
 function defaultDeletor(path, payload, store) {
   var conf = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
-  conf = Object.assign({}, defaultConf, conf); // 'user/items.*.tags.*'
+  conf = Object.assign({}, defaultConfig, conf); // 'user/items.*.tags.*'
   var pArr = path.split('/'); // ['user', 'items.*.tags.*']
   var props = pArr.pop(); // 'items.*.tags.*'
   var modulePath = pArr.length ? pArr.join('/') + '/' // 'user/'
@@ -490,19 +594,12 @@ function defaultDeletor(path, payload, store) {
   var _module = store._modulesNamespaceMap[modulePath];
   var firestoreConf = !_module ? null : _module.state._conf;
   if (conf.vuexEasyFirestore && firestoreConf) {
-    var target = void 0;
-    // DOC: 'user/favColours', 'primary'
-    // COLLECTION: 'items', '123'
-    if (isWhat.isString(payload)) {
-      target = props ? props + '.' + payload // 'favColours.primary'
-      : payload; // 123
-    }
-    // DOC: 'user/favColours.*', {id: 'primary'}
-    // COLLECTION: 'items/*', {id: '123'}
-    if (isWhat.isObject(payload) && payload.id) {
-      target = props.replace('*', payload.id);
-    }
-    if (target) return store.dispatch(modulePath + 'delete', target);
+    // DOC: 'user/favColours.*', 'primary'
+    // COLLECTION: 'items.*', '123'
+    // COLLECTION: 'items.*.tags.*', ['123', 'dark']
+    var ids = !isWhat.isArray(payload) ? [payload] : payload;
+    var newPath = fillinPathWildcards(ids, props, _module.state, conf);
+    if (newPath) return store.dispatch(modulePath + 'delete', newPath);
   }
   // Trigger the mutation!
   var mutationName = conf.pattern === 'traditional' ? 'DELETE_' + props.toUpperCase() // 'DELETE_ITEMS.*.TAGS.*'
@@ -512,7 +609,7 @@ function defaultDeletor(path, payload, store) {
   if (mutationExists) {
     return store.commit(mutationPath, payload);
   }
-  error('missingDeleteMutation', conf, mutationPath, mutationName, props);
+  return error('missingDeleteMutation', conf, mutationPath, props);
 }
 
 /**
@@ -529,7 +626,7 @@ function createSetterModule(targetState) {
   var store = arguments[2];
   var conf = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
-  conf = Object.assign({}, defaultConf, conf);
+  conf = Object.assign({}, defaultConfig, conf);
   function getSetters(_targetState) {
     var _propPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
@@ -623,7 +720,7 @@ function createDeleteModule(targetState) {
   var store = arguments[2];
   var conf = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
-  conf = Object.assign({}, defaultConf, conf);
+  conf = Object.assign({}, defaultConfig, conf);
   function getDeletors(_targetState) {
     var _propPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
@@ -665,7 +762,7 @@ function generateSetterModules(store) {
   var conf = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   var modules = store._modulesNamespaceMap;
-  conf = Object.assign({}, defaultConf, conf);
+  conf = Object.assign({}, defaultConfig, conf);
   Object.keys(modules).forEach(function (moduleNS) {
     var _module = modules[moduleNS];
     var moduleName = getKeysFromPath(moduleNS + conf.setter);
@@ -692,7 +789,7 @@ function generateSetterModules(store) {
  */
 
 function createEasyAccess(userConfig) {
-  var conf = Object.assign({}, defaultConf, userConfig);
+  var conf = Object.assign({}, defaultConfig, userConfig);
   return function (store) {
     generateSetterModules(store, conf);
     store[conf.setter] = function (path, payload) {

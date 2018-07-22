@@ -10,7 +10,7 @@ import defaultConfig from './defaultConfig'
 import { defaultMutations } from './makeMutations'
 import { defaultGetter } from './makeGetters'
 import { defaultSetter, defaultDeletor, generateSetterModules } from './makeSetters'
-import { getDeepRef, getKeysFromPath } from './objectDeepValueUtils'
+import { getDeepRef, getKeysFromPath } from './pathUtils'
 
 function createEasyAccess (userConfig) {
   const conf = Object.assign({}, defaultConfig, userConfig)

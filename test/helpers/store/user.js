@@ -7,10 +7,21 @@ const userState = {
   importedData: [],
   wallet: []
 }
-const user = {
+
+export const user = {
   namespaced: true,
   state: userState,
   mutations: defaultMutations(userState, config, {moduleNamespace: 'user/'})
 }
 
-export default user
+export const firestoreUser = {
+  // firestore settings
+  firestorePath: 'fakePath',
+  firestoreRefType: 'doc',
+  moduleName: 'userDB',
+  statePropName: 'user',
+  // the rest
+  namespaced: true,
+  state: userState,
+  mutations: defaultMutations(userState, config, {moduleNamespace: 'userDB/'})
+}
