@@ -36,16 +36,17 @@ function defaultSetter (path, payload, store, conf = {}) {
     return store.dispatch(actionPath, payload)
   }
   // [vuex-easy-firestore] check if it's a firestore module
-  const _module = (!modulePath && props && !props.includes('.') && conf.vuexEasyFirestore)
-    ? store._modulesNamespaceMap[props]
-    : store._modulesNamespaceMap[modulePath]
+  const firestoreModulePath = (!modulePath && props && !props.includes('.') && conf.vuexEasyFirestore)
+    ? props + '/'
+    : modulePath
+  const _module = store._modulesNamespaceMap[firestoreModulePath]
   const firestoreConf = (!_module) ? null : _module.state._conf
   if (conf.vuexEasyFirestore && firestoreConf) {
     // 'info/user/set', {favColours: {primary: payload}}'
-    const newPayload = (!props)
+    const newPayload = (!props || (!modulePath && props && !props.includes('.')))
       ? payload
       : createObjectFromPath(props, payload, _module.state, conf)
-    const firestoreActionPath = modulePath + 'set'
+    const firestoreActionPath = firestoreModulePath + 'set'
     const firestoreActionExists = store._actions[firestoreActionPath]
     if (firestoreActionExists) {
       return store.dispatch(firestoreActionPath, newPayload)
