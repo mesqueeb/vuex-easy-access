@@ -160,18 +160,20 @@ function fillinPathWildcards(ids, path, state, conf) {
 function createObjectFromPath(path, payload, state, conf) {
   var newValue = payload;
   if (path.includes('*')) {
-    var idsPayload = !isWhat.isArray(payload) ? [payload] : payload;
-    var ids = getIdsFromPayload(idsPayload, conf, path);
-    // CASE: 'dex/pokemonById.*.tags.*'
-    if (path.endsWith('*')) {
-      var lastId = ids[ids.length - 1];
-      newValue = getValueFromPayloadPiece(idsPayload[idsPayload.length - 1]);
-      if (isWhat.isObject(newValue)) newValue.id = lastId;
-    }
+    // only work with arrays
+    if (!isWhat.isArray(payload)) payload = [payload];
+    var lastPayloadPiece = payload.pop();
+    var ids = payload;
     // CASE: 'dex/pokemonById.*.tags'
     if (!path.endsWith('*')) {
-      ids.pop();
-      newValue = idsPayload.pop();
+      newValue = lastPayloadPiece;
+    }
+    // CASE: 'dex/pokemonById.*.tags.*'
+    if (path.endsWith('*')) {
+      var lastId = getId(lastPayloadPiece, conf, path);
+      ids.push(lastId);
+      newValue = getValueFromPayloadPiece(lastPayloadPiece);
+      if (isWhat.isObject(newValue)) newValue.id = lastId;
     }
     if (!checkIdWildcardRatio(ids, path, conf)) return;
     var pathWithIds = fillinPathWildcards(ids, path, state, conf);
