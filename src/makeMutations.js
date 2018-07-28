@@ -3,7 +3,7 @@ import { isObject, isArray } from 'is-what'
 import defaultConf from './defaultConfig'
 import error from './errors'
 import Vue from 'vue'
-import merge from 'nanomerge'
+import merge from './merge'
 
 /**
  * Creates the mutations for each property of the object passed recursively
