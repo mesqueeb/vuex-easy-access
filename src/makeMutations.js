@@ -3,7 +3,7 @@ import { isObject, isArray } from 'is-what'
 import defaultConf from './defaultConfig'
 import error from './errors'
 import Vue from 'vue'
-import merge from 'nanomerge'
+import merge from './merge'
 
 /**
  * Creates the mutations for each property of the object passed recursively
@@ -73,15 +73,11 @@ function makeMutationsForAllProps (
         if (!id) return error('mutationDeleteNoId', conf, propPath)
         const ids = (!isArray(id)) ? [id] : id
         if (!checkIdWildcardRatio(ids, propPath, conf)) return
-        console.log('propPath → ', propPath)
         const lastId = ids.pop()
         const pathWithoutWildcard = (propPath.endsWith('*'))
           ? propPath.slice(0, -1)
           : propPath
-        console.log('pathWithoutWildcard → ', pathWithoutWildcard)
-        console.log('ids → ', ids)
         const pathWithIds = fillinPathWildcards(ids, pathWithoutWildcard, state, conf)
-        console.log('pathWithIds → ', pathWithIds)
         const ref = getDeepRef(state, pathWithIds)
         return Vue.delete(ref, lastId)
       }

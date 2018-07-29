@@ -108,20 +108,20 @@ export function fillinPathWildcards (ids, path, state, conf) {
 export function createObjectFromPath (path, payload, state, conf) {
   let newValue = payload
   if (path.includes('*')) {
-    const idsPayload = (!isArray(payload))
-      ? [payload]
-      : payload
-    const ids = getIdsFromPayload(idsPayload, conf, path)
-    // CASE: 'dex/pokemonById.*.tags.*'
-    if (path.endsWith('*')) {
-      const lastId = ids[ids.length - 1]
-      newValue = getValueFromPayloadPiece(idsPayload[idsPayload.length - 1])
-      if (isObject(newValue)) newValue.id = lastId
-    }
+    // only work with arrays
+    if (!isArray(payload)) payload = [payload]
+    const lastPayloadPiece = payload.pop()
+    const ids = payload
     // CASE: 'dex/pokemonById.*.tags'
     if (!path.endsWith('*')) {
-      ids.pop()
-      newValue = idsPayload.pop()
+      newValue = lastPayloadPiece
+    }
+    // CASE: 'dex/pokemonById.*.tags.*'
+    if (path.endsWith('*')) {
+      const lastId = getId(lastPayloadPiece, conf, path)
+      ids.push(lastId)
+      newValue = getValueFromPayloadPiece(lastPayloadPiece)
+      if (isObject(newValue)) newValue.id = lastId
     }
     if (!checkIdWildcardRatio(ids, path, conf)) return
     const pathWithIds = fillinPathWildcards(ids, path, state, conf)

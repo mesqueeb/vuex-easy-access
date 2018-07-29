@@ -1,6 +1,6 @@
 import { isArray, isString, isObject } from 'is-what';
+import nanomerge from 'nanomerge';
 import Vue from 'vue';
-import merge from 'nanomerge';
 
 var defaultConfig = {
   setter: 'set',
@@ -158,18 +158,20 @@ function fillinPathWildcards(ids, path, state, conf) {
 function createObjectFromPath(path, payload, state, conf) {
   var newValue = payload;
   if (path.includes('*')) {
-    var idsPayload = !isArray(payload) ? [payload] : payload;
-    var ids = getIdsFromPayload(idsPayload, conf, path);
-    // CASE: 'dex/pokemonById.*.tags.*'
-    if (path.endsWith('*')) {
-      var lastId = ids[ids.length - 1];
-      newValue = getValueFromPayloadPiece(idsPayload[idsPayload.length - 1]);
-      if (isObject(newValue)) newValue.id = lastId;
-    }
+    // only work with arrays
+    if (!isArray(payload)) payload = [payload];
+    var lastPayloadPiece = payload.pop();
+    var ids = payload;
     // CASE: 'dex/pokemonById.*.tags'
     if (!path.endsWith('*')) {
-      ids.pop();
-      newValue = idsPayload.pop();
+      newValue = lastPayloadPiece;
+    }
+    // CASE: 'dex/pokemonById.*.tags.*'
+    if (path.endsWith('*')) {
+      var lastId = getId(lastPayloadPiece, conf, path);
+      ids.push(lastId);
+      newValue = getValueFromPayloadPiece(lastPayloadPiece);
+      if (isObject(newValue)) newValue.id = lastId;
     }
     if (!checkIdWildcardRatio(ids, path, conf)) return;
     var pathWithIds = fillinPathWildcards(ids, path, state, conf);
@@ -315,6 +317,32 @@ function spliceDeepValue(target, path) {
   return deepRef.splice(index, deleteCount, value);
 }
 
+// import deepAssign from 'deep-object-assign-with-reduce'
+// const mergeOptions = require('merge-options')
+// import deepmerge from 'deepmerge'
+
+function merge() {
+  // check if all are objects
+  var l = arguments.length;
+  for (l; l > 0; l--) {
+    var item = arguments.length <= l - 1 ? undefined : arguments[l - 1];
+    if (!isObject(item)) {
+      console.error('trying to merge a non-object: ', item);
+      return item;
+    }
+  }
+  return nanomerge.apply(undefined, arguments);
+  // return deepAssign(...params)
+  // return mergeOptions(...params)
+  // settings for 'deepmerge'
+  // const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
+  // const options = {arrayMerge: overwriteMerge}
+  // if (params.length > 2) {
+  //   return deepmerge.all([...params], options)
+  // }
+  // return deepmerge(...params, options)
+}
+
 var toConsumableArray = function (arr) {
   if (Array.isArray(arr)) {
     for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
@@ -385,13 +413,9 @@ function makeMutationsForAllProps(propParent, path) {
       if (!id) return error('mutationDeleteNoId', conf, propPath);
       var ids = !isArray(id) ? [id] : id;
       if (!checkIdWildcardRatio(ids, propPath, conf)) return;
-      console.log('propPath → ', propPath);
       var lastId = ids.pop();
       var pathWithoutWildcard = propPath.endsWith('*') ? propPath.slice(0, -1) : propPath;
-      console.log('pathWithoutWildcard → ', pathWithoutWildcard);
-      console.log('ids → ', ids);
       var pathWithIds = fillinPathWildcards(ids, pathWithoutWildcard, state, conf);
-      console.log('pathWithIds → ', pathWithIds);
       var ref = getDeepRef(state, pathWithIds);
       return Vue.delete(ref, lastId);
     }

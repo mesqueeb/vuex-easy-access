@@ -11,6 +11,11 @@ const userState = {
 export const user = {
   namespaced: true,
   state: userState,
+  actions: {
+    wallet ({state}, newVal) {
+      return newVal + '!'
+    },
+  },
   mutations: defaultMutations(userState, config, {moduleNamespace: 'user/'})
 }
 
