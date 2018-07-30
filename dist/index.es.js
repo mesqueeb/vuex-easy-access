@@ -130,12 +130,14 @@ function checkIdWildcardRatio(ids, path, conf) {
  * @returns {string} The path with '*' replaced by IDs
  */
 function fillinPathWildcards(ids, path, state, conf) {
+  // Ignore pool check if '*' comes last
+  var ignorePoolCheckOn = path.endsWith('*') ? ids[ids.length - 1] : null;
   ids.forEach(function (_id, _index, _array) {
     var idIndex = path.indexOf('*');
     var pathUntilPool = path.substring(0, idIndex);
     // check for errors when both state and conf are passed
     // pathUntilPool can be '' in case the path starts with '*'
-    if (state && conf) {
+    if (ignorePoolCheckOn !== _id && state && conf) {
       var pool = pathUntilPool ? getDeepRef(state, pathUntilPool) : state;
       if (pool[_id] === undefined) return error('mutationSetterPropPathWildcardMissingItemDoesntExist', conf, pathUntilPool, _id);
     }

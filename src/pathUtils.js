@@ -77,12 +77,14 @@ export function checkIdWildcardRatio (ids, path, conf) {
  * @returns {string} The path with '*' replaced by IDs
  */
 export function fillinPathWildcards (ids, path, state, conf) {
+  // Ignore pool check if '*' comes last
+  const ignorePoolCheckOn = (path.endsWith('*')) ? ids[ids.length - 1] : null
   ids.forEach((_id, _index, _array) => {
     const idIndex = path.indexOf('*')
     const pathUntilPool = path.substring(0, idIndex)
     // check for errors when both state and conf are passed
     // pathUntilPool can be '' in case the path starts with '*'
-    if (state && conf) {
+    if (ignorePoolCheckOn !== _id && state && conf) {
       const pool = (pathUntilPool)
         ? getDeepRef(state, pathUntilPool)
         : state
