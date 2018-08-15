@@ -177,6 +177,11 @@ function createObjectFromPath(path, payload, state, conf) {
       newValue = getValueFromPayloadPiece(lastPayloadPiece);
       if (isWhat.isObject(newValue)) newValue.id = lastId;
     }
+    ids = ids.map(function (_id) {
+      _id = _id.replace('.', '_____dot_____');
+      _id = _id.replace('/', '_____slash_____');
+      return _id;
+    });
     if (!checkIdWildcardRatio(ids, path, conf)) return;
     var pathWithIds = fillinPathWildcards(ids, path, state, conf);
     path = pathWithIds;
@@ -184,6 +189,8 @@ function createObjectFromPath(path, payload, state, conf) {
   // important to set the result here and not return the reduce directly!
   var result = {};
   path.match(/[^\/^\.]+/g).reduce(function (carry, _prop, index, array) {
+    _prop = _prop.replace('_____dot_____', '.');
+    _prop = _prop.replace('_____slash_____', '/');
     var container = index === array.length - 1 ? newValue : {};
     carry[_prop] = container;
     return container;

@@ -117,6 +117,11 @@ test('createObjectFromPath', t => {
   payload = ['001', {id: 'dark', state: true}]
   res = createObjectFromPath(path, payload, state, conf)
   t.deepEqual(res, {dex: {pokemonById: {'001': {tags: {dark: {id: 'dark', state: true}}}}}})
+
+  path = 'dex/pokemonById.*.tags.*'
+  payload = ['001/m', {id: 'dark@universe.com', state: true}]
+  res = createObjectFromPath(path, payload, state, conf)
+  t.deepEqual(res, {dex: {pokemonById: {'001/m': {tags: {'dark@universe.com': {id: 'dark@universe.com', state: true}}}}}})
 })
 test('getKeysFromPath', t => {
   let path, res

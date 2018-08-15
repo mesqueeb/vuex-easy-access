@@ -113,7 +113,7 @@ export function createObjectFromPath (path, payload, state, conf) {
     // only work with arrays
     if (!isArray(payload)) payload = [payload]
     const lastPayloadPiece = payload.pop()
-    const ids = payload
+    let ids = payload
     // CASE: 'dex/pokemonById.*.tags'
     if (!path.endsWith('*')) {
       newValue = lastPayloadPiece
@@ -125,6 +125,11 @@ export function createObjectFromPath (path, payload, state, conf) {
       newValue = getValueFromPayloadPiece(lastPayloadPiece)
       if (isObject(newValue)) newValue.id = lastId
     }
+    ids = ids.map(_id => {
+      _id = _id.replace('.', '_____dot_____')
+      _id = _id.replace('/', '_____slash_____')
+      return _id
+    })
     if (!checkIdWildcardRatio(ids, path, conf)) return
     const pathWithIds = fillinPathWildcards(ids, path, state, conf)
     path = pathWithIds
@@ -133,6 +138,8 @@ export function createObjectFromPath (path, payload, state, conf) {
   const result = {}
   path.match(/[^\/^\.]+/g)
     .reduce((carry, _prop, index, array) => {
+      _prop = _prop.replace('_____dot_____', '.')
+      _prop = _prop.replace('_____slash_____', '/')
       const container = (index === array.length - 1)
         ? newValue
         : {}
