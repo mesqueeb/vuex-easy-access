@@ -8,7 +8,8 @@ const state = {
       name: '',
       tags: {
         '*': true
-      }
+      },
+      powerUps: []
     }
   }
 }

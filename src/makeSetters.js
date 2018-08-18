@@ -153,38 +153,28 @@ function createSetterModule (targetState, moduleNS = '', store, conf = {}) {
       // Get the value of the prop
       const propValue = _targetState[stateProp]
       // =================================================>
-      //   WILDCARDS SETTERS
-      // =================================================>
-      // let's create a wildcard setter
-      if (stateProp === '*') {
-        carry[propPath] = (context, payload) => {
-          return defaultSetter(fullPath, payload, store, conf)
-        }
-      }
-      if (isObject(propValue) && !Object.keys(propValue).length) {
-        carry[propPath + '.*'] = (context, payload) => {
-          return defaultSetter(fullPath + '.*', payload, store, conf)
-        }
-      }
-      // =================================================>
       //   ARRAY SETTERS
       // =================================================>
       if (isArray(propValue)) {
-        carry[propPath + '.push'] = ({rootState}, value) => {
-          const ref = getDeepRef(rootState, moduleNS)
-          return pushDeepValue(ref, propPath, value)
+        carry[propPath + '.push'] = (context, payload) => {
+          return defaultSetter(fullPath + '.push', payload, store, conf)
         }
-        carry[propPath + '.pop'] = ({rootState}) => {
-          const ref = getDeepRef(rootState, moduleNS)
-          return popDeepValue(ref, propPath)
+        carry[propPath + '.pop'] = (context, payload) => {
+          return defaultSetter(fullPath + '.pop', payload, store, conf)
         }
-        carry[propPath + '.shift'] = ({rootState}) => {
-          const ref = getDeepRef(rootState, moduleNS)
-          return shiftDeepValue(ref, propPath)
+        carry[propPath + '.shift'] = (context, payload) => {
+          return defaultSetter(fullPath + '.shift', payload, store, conf)
         }
-        carry[propPath + '.splice'] = ({rootState}, array) => {
-          const ref = getDeepRef(rootState, moduleNS)
-          return spliceDeepValue(ref, propPath, ...array)
+        carry[propPath + '.splice'] = (context, payload) => {
+          return defaultSetter(fullPath + '.splice', payload, store, conf)
+        }
+      }
+      // =================================================>
+      //   WILDCARDS SETTER
+      // =================================================>
+      if (isObject(propValue) && !Object.keys(propValue).length) {
+        carry[propPath + '.*'] = (context, payload) => {
+          return defaultSetter(fullPath + '.*', payload, store, conf)
         }
       }
       // =================================================>

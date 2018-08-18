@@ -221,6 +221,29 @@ test('double id setters', t => {
   t.falsy(dex[_027.id].tags['dark'])
   t.falsy(dex[_043.id].tags['dark'])
   t.falsy(dex[_077.id].tags['dark'])
+
+  // push pop shift splice mutations
+  store.commit('dex/pokemonById.*.powerUps.push', [_027.id, 'str1'])
+  store.commit('dex/pokemonById.*.powerUps.push', [_027.id, 'res1'])
+  t.deepEqual(dex[_027.id].powerUps, ['str1', 'res1'])
+  store.commit('dex/pokemonById.*.powerUps.pop', _027.id)
+  t.deepEqual(dex[_027.id].powerUps, ['str1'])
+  store.commit('dex/pokemonById.*.powerUps.push', [_027.id, 'str2'])
+  t.deepEqual(dex[_027.id].powerUps, ['str1', 'str2'])
+  store.commit('dex/pokemonById.*.powerUps.shift', _027.id)
+  t.deepEqual(dex[_027.id].powerUps, ['str2'])
+  store.commit('dex/pokemonById.*.powerUps.splice', [_027.id, [0, 0, 'res3']])
+  t.deepEqual(dex[_027.id].powerUps, ['res3', 'str2'])
+
+  // push pop shift splice actions
+  store.dispatch('dex/set/pokemonById.*.powerUps.push', [_027.id, 'def1'])
+  t.deepEqual(dex[_027.id].powerUps, ['res3', 'str2', 'def1'])
+  store.dispatch('dex/set/pokemonById.*.powerUps.pop', _027.id)
+  t.deepEqual(dex[_027.id].powerUps, ['res3', 'str2'])
+  store.dispatch('dex/set/pokemonById.*.powerUps.shift', _027.id)
+  t.deepEqual(dex[_027.id].powerUps, ['str2'])
+  store.dispatch('dex/set/pokemonById.*.powerUps.splice', [_027.id, [0, 0, 'def2']])
+  t.deepEqual(dex[_027.id].powerUps, ['def2', 'str2'])
 })
 
 test('errors', t => {
@@ -284,5 +307,4 @@ test('Set and delete wildcard props directly on state', t => {
   t.is(fL['001'].tags.guild, true)
   t.is(fL['004'].tags.guild, true)
   t.is(fL['007'].tags.guild, true)
-
 })
