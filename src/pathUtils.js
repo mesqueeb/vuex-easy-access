@@ -77,12 +77,14 @@ export function checkIdWildcardRatio (ids, path, conf) {
  * @returns {string} The path with '*' replaced by IDs
  */
 export function fillinPathWildcards (ids, path, state, conf) {
+  // Ignore pool check if '*' comes last
+  const ignorePoolCheckOn = (path.endsWith('*')) ? ids[ids.length - 1] : null
   ids.forEach((_id, _index, _array) => {
     const idIndex = path.indexOf('*')
     const pathUntilPool = path.substring(0, idIndex)
     // check for errors when both state and conf are passed
     // pathUntilPool can be '' in case the path starts with '*'
-    if (state && conf) {
+    if (ignorePoolCheckOn !== _id && state && conf) {
       const pool = (pathUntilPool)
         ? getDeepRef(state, pathUntilPool)
         : state
@@ -111,7 +113,7 @@ export function createObjectFromPath (path, payload, state, conf) {
     // only work with arrays
     if (!isArray(payload)) payload = [payload]
     const lastPayloadPiece = payload.pop()
-    const ids = payload
+    let ids = payload
     // CASE: 'dex/pokemonById.*.tags'
     if (!path.endsWith('*')) {
       newValue = lastPayloadPiece
@@ -123,6 +125,11 @@ export function createObjectFromPath (path, payload, state, conf) {
       newValue = getValueFromPayloadPiece(lastPayloadPiece)
       if (isObject(newValue)) newValue.id = lastId
     }
+    ids = ids.map(_id => {
+      _id = _id.replace('.', '_____dot_____')
+      _id = _id.replace('/', '_____slash_____')
+      return _id
+    })
     if (!checkIdWildcardRatio(ids, path, conf)) return
     const pathWithIds = fillinPathWildcards(ids, path, state, conf)
     path = pathWithIds
@@ -131,6 +138,8 @@ export function createObjectFromPath (path, payload, state, conf) {
   const result = {}
   path.match(/[^\/^\.]+/g)
     .reduce((carry, _prop, index, array) => {
+      _prop = _prop.replace('_____dot_____', '.')
+      _prop = _prop.replace('_____slash_____', '/')
       const container = (index === array.length - 1)
         ? newValue
         : {}

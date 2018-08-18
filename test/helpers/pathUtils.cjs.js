@@ -132,12 +132,14 @@ function checkIdWildcardRatio(ids, path, conf) {
  * @returns {string} The path with '*' replaced by IDs
  */
 function fillinPathWildcards(ids, path, state, conf) {
+  // Ignore pool check if '*' comes last
+  var ignorePoolCheckOn = path.endsWith('*') ? ids[ids.length - 1] : null;
   ids.forEach(function (_id, _index, _array) {
     var idIndex = path.indexOf('*');
     var pathUntilPool = path.substring(0, idIndex);
     // check for errors when both state and conf are passed
     // pathUntilPool can be '' in case the path starts with '*'
-    if (state && conf) {
+    if (ignorePoolCheckOn !== _id && state && conf) {
       var pool = pathUntilPool ? getDeepRef(state, pathUntilPool) : state;
       if (pool[_id] === undefined) return error('mutationSetterPropPathWildcardMissingItemDoesntExist', conf, pathUntilPool, _id);
     }
@@ -175,6 +177,11 @@ function createObjectFromPath(path, payload, state, conf) {
       newValue = getValueFromPayloadPiece(lastPayloadPiece);
       if (isWhat.isObject(newValue)) newValue.id = lastId;
     }
+    ids = ids.map(function (_id) {
+      _id = _id.replace('.', '_____dot_____');
+      _id = _id.replace('/', '_____slash_____');
+      return _id;
+    });
     if (!checkIdWildcardRatio(ids, path, conf)) return;
     var pathWithIds = fillinPathWildcards(ids, path, state, conf);
     path = pathWithIds;
@@ -182,6 +189,8 @@ function createObjectFromPath(path, payload, state, conf) {
   // important to set the result here and not return the reduce directly!
   var result = {};
   path.match(/[^\/^\.]+/g).reduce(function (carry, _prop, index, array) {
+    _prop = _prop.replace('_____dot_____', '.');
+    _prop = _prop.replace('_____slash_____', '/');
     var container = index === array.length - 1 ? newValue : {};
     carry[_prop] = container;
     return container;

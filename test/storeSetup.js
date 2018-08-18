@@ -27,6 +27,10 @@ test('makeMutations', t => {
     'dex/pokemonById',
     'dex/pokemonById.*',
     'dex/-pokemonById.*',
+    'dex/pokemonById.*.powerUps.push',
+    'dex/pokemonById.*.powerUps.splice',
+    'dex/pokemonById.*.powerUps.pop',
+    'dex/pokemonById.*.powerUps.shift',
   ]
   expectedMutations.forEach(m => t.truthy(mutations[m]))
 })
@@ -57,6 +61,10 @@ test('makeActions', t => {
     'dex/set/pokemonById',
     'dex/set/pokemonById.*',
     'dex/delete/pokemonById.*',
+    'dex/set/pokemonById.*.powerUps.push',
+    'dex/set/pokemonById.*.powerUps.splice',
+    'dex/set/pokemonById.*.powerUps.pop',
+    'dex/set/pokemonById.*.powerUps.shift',
   ]
   expectedActions.forEach(a => t.truthy(actions[a]))
 })

@@ -138,12 +138,14 @@ function checkIdWildcardRatio(ids, path, conf) {
  * @returns {string} The path with '*' replaced by IDs
  */
 function fillinPathWildcards(ids, path, state, conf) {
+  // Ignore pool check if '*' comes last
+  var ignorePoolCheckOn = path.endsWith('*') ? ids[ids.length - 1] : null;
   ids.forEach(function (_id, _index, _array) {
     var idIndex = path.indexOf('*');
     var pathUntilPool = path.substring(0, idIndex);
     // check for errors when both state and conf are passed
     // pathUntilPool can be '' in case the path starts with '*'
-    if (state && conf) {
+    if (ignorePoolCheckOn !== _id && state && conf) {
       var pool = pathUntilPool ? getDeepRef(state, pathUntilPool) : state;
       if (pool[_id] === undefined) return error('mutationSetterPropPathWildcardMissingItemDoesntExist', conf, pathUntilPool, _id);
     }
@@ -181,6 +183,11 @@ function createObjectFromPath(path, payload, state, conf) {
       newValue = getValueFromPayloadPiece(lastPayloadPiece);
       if (isWhat.isObject(newValue)) newValue.id = lastId;
     }
+    ids = ids.map(function (_id) {
+      _id = _id.replace('.', '_____dot_____');
+      _id = _id.replace('/', '_____slash_____');
+      return _id;
+    });
     if (!checkIdWildcardRatio(ids, path, conf)) return;
     var pathWithIds = fillinPathWildcards(ids, path, state, conf);
     path = pathWithIds;
@@ -188,6 +195,8 @@ function createObjectFromPath(path, payload, state, conf) {
   // important to set the result here and not return the reduce directly!
   var result = {};
   path.match(/[^\/^\.]+/g).reduce(function (carry, _prop, index, array) {
+    _prop = _prop.replace('_____dot_____', '.');
+    _prop = _prop.replace('_____slash_____', '/');
     var container = index === array.length - 1 ? newValue : {};
     carry[_prop] = container;
     return container;
@@ -453,26 +462,53 @@ function makeMutationsForAllProps(propParent, path) {
     // =================================================>
     //   ARRAY MUTATIONS
     // =================================================>
+    // execute mutation
+    function executeArrayMutation(state, payload, action) {
+      var newValue = void 0,
+          pathWithIds = void 0;
+      if (!propPath.includes('*')) {
+        newValue = payload;
+        pathWithIds = propPath;
+      } else {
+        if (!isWhat.isArray(payload) && action !== 'splice') payload = [payload];
+        if (action !== 'pop' && action !== 'shift') newValue = payload.pop();
+        var ids = getIdsFromPayload(payload, conf, propPath);
+        if (!checkIdWildcardRatio(ids, propPath, conf)) return;
+        pathWithIds = fillinPathWildcards(ids, propPath, state, conf);
+      }
+      if (action === 'push') {
+        return pushDeepValue(state, pathWithIds, newValue);
+      }
+      if (action === 'pop') {
+        return popDeepValue(state, pathWithIds);
+      }
+      if (action === 'shift') {
+        return shiftDeepValue(state, pathWithIds);
+      }
+      if (action === 'splice') {
+        return spliceDeepValue.apply(undefined, [state, pathWithIds].concat(toConsumableArray(newValue)));
+      }
+    }
     if (isWhat.isArray(propValue)) {
       // PUSH mutation name
       var push = conf.pattern === 'traditional' ? 'PUSH_' + propPath.toUpperCase() : propPath + '.push';
-      mutations[push] = function (state, value) {
-        return pushDeepValue(state, propPath, value);
+      mutations[push] = function (state, payload) {
+        return executeArrayMutation(state, payload, 'push');
       };
       // POP mutation name
       var pop = conf.pattern === 'traditional' ? 'POP_' + propPath.toUpperCase() : propPath + '.pop';
-      mutations[pop] = function (state) {
-        return popDeepValue(state, propPath);
+      mutations[pop] = function (state, payload) {
+        return executeArrayMutation(state, payload, 'pop');
       };
       // SHIFT mutation name
       var shift = conf.pattern === 'traditional' ? 'SHIFT_' + propPath.toUpperCase() : propPath + '.shift';
-      mutations[shift] = function (state) {
-        return shiftDeepValue(state, propPath);
+      mutations[shift] = function (state, payload) {
+        return executeArrayMutation(state, payload, 'shift');
       };
       // SPLICE mutation name
       var splice = conf.pattern === 'traditional' ? 'SPLICE_' + propPath.toUpperCase() : propPath + '.splice';
-      mutations[splice] = function (state, array) {
-        return spliceDeepValue.apply(undefined, [state, propPath].concat(toConsumableArray(array)));
+      mutations[splice] = function (state, payload) {
+        return executeArrayMutation(state, payload, 'splice');
       };
     }
     // =================================================>
@@ -676,46 +712,28 @@ function createSetterModule(targetState) {
       // Get the value of the prop
       var propValue = _targetState[stateProp];
       // =================================================>
-      //   WILDCARDS SETTERS
-      // =================================================>
-      // let's create a wildcard setter
-      if (stateProp === '*') {
-        carry[propPath] = function (context, payload) {
-          return defaultSetter(fullPath, payload, store, conf);
-        };
-      }
-      if (isWhat.isObject(propValue) && !Object.keys(propValue).length) {
-        carry[propPath + '.*'] = function (context, payload) {
-          return defaultSetter(fullPath + '.*', payload, store, conf);
-        };
-      }
-      // =================================================>
       //   ARRAY SETTERS
       // =================================================>
       if (isWhat.isArray(propValue)) {
-        carry[propPath + '.push'] = function (_ref, value) {
-          var rootState = _ref.rootState;
-
-          var ref = getDeepRef(rootState, moduleNS);
-          return pushDeepValue(ref, propPath, value);
+        carry[propPath + '.push'] = function (context, payload) {
+          return defaultSetter(fullPath + '.push', payload, store, conf);
         };
-        carry[propPath + '.pop'] = function (_ref2) {
-          var rootState = _ref2.rootState;
-
-          var ref = getDeepRef(rootState, moduleNS);
-          return popDeepValue(ref, propPath);
+        carry[propPath + '.pop'] = function (context, payload) {
+          return defaultSetter(fullPath + '.pop', payload, store, conf);
         };
-        carry[propPath + '.shift'] = function (_ref3) {
-          var rootState = _ref3.rootState;
-
-          var ref = getDeepRef(rootState, moduleNS);
-          return shiftDeepValue(ref, propPath);
+        carry[propPath + '.shift'] = function (context, payload) {
+          return defaultSetter(fullPath + '.shift', payload, store, conf);
         };
-        carry[propPath + '.splice'] = function (_ref4, array) {
-          var rootState = _ref4.rootState;
-
-          var ref = getDeepRef(rootState, moduleNS);
-          return spliceDeepValue.apply(undefined, [ref, propPath].concat(toConsumableArray(array)));
+        carry[propPath + '.splice'] = function (context, payload) {
+          return defaultSetter(fullPath + '.splice', payload, store, conf);
+        };
+      }
+      // =================================================>
+      //   WILDCARDS SETTER
+      // =================================================>
+      if (isWhat.isObject(propValue) && !Object.keys(propValue).length) {
+        carry[propPath + '.*'] = function (context, payload) {
+          return defaultSetter(fullPath + '.*', payload, store, conf);
         };
       }
       // =================================================>
@@ -908,7 +926,8 @@ var state = {
       name: '',
       tags: {
         '*': true
-      }
+      },
+      powerUps: []
     }
   }
 };

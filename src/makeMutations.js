@@ -111,34 +111,60 @@ function makeMutationsForAllProps (
       // =================================================>
       //   ARRAY MUTATIONS
       // =================================================>
+      // execute mutation
+      function executeArrayMutation (state, payload, action) {
+        let newValue, pathWithIds
+        if (!propPath.includes('*')) {
+          newValue = payload
+          pathWithIds = propPath
+        } else {
+          if (!isArray(payload) && action !== 'splice') payload = [payload]
+          if (action !== 'pop' && action !== 'shift') newValue = payload.pop()
+          const ids = getIdsFromPayload(payload, conf, propPath)
+          if (!checkIdWildcardRatio(ids, propPath, conf)) return
+          pathWithIds = fillinPathWildcards(ids, propPath, state, conf)
+        }
+        if (action === 'push') {
+          return pushDeepValue(state, pathWithIds, newValue)
+        }
+        if (action === 'pop') {
+          return popDeepValue(state, pathWithIds)
+        }
+        if (action === 'shift') {
+          return shiftDeepValue(state, pathWithIds)
+        }
+        if (action === 'splice') {
+          return spliceDeepValue(state, pathWithIds, ...newValue)
+        }
+      }
       if (isArray(propValue)) {
         // PUSH mutation name
         const push = (conf.pattern === 'traditional')
           ? 'PUSH_' + propPath.toUpperCase()
           : propPath + '.push'
-        mutations[push] = (state, value) => {
-          return pushDeepValue(state, propPath, value)
+        mutations[push] = (state, payload) => {
+          return executeArrayMutation(state, payload, 'push')
         }
         // POP mutation name
         const pop = (conf.pattern === 'traditional')
           ? 'POP_' + propPath.toUpperCase()
           : propPath + '.pop'
-        mutations[pop] = (state) => {
-          return popDeepValue(state, propPath)
+        mutations[pop] = (state, payload) => {
+          return executeArrayMutation(state, payload, 'pop')
         }
         // SHIFT mutation name
         const shift = (conf.pattern === 'traditional')
           ? 'SHIFT_' + propPath.toUpperCase()
           : propPath + '.shift'
-        mutations[shift] = (state) => {
-          return shiftDeepValue(state, propPath)
+        mutations[shift] = (state, payload) => {
+          return executeArrayMutation(state, payload, 'shift')
         }
         // SPLICE mutation name
         const splice = (conf.pattern === 'traditional')
           ? 'SPLICE_' + propPath.toUpperCase()
           : propPath + '.splice'
-        mutations[splice] = (state, array) => {
-          return spliceDeepValue(state, propPath, ...array)
+        mutations[splice] = (state, payload) => {
+          return executeArrayMutation(state, payload, 'splice')
         }
       }
       // =================================================>
