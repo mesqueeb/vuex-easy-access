@@ -203,4 +203,8 @@ test('spliceDeepValue', t => {
   res = spliceDeepValue(target, path, 2, 2, 'squirt')
   t.deepEqual(target.dex.pokemonById['001'].tags, ['0', '1', 'squirt'])
   t.deepEqual(res, ['2', '3'])
+  target = {dex: {pokemonById: {'001': {tags: ['0', '1', '2', '3']}}}}
+  res = spliceDeepValue(target, path, 1, 1)
+  t.deepEqual(target.dex.pokemonById['001'].tags, ['0', '2', '3'])
+  t.deepEqual(res, ['1'])
 })

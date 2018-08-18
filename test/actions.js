@@ -244,6 +244,14 @@ test('double id setters', t => {
   t.deepEqual(dex[_027.id].powerUps, ['str2'])
   store.dispatch('dex/set/pokemonById.*.powerUps.splice', [_027.id, [0, 0, 'def2']])
   t.deepEqual(dex[_027.id].powerUps, ['def2', 'str2'])
+  store.dispatch('dex/set/pokemonById.*.powerUps.splice', [_027.id, [1, 0, 'def3']])
+  t.deepEqual(dex[_027.id].powerUps, ['def2', 'def3', 'str2'])
+  store.dispatch('dex/set/pokemonById.*.powerUps.splice', [_027.id, [1, 1]])
+  t.deepEqual(dex[_027.id].powerUps, ['def2', 'str2'])
+  store.dispatch('dex/set/pokemonById.*.powerUps.splice', [_027.id, [0, 1]])
+  t.deepEqual(dex[_027.id].powerUps, ['str2'])
+  store.dispatch('dex/set/pokemonById.*.powerUps.splice', [_027.id, [0, 1]])
+  t.deepEqual(dex[_027.id].powerUps, [])
 })
 
 test('errors', t => {
