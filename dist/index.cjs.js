@@ -454,10 +454,6 @@ function makeMutationsForAllProps(propParent, path) {
       mutations[name] = setWildcardProp;
       mutations[deleteName] = deleteProp;
     }
-    if (isWhat.isObject(propValue) && !Object.keys(propValue).length) {
-      mutations[name + '.*'] = setWildcardProp;
-      mutations[deleteName + '.*'] = deleteProp;
-    }
     // =================================================>
     //   ARRAY MUTATIONS
     // =================================================>

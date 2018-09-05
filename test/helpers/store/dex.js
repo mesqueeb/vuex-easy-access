@@ -11,7 +11,8 @@ const state = {
       },
       powerUps: []
     }
-  }
+  },
+  emptyObject: {}
 }
 
 export const dex = {
