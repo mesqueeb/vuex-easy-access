@@ -73,18 +73,19 @@ Let's add Bulbasaur to our PokéDex:
 
 - Bulbasaur is to be added at `pokeDex['001']`
 - Bulbasaur will have `seen: false` as **default prop**!
+- Below is the method to insert Bulbasaur:
 
 _ | in Vue components
 --|--
-Insert / overwrite | Object with a `{[id]: value}` pair:<br>`$store.set('pokeDex.*', {'001': {name: 'Bulbasaur'}})`<br>Or object that has an `id` field:<br>`$store.set('pokeDex.*', {id: '001', name: 'Bulbasaur'})`
-Overwrite single values | `seen` of Pokemon with id `'001'` will be set to `true`:<br>`store.set('pokeDex.*.seen', ['001', true])`
+Insert / overwrite<br>wildcard object | 1) Set an object with a `{[id]: value}` pair to `'*'`:<br>`$store.set('pokeDex.*', {'001': {name: 'Bulbasaur'}})`<br><br>2) **Or** set an object with an `id` field to `'*'`:<br>`$store.set('pokeDex.*', {id: '001', name: 'Bulbasaur'})`
+Overwrite single values | Arrays for wildcards in mid path:<br>`seen` of Pokemon with id `'001'` will be set to `true`:<br>`store.set('pokeDex.*.seen', ['001', true])`
 Delete with id | Only pass `id`:<br>`$store.delete('pokeDex.*', '001')`
 Multiple wildcards | Must pass array, where first value is first id:<br>`$store.set('pokeDex.*.tags.*', ['001', {fire: true}])`<br>`$store.delete('pokeDex.*.tags.*', ['001', 'fire'])`
 
 
 _ | in the Vuex store:<br><small>Almost same as above</small>
 --|--
-Vue component<br><br><br>Vuex store | `$store.set('pokeDex.*', newPokemon)`<br>`$store.delete('pokeDex.*', '001')`<br>becomes:<br>`dispatch('set/pokeDex.*', newPokemon)`<br>`dispatch('delete/pokeDex.*', '001')`
+Vue component<br><br><br>Vuex store<br><br><br>Underlying mutations | `$store.set('pokeDex.*', newPokemon)`<br>`$store.delete('pokeDex.*', '001')`<br>becomes:<br>`dispatch('set/pokeDex.*', newPokemon)`<br>`dispatch('delete/pokeDex.*', '001')`<br>which uses:<br>`commit('pokeDex.*', newPokemon)`<br>`commit('-pokeDex.*', '001')`
 
 ## Table of contents
 
@@ -279,10 +280,10 @@ I also got you covered when you need to set a property with an ID. Let's say the
 ```js
 // Module: `pokeDex/`
 state: {
-  byId: {} // empty object indicates this will receive wildcard paths '*'
-  // OR
   byId: {
-    '*': {captured: true} // '*' does the same! And in this case you can assign default values in this object!
+    '*': {captured: true}
+    // '*' indicates this will receive wildcard paths '*'.
+    // And anything written as value of the '*' prop will become the default values of objects inserted through wildcard paths.
   }
 }
 ```
@@ -318,6 +319,7 @@ Say that we want to make the first letter of our primary Pokémon always show up
 
 ```js
 // Module: `character/`
+state: { party: { primary: 'mewtwo' } },
 getters: {
   // create a getter with the prop name you want to overwrite:
   'party.primary': (state) => {
@@ -374,9 +376,9 @@ You can add compatibility for the amazing sister plugin: [Vuex Easy Firestore](h
 const easyAccess = createEasyAccess({vuexEasyFirestore: true})
 ```
 
-This will make sure that whenever you set a value in a module that's auto-synced to firestore through Vuex Easy Firestore, it will trigger the sync properly. Please see the [Vuex Easy Firestore documentation](https://github.com/mesqueeb/VuexEasyFirestore) for more information on how to set up auto-sync with firestore.
+This will make sure that whenever you set a value in a module where you enabled 'Vuex Easy Firestore', it will **auto-sync to your firestore**! Please see the [Vuex Easy Firestore documentation](https://github.com/mesqueeb/VuexEasyFirestore) for more information on how to set up auto-sync with firestore.
 
-Vuex Easy Firestore comes with a special setter for adding items to your module ánd database. However, it is important to pass the 'vuex-easy-firestore' plugin first, and the 'easyAccess' second for it to work properly.
+Please note when using both plugins, it is important to pass the 'vuex-easy-firestore' plugin first, and the 'easyAccess' second for it to work properly.
 
 ### Change get() set() function names
 

@@ -329,6 +329,7 @@ function spliceDeepValue(target, path) {
 
   var deepRef = getDeepRef(target, path);
   if (!isWhat.isArray(deepRef)) return;
+  if (value === undefined) return deepRef.splice(index, deleteCount);
   return deepRef.splice(index, deleteCount, value);
 }
 
@@ -452,10 +453,6 @@ function makeMutationsForAllProps(propParent, path) {
     if (prop === '*') {
       mutations[name] = setWildcardProp;
       mutations[deleteName] = deleteProp;
-    }
-    if (isWhat.isObject(propValue) && !Object.keys(propValue).length) {
-      mutations[name + '.*'] = setWildcardProp;
-      mutations[deleteName + '.*'] = deleteProp;
     }
     // =================================================>
     //   ARRAY MUTATIONS

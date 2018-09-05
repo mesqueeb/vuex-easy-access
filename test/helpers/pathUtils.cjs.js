@@ -325,6 +325,7 @@ function spliceDeepValue(target, path) {
 
   var deepRef = getDeepRef(target, path);
   if (!isWhat.isArray(deepRef)) return;
+  if (value === undefined) return deepRef.splice(index, deleteCount);
   return deepRef.splice(index, deleteCount, value);
 }
 

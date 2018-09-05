@@ -269,5 +269,6 @@ export function shiftDeepValue (target, path) {
 export function spliceDeepValue (target, path, index = 0, deleteCount = 0, value) {
   const deepRef = getDeepRef(target, path)
   if (!isArray(deepRef)) return
+  if (value === undefined) return deepRef.splice(index, deleteCount)
   return deepRef.splice(index, deleteCount, value)
 }
