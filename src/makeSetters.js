@@ -1,5 +1,5 @@
 import { fillinPathWildcards, createObjectFromPath, getKeysFromPath, getDeepRef, pushDeepValue, popDeepValue, shiftDeepValue, spliceDeepValue } from './pathUtils'
-import { isObject, isString, isArray } from 'is-what'
+import { isObject, isArray } from 'is-what'
 import defaultConf from './defaultConfig'
 import error from './errors'
 

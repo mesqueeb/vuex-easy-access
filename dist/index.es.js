@@ -1,6 +1,6 @@
 import { isArray, isString, isObject } from 'is-what';
-import nanomerge from 'nanomerge';
 import Vue from 'vue';
+import merge from 'merge-anything';
 
 var defaultConfig = {
   setter: 'set',
@@ -356,33 +356,6 @@ function spliceDeepValue(target, path) {
   if (!isArray(deepRef)) return;
   if (value === undefined) return deepRef.splice(index, deleteCount);
   return deepRef.splice(index, deleteCount, value);
-}
-
-// const mergeOptions = require('merge-options')
-// import deepmerge from 'deepmerge'
-
-function merge() {
-  // check if all are objects
-  var l = arguments.length;
-
-  for (l; l > 0; l--) {
-    var item = l - 1 < 0 || arguments.length <= l - 1 ? undefined : arguments[l - 1];
-
-    if (!isObject(item)) {
-      console.error('trying to merge a non-object: ', item);
-      return item;
-    }
-  }
-
-  return nanomerge.apply(void 0, arguments); // return deepAssign(...params)
-  // return mergeOptions(...params)
-  // settings for 'deepmerge'
-  // const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
-  // const options = {arrayMerge: overwriteMerge}
-  // if (params.length > 2) {
-  //   return deepmerge.all([...params], options)
-  // }
-  // return deepmerge(...params, options)
 }
 
 /**
