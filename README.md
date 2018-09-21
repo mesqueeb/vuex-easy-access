@@ -3,7 +3,7 @@
 1. Zero boilerplate Vuex → auto generated actions & mutations!
 2. Unified syntax for accessing your store through simple `set()` and `get()`
 
-**[Go to documentation](https://mesqueeb.github.io/vuex-easy-access)　→**
+**[Full documentation](https://mesqueeb.github.io/vuex-easy-access)**
 
 ## Motivation
 
@@ -36,6 +36,8 @@ And the best part is, all state changes go through a mutation under the hood!
 - Shorthand `store.set()` for all the above
 - Streamlined `store.get()` to get state valuess
 
+**[Go to documentation](https://mesqueeb.github.io/vuex-easy-access/)**
+
 ## Short overview
 
 auto-generated<br>Vuex actions | code
@@ -47,13 +49,15 @@ Push/shift/pop/splice values | `dispatch(module/set/someArray.push', newVal)`<br
 **Objects with id wildcard** | eg. ```state: {someObject: {'*': ''}}```
 Set and delete | `dispatch(module/set/someObject.*', {[id]: newVal})`<br>`dispatch(module/delete/someObject.*', id)`
 
-Shorthand | code
+Easy Access shorthand | code
 --|--
 **State props** | eg. ```state: {someProp: {nestedProp: ''}}```
-Set values<br>Set nested values<br><br>Delete values | `store.set('module/someProp', newVal)`<br>`store.set('module/someProp.nestedProp', newVal)`<br>`store.delete('module/someProp')`<br>`store.delete('module/someProp.nestedProp')`
+Set values<br>Set nested values<br><br>Delete values | `set('module/someProp', newVal)`*<br>`set('module/someProp.nestedProp', newVal)`<br>`delete('module/someProp')`<br>`delete('module/someProp.nestedProp')`
 **Array props** | eg. ```state: {someArray: []}```
-Push/shift/pop/splice values | `store.set('module/someArray.push', newVal)`<br>`store.set('module/someArray.shift', newVal)`<br>`store.set('module/someArray.pop', newVal)`<br>`store.set('module/someArray.splice', newVal)`
+Push/shift/pop/splice values | `set('module/someArray.push', newVal)`<br>`set('module/someArray.shift', newVal)`<br>`set('module/someArray.pop', newVal)`<br>`set('module/someArray.splice', newVal)`
 **Objects with id wildcard** | eg. ```state: {someObject: {'*': ''}}```
-Set and delete | `store.set('module/someObject.*', {[id]: newVal})`<br>`store.delete('module/someObject.*', id)`
+Set and delete | `set('module/someObject.*', {[id]: newVal})`<br>`delete('module/someObject.*', id)`
 
-**[Go to documentation](https://mesqueeb.github.io/vuex-easy-access)　→**
+\* `set()` and `delete()` are attached to the Vuex `store` object: `store.set()`
+
+**[Installation and setup](https://mesqueeb.github.io/vuex-easy-access/setup.html)　→**
