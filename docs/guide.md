@@ -20,6 +20,8 @@ Now we need a page with an option to swap the primary Pokémon:
 
 Nothing required inside your Vue component methods! Very clean! 🏄🏼‍
 
+With Vuex Easy Access you **only need to set your state** and you can use these handy setters automatically! Below we see how you can set up the state and what kind of powers that will give you:
+
 ## Regular state props
 
 ```js
@@ -39,7 +41,9 @@ dispatch('player/set/party', newParty)
 dispatch('player/set/party.primary', newPokemon)
 ```
 
-## Array state props []
+## Array props []
+
+If a state prop is an empty array `[]` you will have super powers 💪🏻! Push, pop, shift, splice just like regular JavaScript!
 
 ```js
 // module: `player/`
@@ -60,9 +64,9 @@ dispatch('player/set/pokeBox.shift')
 dispatch('player/set/pokeBox.splice', [0, 1, newPokemon])
 ```
 
-## Wildcard state props 🃏
+## ID wildcard props 🃏
 
-Just add `'*'` as prop in your state and you will have super powers 💪🏻!
+Just add `'*'` as prop in your state and you will have super powers 💪🏻! Perfect for working with IDs!
 
 ```js
 // module: `player/`

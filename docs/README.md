@@ -36,7 +36,8 @@ And the best part is, all state changes go through a mutation under the hood!
 ## Short overview
 
 ### 1. auto-generated Vuex actions
-_ | state & actions
+
+_ | actions generated from state
 --|--
 **State props** | eg. ```state: {someProp: {nestedProp: ''}}```
 Set values<br>Set nested values<br><br>Delete values | `dispatch('module/set/someProp', newVal)`<br>`dispatch('module/set/someProp.nestedProp', newVal)`<br>`dispatch('module/delete/someProp')`<br>`dispatch('module/delete/someProp.nestedProp')`
@@ -45,7 +46,9 @@ Push/shift/pop/splice values | `dispatch('module/set/someArray.push', newVal)`<b
 **Objects with id wildcard** | eg. ```state: {someObject: {'*': ''}}```
 Set and delete | `dispatch('module/set/someObject.*', {[id]: newVal})`<br>`dispatch('module/delete/someObject.*', id)`
 
-Easy Access shorthand | code
+### 2. Easy Access shorthand
+
+_ | available setters
 --|--
 **State props** | eg. ```state: {someProp: {nestedProp: ''}}```
 Set values<br>Set nested values<br><br>Delete values | `set('module/someProp', newVal)`*<br>`set('module/someProp.nestedProp', newVal)`<br>`delete('module/someProp')`<br>`delete('module/someProp.nestedProp')`
