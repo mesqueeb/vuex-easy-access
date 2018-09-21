@@ -8,7 +8,11 @@
     "lint": "eslint --ext .js,.vue src",
     "test": "ava",
     "build": "rollup -c build/rollup.js && npm run test",
-    "watch": "rollup -c build/rollup.js --watch"
+    "watch": "rollup -c build/rollup.js --watch",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs",
+    "docs:deploy": "./docs/.vuepress/deploy.sh",
+    "publish": "npm publish && npm run docs:deploy"
   },
   "repository": {
     "type": "git",
@@ -48,12 +52,13 @@
     "rollup-plugin-commonjs": "^9.1.6",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-terser": "^2.0.2",
+    "vuepress": "^0.14.4",
     "vuex": "^3.0.1",
     "vuex-easy-firestore": "^1.2.1"
   },
   "dependencies": {
     "is-what": "^1.0.4",
     "merge-anything": "^1.0.0",
-    "vue": "^2.5.16"
+    "vue": "^2.5.17"
   }
 }
