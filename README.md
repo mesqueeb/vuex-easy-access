@@ -3,7 +3,7 @@
 1. Zero boilerplate Vuex → auto generated actions & mutations!
 2. Unified syntax for accessing your store through simple `set()` and `get()`
 
-#### [Go to documentation](https://mesqueeb.github.io/vuex-easy-access)　→
+**[Go to documentation](https://mesqueeb.github.io/vuex-easy-access)　→**
 
 ## Motivation
 
@@ -56,4 +56,4 @@ Push/shift/pop/splice values | `store.set('module/someArray.push', newVal)`<br>`
 **Objects with id wildcard** | eg. ```state: {someObject: {'*': ''}}```
 Set and delete | `store.set('module/someObject.*', {[id]: newVal})`<br>`store.delete('module/someObject.*', id)`
 
-#### [Go to documentation](https://mesqueeb.github.io/vuex-easy-access)　→
+**[Go to documentation](https://mesqueeb.github.io/vuex-easy-access)　→**
