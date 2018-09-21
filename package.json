@@ -1,6 +1,6 @@
 {
   "name": "vuex-easy-access",
-  "version": "2.5.2",
+  "version": "3.0.0",
   "description": "Unified syntax with simple set() and get() store access + auto generate mutations",
   "main": "dist/index.cjs.js",
   "module": "dist/index.es.js",
@@ -8,11 +8,15 @@
     "lint": "eslint --ext .js,.vue src",
     "test": "ava",
     "build": "rollup -c build/rollup.js && npm run test",
-    "watch": "rollup -c build/rollup.js --watch"
+    "watch": "rollup -c build/rollup.js --watch",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs",
+    "docs:deploy": "./docs/.vuepress/deploy.sh",
+    "publish": "npm publish && npm run docs:deploy"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mesqueeb/VuexEasyAccess.git"
+    "url": "git+https://github.com/mesqueeb/vuex-easy-access.git"
   },
   "keywords": [
     "vuex",
@@ -24,16 +28,16 @@
   "author": "Luca Ban - Mesqueeb",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mesqueeb/VuexEasyAccess/issues"
+    "url": "https://github.com/mesqueeb/vuex-easy-access/issues"
   },
-  "homepage": "https://github.com/mesqueeb/VuexEasyAccess#readme",
+  "homepage": "https://github.com/mesqueeb/vuex-easy-access#readme",
   "devDependencies": {
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-external-helpers": "^7.0.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
     "ava": "^0.25.0",
-    "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.6",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
     "eslint": "^5.1.0",
     "eslint-config-standard": "^11.0.0",
     "eslint-friendly-formatter": "^4.0.1",
@@ -43,16 +47,18 @@
     "eslint-plugin-promise": "^3.8.0",
     "eslint-plugin-standard": "^3.1.0",
     "eslint-plugin-vue": "^4.7.0",
-    "rollup": "^0.60.7",
-    "rollup-plugin-babel": "^3.0.4",
-    "rollup-plugin-commonjs": "^9.1.3",
-    "rollup-plugin-terser": "^1.0.1",
+    "rollup": "^0.65.2",
+    "rollup-plugin-babel": "^4.0.3",
+    "rollup-plugin-commonjs": "^9.1.6",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-terser": "^2.0.2",
+    "vuepress": "^0.14.4",
     "vuex": "^3.0.1",
     "vuex-easy-firestore": "^1.2.1"
   },
   "dependencies": {
     "is-what": "^1.0.4",
-    "nanomerge": "^0.3.0-0",
-    "vue": "^2.5.16"
+    "merge-anything": "^1.0.0",
+    "vue": "^2.5.17"
   }
 }

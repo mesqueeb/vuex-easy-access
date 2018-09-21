@@ -3,8 +3,6 @@
 1. Zero boilerplate Vuex → auto generated actions & mutations!
 2. Unified syntax for accessing your store through simple `set()` and `get()`
 
-**[Full documentation](https://mesqueeb.github.io/vuex-easy-access)**
-
 ## Motivation
 
 [Vuex](https://vuex.vuejs.org/) is great for state management in a VueJS app, however **it requires a lot of boilerplating** setting up your store and all actions and mutations.
@@ -14,7 +12,6 @@
 The philosophy of Vuex is to do everything through mutations that will record a history of the changes you make to the store. This makes it possible to easily track changes when things go wrong as your app grows.
 
 #### The Vuex Easy Access philosophy
-
 Instead of having to write all actions and mutations for each change you make to the store, wouldn't it be great if an action and mutation is generated for you from the start? That's exactly what Vuex Easy Access does!
 
 > Vuex Easy Access automatically generates actions and mutations for each state property!
@@ -35,8 +32,6 @@ And the best part is, all state changes go through a mutation under the hood!
   - **Objects:** use ID wildcards
 - Shorthand `store.set()` for all the above
 - Streamlined `store.get()` to get state valuess
-
-**[Go to documentation](https://mesqueeb.github.io/vuex-easy-access/)**
 
 ## Short overview
 
@@ -63,5 +58,3 @@ Push/shift/pop/splice values | `set('module/someArray.push', newVal)`<br>`set('m
 Set and delete | `set('module/someObject.*', {[id]: newVal})`<br>`delete('module/someObject.*', id)`
 
 \* `set()` and `delete()` are attached to the Vuex `store` object: `store.set()`
-
-**[Installation and setup](https://mesqueeb.github.io/vuex-easy-access/setup.html)　→**

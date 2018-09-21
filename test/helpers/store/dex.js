@@ -12,7 +12,8 @@ const state = {
       powerUps: []
     }
   },
-  emptyObject: {}
+  emptyObject: {},
+  propToBeDeleted: true
 }
 
 export const dex = {

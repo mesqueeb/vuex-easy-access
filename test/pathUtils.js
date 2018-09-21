@@ -138,10 +138,16 @@ test('getDeepRef', t => {
   path = 'dex/pokemonById.001.tags.water'
   res = getDeepRef(target, path)
   t.is(res, target.dex.pokemonById['001'].tags.water)
+  t.is(res, target.dex.pokemonById['001'].tags.water)
   path = 'dex/pokemonById.001.tags'
   res = getDeepRef(target, path)
   t.is(res, target.dex.pokemonById['001'].tags)
   t.deepEqual(res, {grass: true, water: false})
+})
+test('getDeepRef returns target on empty string', t => {
+  let res
+  res = getDeepRef({theState: true}, '')
+  t.deepEqual(res, {theState: true})
 })
 test('getDeepValue', t => {
   let target, path, res
