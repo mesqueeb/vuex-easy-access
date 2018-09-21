@@ -26,7 +26,7 @@ function makeMutationsForAllProps (
   return Object.keys(propParent)
     .reduce((mutations, prop) => {
       // Get the path info up until this point
-      const propPath = (!path)
+      const PROP_SUBPROP = (!path)
         ? prop
         : path + '.' + prop
       // Avoid making setters for private props
@@ -36,8 +36,8 @@ function makeMutationsForAllProps (
         const ignPropNS = (separatePropFromNS) ? separatePropFromNS[1] + '/' : ''
         const ignProp = (separatePropFromNS) ? separatePropFromNS[2] : ignPropFull
         return (
-          !infoNS && ignProp === propPath ||
-          infoNS && infoNS.moduleNamespace == ignPropNS && ignProp === propPath
+          (!infoNS && ignProp === PROP_SUBPROP) ||
+          (infoNS && infoNS.moduleNamespace === ignPropNS && ignProp === PROP_SUBPROP)
         )
       })) {
         return mutations
@@ -45,15 +45,49 @@ function makeMutationsForAllProps (
       // Get the value of the prop
       const propValue = propParent[prop]
       // define possible functions
-      function setProp (state, payload) {
-        return setDeepValue(state, propPath, payload)
+      // eslint-disable-next-line
+      function SET_PROP_SUBPROP (state, payload) {
+        return setDeepValue(state, PROP_SUBPROP, payload)
       }
-      function setWildcardProp (state, payload) {
+      // eslint-disable-next-line
+      function DELETE_PROP_SUBPROP (state) {
+        const propsArray = (PROP_SUBPROP.includes('.'))
+          ? PROP_SUBPROP.split('.')
+          : [PROP_SUBPROP]
+        const lastProp = propsArray.pop()
+        const propsWithoutLast = propsArray.join('.')
+        const ref = getDeepRef(state, propsWithoutLast)
+        return Vue.delete(ref, lastProp)
+      }
+      // eslint-disable-next-line
+      function MUTATE_PROP_x_SUBPROP (state, payload) {
         if (!isArray(payload)) payload = [payload]
-        const ids = getIdsFromPayload(payload, conf, propPath)
-        if (!checkIdWildcardRatio(ids, propPath, conf)) return
+        const newValue = payload.pop()
+        const ids = getIdsFromPayload(payload, conf, PROP_SUBPROP)
+        if (!checkIdWildcardRatio(ids, PROP_SUBPROP, conf)) return
+        const pathWithIds = fillinPathWildcards(ids, PROP_SUBPROP, state, conf)
+        return setDeepValue(state, pathWithIds, newValue)
+      }
+      // eslint-disable-next-line
+      function DELETE_PROP_x_SUBPROP (state, payload) {
+        const propsArray = (PROP_SUBPROP.includes('.'))
+          ? PROP_SUBPROP.split('.')
+          : [PROP_SUBPROP]
+        const lastProp = propsArray.pop()
+        const propsWithoutLast = propsArray.join('.')
+        const ids = payload
+        if (!checkIdWildcardRatio(ids, propsWithoutLast, conf)) return
+        const pathWithIds = fillinPathWildcards(ids, propsWithoutLast, state, conf)
+        const ref = getDeepRef(state, pathWithIds)
+        return Vue.delete(ref, lastProp)
+      }
+      // eslint-disable-next-line
+      function MUTATE_PROP_x (state, payload) {
+        if (!isArray(payload)) payload = [payload]
+        const ids = getIdsFromPayload(payload, conf, PROP_SUBPROP)
+        if (!checkIdWildcardRatio(ids, PROP_SUBPROP, conf)) return
         const lastId = ids.pop()
-        const propPathWithoutLast = propPath.slice(0, -1)
+        const propPathWithoutLast = PROP_SUBPROP.slice(0, -1)
         const pathWithIds = fillinPathWildcards(ids, propPathWithoutLast, state, conf)
         const ref = getDeepRef(state, pathWithIds)
         let newValue = getValueFromPayloadPiece(payload.pop())
@@ -61,48 +95,46 @@ function makeMutationsForAllProps (
         if (isObject(propValue)) newValue = merge(propValue, newValue)
         return Vue.set(ref, lastId, newValue)
       }
-      function setPropWithWildcardPath (state, payload) {
-        if (!isArray(payload)) payload = [payload]
-        const newValue = payload.pop()
-        const ids = getIdsFromPayload(payload, conf, propPath)
-        if (!checkIdWildcardRatio(ids, propPath, conf)) return
-        const pathWithIds = fillinPathWildcards(ids, propPath, state, conf)
-        setDeepValue(state, pathWithIds, newValue)
-      }
-      function deleteProp (state, id) {
-        if (!id) return error('mutationDeleteNoId', conf, propPath)
+      // eslint-disable-next-line
+      function DELETE_PROP_x (state, id) {
+        if (!id) return error('mutationDeleteNoId', conf, PROP_SUBPROP)
         const ids = (!isArray(id)) ? [id] : id
-        if (!checkIdWildcardRatio(ids, propPath, conf)) return
+        if (!checkIdWildcardRatio(ids, PROP_SUBPROP, conf)) return
         const lastId = ids.pop()
-        const pathWithoutWildcard = (propPath.endsWith('*'))
-          ? propPath.slice(0, -1)
-          : propPath
+        const pathWithoutWildcard = (PROP_SUBPROP.endsWith('*'))
+          ? PROP_SUBPROP.slice(0, -1)
+          : PROP_SUBPROP
         const pathWithIds = fillinPathWildcards(ids, pathWithoutWildcard, state, conf)
         const ref = getDeepRef(state, pathWithIds)
         return Vue.delete(ref, lastId)
       }
       // =================================================>
-      //   NORMAL MUTATION
+      //   SET & DELETE MUTATION NAMES
       // =================================================>
-      const name = (conf.pattern === 'traditional')
-        ? 'SET_' + propPath.toUpperCase()
-        : propPath
+      const SET = (conf.pattern === 'traditional')
+        ? 'SET_' + PROP_SUBPROP.toUpperCase()
+        : PROP_SUBPROP
+      const DELETE = (conf.pattern === 'traditional')
+        ? 'DELETE_' + PROP_SUBPROP.toUpperCase()
+        : '-' + PROP_SUBPROP
+      // =================================================>
+      //   PROP MUTATION
+      // =================================================>
       // All good, make the mutation!
-      if (!propPath.includes('*')) {
-        mutations[name] = setProp
+      if (!PROP_SUBPROP.includes('*')) {
+        mutations[SET] = SET_PROP_SUBPROP
+        mutations[DELETE] = DELETE_PROP_SUBPROP
       } else if (prop !== '*') {
         // path includes wildcard, but prop is not a wildcard
-        mutations[name] = setPropWithWildcardPath
+        mutations[SET] = MUTATE_PROP_x_SUBPROP
+        mutations[DELETE] = DELETE_PROP_x_SUBPROP
       }
       // =================================================>
-      //   WILDCARD MUTATIONS
+      //   WILDCARD MUTATION
       // =================================================>
-      const deleteName = (conf.pattern === 'traditional')
-        ? 'DELETE_' + propPath.toUpperCase()
-        : '-' + propPath
       if (prop === '*') {
-        mutations[name] = setWildcardProp
-        mutations[deleteName] = deleteProp
+        mutations[SET] = MUTATE_PROP_x
+        mutations[DELETE] = DELETE_PROP_x
       }
       // =================================================>
       //   ARRAY MUTATIONS
@@ -110,15 +142,15 @@ function makeMutationsForAllProps (
       // execute mutation
       function executeArrayMutation (state, payload, action) {
         let newValue, pathWithIds
-        if (!propPath.includes('*')) {
+        if (!PROP_SUBPROP.includes('*')) {
           newValue = payload
-          pathWithIds = propPath
+          pathWithIds = PROP_SUBPROP
         } else {
           if (!isArray(payload) && action !== 'splice') payload = [payload]
           if (action !== 'pop' && action !== 'shift') newValue = payload.pop()
-          const ids = getIdsFromPayload(payload, conf, propPath)
-          if (!checkIdWildcardRatio(ids, propPath, conf)) return
-          pathWithIds = fillinPathWildcards(ids, propPath, state, conf)
+          const ids = getIdsFromPayload(payload, conf, PROP_SUBPROP)
+          if (!checkIdWildcardRatio(ids, PROP_SUBPROP, conf)) return
+          pathWithIds = fillinPathWildcards(ids, PROP_SUBPROP, state, conf)
         }
         if (action === 'push') {
           return pushDeepValue(state, pathWithIds, newValue)
@@ -136,29 +168,29 @@ function makeMutationsForAllProps (
       if (isArray(propValue)) {
         // PUSH mutation name
         const push = (conf.pattern === 'traditional')
-          ? 'PUSH_' + propPath.toUpperCase()
-          : propPath + '.push'
+          ? 'PUSH_' + PROP_SUBPROP.toUpperCase()
+          : PROP_SUBPROP + '.push'
         mutations[push] = (state, payload) => {
           return executeArrayMutation(state, payload, 'push')
         }
         // POP mutation name
         const pop = (conf.pattern === 'traditional')
-          ? 'POP_' + propPath.toUpperCase()
-          : propPath + '.pop'
+          ? 'POP_' + PROP_SUBPROP.toUpperCase()
+          : PROP_SUBPROP + '.pop'
         mutations[pop] = (state, payload) => {
           return executeArrayMutation(state, payload, 'pop')
         }
         // SHIFT mutation name
         const shift = (conf.pattern === 'traditional')
-          ? 'SHIFT_' + propPath.toUpperCase()
-          : propPath + '.shift'
+          ? 'SHIFT_' + PROP_SUBPROP.toUpperCase()
+          : PROP_SUBPROP + '.shift'
         mutations[shift] = (state, payload) => {
           return executeArrayMutation(state, payload, 'shift')
         }
         // SPLICE mutation name
         const splice = (conf.pattern === 'traditional')
-          ? 'SPLICE_' + propPath.toUpperCase()
-          : propPath + '.splice'
+          ? 'SPLICE_' + PROP_SUBPROP.toUpperCase()
+          : PROP_SUBPROP + '.splice'
         mutations[splice] = (state, payload) => {
           return executeArrayMutation(state, payload, 'splice')
         }
@@ -167,7 +199,7 @@ function makeMutationsForAllProps (
       //   CHILDREN MUTATIONS
       // =================================================>
       if (isObject(propValue) && Object.keys(propValue).length) {
-        const childrenMutations = makeMutationsForAllProps(propValue, propPath, conf)
+        const childrenMutations = makeMutationsForAllProps(propValue, PROP_SUBPROP, conf)
         Object.assign(mutations, childrenMutations)
       }
       return mutations

@@ -21,6 +21,9 @@ function initialState () {
       _secrets: []
     },
     wallet: [],
+    propToBeDeleted_commit: true,
+    propToBeDeleted_dispatch: true,
+    propToBeDeleted_delete: true
   }
 }
 

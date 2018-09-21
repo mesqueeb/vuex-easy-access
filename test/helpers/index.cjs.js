@@ -384,7 +384,7 @@ function makeMutationsForAllProps(propParent, path) {
   if (!isWhat.isObject(propParent)) return {};
   return Object.keys(propParent).reduce(function (mutations, prop) {
     // Get the path info up until this point
-    var propPath = !path ? prop : path + '.' + prop; // Avoid making setters for private props
+    var PROP_SUBPROP = !path ? prop : path + '.' + prop; // Avoid making setters for private props
 
     if (conf.ignorePrivateProps && prop[0] === '_') return mutations;
 
@@ -392,72 +392,101 @@ function makeMutationsForAllProps(propParent, path) {
       var separatePropFromNS = /(.*?)\/([^\/]*?)$/.exec(ignPropFull);
       var ignPropNS = separatePropFromNS ? separatePropFromNS[1] + '/' : '';
       var ignProp = separatePropFromNS ? separatePropFromNS[2] : ignPropFull;
-      return !infoNS && ignProp === propPath || infoNS && infoNS.moduleNamespace == ignPropNS && ignProp === propPath;
+      return !infoNS && ignProp === PROP_SUBPROP || infoNS && infoNS.moduleNamespace === ignPropNS && ignProp === PROP_SUBPROP;
     })) {
       return mutations;
     } // Get the value of the prop
 
 
     var propValue = propParent[prop]; // define possible functions
+    // eslint-disable-next-line
 
-    function setProp(state, payload) {
-      return setDeepValue(state, propPath, payload);
-    }
+    function SET_PROP_SUBPROP(state, payload) {
+      return setDeepValue(state, PROP_SUBPROP, payload);
+    } // eslint-disable-next-line
 
-    function setWildcardProp(state, payload) {
+
+    function DELETE_PROP_SUBPROP(state) {
+      var propsArray = PROP_SUBPROP.includes('.') ? PROP_SUBPROP.split('.') : [PROP_SUBPROP];
+      var lastProp = propsArray.pop();
+      var propsWithoutLast = propsArray.join('.');
+      var ref = getDeepRef(state, propsWithoutLast);
+      return Vue.delete(ref, lastProp);
+    } // eslint-disable-next-line
+
+
+    function MUTATE_PROP_x_SUBPROP(state, payload) {
       if (!isWhat.isArray(payload)) payload = [payload];
-      var ids = getIdsFromPayload(payload, conf, propPath);
-      if (!checkIdWildcardRatio(ids, propPath, conf)) return;
+      var newValue = payload.pop();
+      var ids = getIdsFromPayload(payload, conf, PROP_SUBPROP);
+      if (!checkIdWildcardRatio(ids, PROP_SUBPROP, conf)) return;
+      var pathWithIds = fillinPathWildcards(ids, PROP_SUBPROP, state, conf);
+      return setDeepValue(state, pathWithIds, newValue);
+    } // eslint-disable-next-line
+
+
+    function DELETE_PROP_x_SUBPROP(state, payload) {
+      var propsArray = PROP_SUBPROP.includes('.') ? PROP_SUBPROP.split('.') : [PROP_SUBPROP];
+      var lastProp = propsArray.pop();
+      var propsWithoutLast = propsArray.join('.');
+      var ids = payload;
+      if (!checkIdWildcardRatio(ids, propsWithoutLast, conf)) return;
+      var pathWithIds = fillinPathWildcards(ids, propsWithoutLast, state, conf);
+      var ref = getDeepRef(state, pathWithIds);
+      return Vue.delete(ref, lastProp);
+    } // eslint-disable-next-line
+
+
+    function MUTATE_PROP_x(state, payload) {
+      if (!isWhat.isArray(payload)) payload = [payload];
+      var ids = getIdsFromPayload(payload, conf, PROP_SUBPROP);
+      if (!checkIdWildcardRatio(ids, PROP_SUBPROP, conf)) return;
       var lastId = ids.pop();
-      var propPathWithoutLast = propPath.slice(0, -1);
+      var propPathWithoutLast = PROP_SUBPROP.slice(0, -1);
       var pathWithIds = fillinPathWildcards(ids, propPathWithoutLast, state, conf);
       var ref = getDeepRef(state, pathWithIds);
       var newValue = getValueFromPayloadPiece(payload.pop());
       if (isWhat.isObject(newValue)) newValue.id = lastId;
       if (isWhat.isObject(propValue)) newValue = merge(propValue, newValue);
       return Vue.set(ref, lastId, newValue);
-    }
+    } // eslint-disable-next-line
 
-    function setPropWithWildcardPath(state, payload) {
-      if (!isWhat.isArray(payload)) payload = [payload];
-      var newValue = payload.pop();
-      var ids = getIdsFromPayload(payload, conf, propPath);
-      if (!checkIdWildcardRatio(ids, propPath, conf)) return;
-      var pathWithIds = fillinPathWildcards(ids, propPath, state, conf);
-      setDeepValue(state, pathWithIds, newValue);
-    }
 
-    function deleteProp(state, id) {
-      if (!id) return error('mutationDeleteNoId', conf, propPath);
+    function DELETE_PROP_x(state, id) {
+      if (!id) return error('mutationDeleteNoId', conf, PROP_SUBPROP);
       var ids = !isWhat.isArray(id) ? [id] : id;
-      if (!checkIdWildcardRatio(ids, propPath, conf)) return;
+      if (!checkIdWildcardRatio(ids, PROP_SUBPROP, conf)) return;
       var lastId = ids.pop();
-      var pathWithoutWildcard = propPath.endsWith('*') ? propPath.slice(0, -1) : propPath;
+      var pathWithoutWildcard = PROP_SUBPROP.endsWith('*') ? PROP_SUBPROP.slice(0, -1) : PROP_SUBPROP;
       var pathWithIds = fillinPathWildcards(ids, pathWithoutWildcard, state, conf);
       var ref = getDeepRef(state, pathWithIds);
       return Vue.delete(ref, lastId);
     } // =================================================>
-    //   NORMAL MUTATION
+    //   SET & DELETE MUTATION NAMES
     // =================================================>
 
 
-    var name = conf.pattern === 'traditional' ? 'SET_' + propPath.toUpperCase() : propPath; // All good, make the mutation!
+    var SET = conf.pattern === 'traditional' ? 'SET_' + PROP_SUBPROP.toUpperCase() : PROP_SUBPROP;
+    var DELETE = conf.pattern === 'traditional' ? 'DELETE_' + PROP_SUBPROP.toUpperCase() : '-' + PROP_SUBPROP; // =================================================>
+    //   PROP MUTATION
+    // =================================================>
+    // All good, make the mutation!
 
-    if (!propPath.includes('*')) {
-      mutations[name] = setProp;
+    if (!PROP_SUBPROP.includes('*')) {
+      mutations[SET] = SET_PROP_SUBPROP;
+      mutations[DELETE] = DELETE_PROP_SUBPROP;
     } else if (prop !== '*') {
       // path includes wildcard, but prop is not a wildcard
-      mutations[name] = setPropWithWildcardPath;
+      mutations[SET] = MUTATE_PROP_x_SUBPROP;
+      mutations[DELETE] = DELETE_PROP_x_SUBPROP;
     } // =================================================>
-    //   WILDCARD MUTATIONS
+    //   WILDCARD MUTATION
     // =================================================>
 
 
-    var deleteName = conf.pattern === 'traditional' ? 'DELETE_' + propPath.toUpperCase() : '-' + propPath;
-
     if (prop === '*') {
-      mutations[name] = setWildcardProp;
-      mutations[deleteName] = deleteProp;
+      mutations[SET] = MUTATE_PROP_x;
+      mutations[DELETE] = DELETE_PROP_x;
     } // =================================================>
     //   ARRAY MUTATIONS
     // =================================================>
@@ -467,15 +496,15 @@ function makeMutationsForAllProps(propParent, path) {
     function executeArrayMutation(state, payload, action) {
       var newValue, pathWithIds;
 
-      if (!propPath.includes('*')) {
+      if (!PROP_SUBPROP.includes('*')) {
         newValue = payload;
-        pathWithIds = propPath;
+        pathWithIds = PROP_SUBPROP;
       } else {
         if (!isWhat.isArray(payload) && action !== 'splice') payload = [payload];
         if (action !== 'pop' && action !== 'shift') newValue = payload.pop();
-        var ids = getIdsFromPayload(payload, conf, propPath);
-        if (!checkIdWildcardRatio(ids, propPath, conf)) return;
-        pathWithIds = fillinPathWildcards(ids, propPath, state, conf);
+        var ids = getIdsFromPayload(payload, conf, PROP_SUBPROP);
+        if (!checkIdWildcardRatio(ids, PROP_SUBPROP, conf)) return;
+        pathWithIds = fillinPathWildcards(ids, PROP_SUBPROP, state, conf);
       }
 
       if (action === 'push') {
@@ -497,28 +526,28 @@ function makeMutationsForAllProps(propParent, path) {
 
     if (isWhat.isArray(propValue)) {
       // PUSH mutation name
-      var push = conf.pattern === 'traditional' ? 'PUSH_' + propPath.toUpperCase() : propPath + '.push';
+      var push = conf.pattern === 'traditional' ? 'PUSH_' + PROP_SUBPROP.toUpperCase() : PROP_SUBPROP + '.push';
 
       mutations[push] = function (state, payload) {
         return executeArrayMutation(state, payload, 'push');
       }; // POP mutation name
 
 
-      var pop = conf.pattern === 'traditional' ? 'POP_' + propPath.toUpperCase() : propPath + '.pop';
+      var pop = conf.pattern === 'traditional' ? 'POP_' + PROP_SUBPROP.toUpperCase() : PROP_SUBPROP + '.pop';
 
       mutations[pop] = function (state, payload) {
         return executeArrayMutation(state, payload, 'pop');
       }; // SHIFT mutation name
 
 
-      var shift = conf.pattern === 'traditional' ? 'SHIFT_' + propPath.toUpperCase() : propPath + '.shift';
+      var shift = conf.pattern === 'traditional' ? 'SHIFT_' + PROP_SUBPROP.toUpperCase() : PROP_SUBPROP + '.shift';
 
       mutations[shift] = function (state, payload) {
         return executeArrayMutation(state, payload, 'shift');
       }; // SPLICE mutation name
 
 
-      var splice = conf.pattern === 'traditional' ? 'SPLICE_' + propPath.toUpperCase() : propPath + '.splice';
+      var splice = conf.pattern === 'traditional' ? 'SPLICE_' + PROP_SUBPROP.toUpperCase() : PROP_SUBPROP + '.splice';
 
       mutations[splice] = function (state, payload) {
         return executeArrayMutation(state, payload, 'splice');
@@ -529,7 +558,7 @@ function makeMutationsForAllProps(propParent, path) {
 
 
     if (isWhat.isObject(propValue) && Object.keys(propValue).length) {
-      var childrenMutations = makeMutationsForAllProps(propValue, propPath, conf);
+      var childrenMutations = makeMutationsForAllProps(propValue, PROP_SUBPROP, conf);
       Object.assign(mutations, childrenMutations);
     }
 
@@ -607,15 +636,15 @@ function defaultSetter(path, payload, store) {
 
   var modulePath = pArr.length ? pArr.join('/') + '/' // 'info/user/'
   : '';
-  var actionName = conf.pattern === 'traditional' ? 'set' + props[0].toUpperCase() + props.substring(1) // 'setFavColours.primary'
+  var setProp = conf.pattern === 'traditional' ? 'set' + props[0].toUpperCase() + props.substring(1) // 'setFavColours.primary'
   : props; // 'favColours.primary'
   // Check if an action exists, if it does, trigger that and return early!
 
-  var actionPath = modulePath + actionName;
-  var actionExists = store._actions[actionPath];
+  var moduleSetProp = modulePath + setProp;
+  var actionExists = store._actions[moduleSetProp];
 
   if (actionExists) {
-    return store.dispatch(actionPath, payload);
+    return store.dispatch(moduleSetProp, payload);
   } // [vuex-easy-firestore] check if it's a firestore module
 
 
@@ -635,17 +664,17 @@ function defaultSetter(path, payload, store) {
   } // Trigger the mutation!
 
 
-  var mutationName = conf.pattern === 'traditional' ? 'SET_' + props.toUpperCase() // 'SET_FAVCOLOURS.PRIMARY'
+  var SET_PROP = conf.pattern === 'traditional' ? 'SET_' + props.toUpperCase() // 'SET_FAVCOLOURS.PRIMARY'
   : props; // 'favColours.primary'
 
-  var mutationPath = modulePath + mutationName;
-  var mutationExists = store._mutations[mutationPath];
+  var MODULES_SET_PROP = modulePath + SET_PROP;
+  var mutationExists = store._mutations[MODULES_SET_PROP];
 
   if (mutationExists) {
-    return store.commit(mutationPath, payload);
+    return store.commit(MODULES_SET_PROP, payload);
   }
 
-  return error('missingSetterMutation', conf, mutationPath, props);
+  return error('missingSetterMutation', conf, MODULES_SET_PROP, props);
 }
 /**
  * Creates a delete function in the store to delete any prop from a value
@@ -676,15 +705,15 @@ function defaultDeletor(path, payload, store) {
 
   var modulePath = pArr.length ? pArr.join('/') + '/' // 'user/'
   : '';
-  var actionName = conf.pattern === 'traditional' ? 'delete' + props[0].toUpperCase() + props.substring(1) // 'deleteItems.*.tags.*'
+  var deleteProp = conf.pattern === 'traditional' ? 'delete' + props[0].toUpperCase() + props.substring(1) // 'deleteItems.*.tags.*'
   : '-' + props; // '-items.*.tags.*'
   // Check if an action exists, if it does, trigger that and return early!
 
-  var actionPath = modulePath + actionName;
-  var actionExists = store._actions[actionPath];
+  var moduleDeleteProp = modulePath + deleteProp;
+  var actionExists = store._actions[moduleDeleteProp];
 
   if (actionExists) {
-    return store.dispatch(actionPath, payload);
+    return store.dispatch(moduleDeleteProp, payload);
   } // [vuex-easy-firestore] check if it's a firestore module
 
 
@@ -701,17 +730,17 @@ function defaultDeletor(path, payload, store) {
   } // Trigger the mutation!
 
 
-  var mutationName = conf.pattern === 'traditional' ? 'DELETE_' + props.toUpperCase() // 'DELETE_ITEMS.*.TAGS.*'
+  var DELETE_PROP = conf.pattern === 'traditional' ? 'DELETE_' + props.toUpperCase() // 'DELETE_ITEMS.*.TAGS.*'
   : '-' + props; // '-items.*.tags.*'
 
-  var mutationPath = modulePath + mutationName;
-  var mutationExists = store._mutations[mutationPath];
+  var MODULE_DELETE_PROP = modulePath + DELETE_PROP;
+  var mutationExists = store._mutations[MODULE_DELETE_PROP];
 
   if (mutationExists) {
-    return store.commit(mutationPath, payload);
+    return store.commit(MODULE_DELETE_PROP, payload);
   }
 
-  return error('missingDeleteMutation', conf, mutationPath, props);
+  return error('missingDeleteMutation', conf, MODULE_DELETE_PROP, props);
 }
 /**
  * Creates a special 'setter-module' to be registered as a child of a module. This 'setter-module' will have the 'set' namespace (by default) and have one setter action per state prop in the parent module. The setter action's name will be the state prop name.
@@ -735,19 +764,19 @@ function createSetterModule(targetState) {
 
     return Object.keys(_targetState).reduce(function (carry, stateProp) {
       // Get the path info up until this point
-      var propPath = _propPath ? _propPath + '.' + stateProp : stateProp;
-      var fullPath = moduleNS + propPath; // Avoid making setters for private props
+      var PROP_SUBPROP = _propPath ? _propPath + '.' + stateProp : stateProp;
+      var MODULE_PROP_SUBPROP = moduleNS + PROP_SUBPROP; // Avoid making setters for private props
 
       if (conf.ignorePrivateProps && stateProp[0] === '_') return carry;
-      if (conf.ignoreProps.includes(fullPath)) return carry; // Avoid making setters for props which are an entire module on its own
+      if (conf.ignoreProps.includes(MODULE_PROP_SUBPROP)) return carry; // Avoid making setters for props which are an entire module on its own
 
-      if (store._modulesNamespaceMap[fullPath + '/']) return carry; // =================================================>
+      if (store._modulesNamespaceMap[MODULE_PROP_SUBPROP + '/']) return carry; // =================================================>
       //   NORMAL SETTER
       // =================================================>
       // All good, make the action!
 
-      carry[propPath] = function (context, payload) {
-        return defaultSetter(fullPath, payload, store, conf);
+      carry[PROP_SUBPROP] = function (context, payload) {
+        return defaultSetter(MODULE_PROP_SUBPROP, payload, store, conf);
       }; // Get the value of the prop
 
 
@@ -756,38 +785,37 @@ function createSetterModule(targetState) {
       // =================================================>
 
       if (isWhat.isArray(propValue)) {
-        carry[propPath + '.push'] = function (context, payload) {
-          return defaultSetter(fullPath + '.push', payload, store, conf);
+        carry[PROP_SUBPROP + '.push'] = function (context, payload) {
+          return defaultSetter(MODULE_PROP_SUBPROP + '.push', payload, store, conf);
         };
 
-        carry[propPath + '.pop'] = function (context, payload) {
-          return defaultSetter(fullPath + '.pop', payload, store, conf);
+        carry[PROP_SUBPROP + '.pop'] = function (context, payload) {
+          return defaultSetter(MODULE_PROP_SUBPROP + '.pop', payload, store, conf);
         };
 
-        carry[propPath + '.shift'] = function (context, payload) {
-          return defaultSetter(fullPath + '.shift', payload, store, conf);
+        carry[PROP_SUBPROP + '.shift'] = function (context, payload) {
+          return defaultSetter(MODULE_PROP_SUBPROP + '.shift', payload, store, conf);
         };
 
-        carry[propPath + '.splice'] = function (context, payload) {
-          return defaultSetter(fullPath + '.splice', payload, store, conf);
+        carry[PROP_SUBPROP + '.splice'] = function (context, payload) {
+          return defaultSetter(MODULE_PROP_SUBPROP + '.splice', payload, store, conf);
         };
       } // =================================================>
       //   WILDCARDS SETTER
       // =================================================>
-
-
-      if (isWhat.isObject(propValue) && !Object.keys(propValue).length) {
-        carry[propPath + '.*'] = function (context, payload) {
-          return defaultSetter(fullPath + '.*', payload, store, conf);
-        };
-      } // =================================================>
+      // if (isObject(propValue) && !Object.keys(propValue).length) {
+      //   carry[PROP_SUBPROP + '.*'] = (context, payload) => {
+      //     return defaultSetter(MODULE_PROP_SUBPROP + '.*', payload, store, conf)
+      //   }
+      // }
+      // =================================================>
       //   CHILDREN SETTERS
       // =================================================>
       // let's do it's children as well!
 
 
       if (isWhat.isObject(propValue) && Object.keys(propValue).length) {
-        var childrenSetters = getSetters(propValue, propPath);
+        var childrenSetters = getSetters(propValue, PROP_SUBPROP);
         Object.assign(carry, childrenSetters);
       }
 
@@ -823,31 +851,23 @@ function createDeleteModule(targetState) {
 
     return Object.keys(_targetState).reduce(function (carry, stateProp) {
       // Get the path info up until this point
-      var propPath = _propPath ? _propPath + '.' + stateProp : stateProp;
-      var fullPath = moduleNS + propPath; // Avoid making deletor for private props
+      var PROP_SUBPROP = _propPath ? _propPath + '.' + stateProp : stateProp;
+      var MODULE_PROP_SUBPROP = moduleNS + PROP_SUBPROP; // Avoid making deletor for private props
 
       if (conf.ignorePrivateProps && stateProp[0] === '_') return carry;
-      if (conf.ignoreProps.includes(fullPath)) return carry; // Avoid making deletor for props which are an entire module on its own
+      if (conf.ignoreProps.includes(MODULE_PROP_SUBPROP)) return carry; // Avoid making deletor for props which are an entire module on its own
 
-      if (store._modulesNamespaceMap[fullPath + '/']) return carry; // Get the value of the prop
+      if (store._modulesNamespaceMap[MODULE_PROP_SUBPROP + '/']) return carry; // Get the value of the prop
 
-      var propValue = _targetState[stateProp]; // let's create the deletors
+      var propValue = _targetState[stateProp];
 
-      if (stateProp === '*') {
-        carry[propPath] = function (context, payload) {
-          return defaultDeletor(fullPath, payload, store, conf);
-        };
-      }
-
-      if (isWhat.isObject(propValue) && !Object.keys(propValue).length) {
-        carry[propPath + '.*'] = function (context, payload) {
-          return defaultDeletor(fullPath + '.*', payload, store, conf);
-        };
-      } // let's do it's children as well!
+      carry[PROP_SUBPROP] = function (context, payload) {
+        return defaultDeletor(MODULE_PROP_SUBPROP, payload, store, conf);
+      }; // let's do it's children as well!
 
 
       if (isWhat.isObject(propValue) && Object.keys(propValue).length) {
-        var childrenDeletors = getDeletors(propValue, propPath);
+        var childrenDeletors = getDeletors(propValue, PROP_SUBPROP);
         Object.assign(carry, childrenDeletors);
       }
 
@@ -997,7 +1017,8 @@ var state = {
       powerUps: []
     }
   },
-  emptyObject: {}
+  emptyObject: {},
+  propToBeDeleted: true
 };
 var dex = {
   namespaced: true,
@@ -1047,7 +1068,10 @@ function initialState() {
       items: [],
       _secrets: []
     },
-    wallet: []
+    wallet: [],
+    propToBeDeleted_commit: true,
+    propToBeDeleted_dispatch: true,
+    propToBeDeleted_delete: true
   };
 } // export store
 

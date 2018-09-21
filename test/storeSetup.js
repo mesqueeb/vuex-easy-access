@@ -4,6 +4,12 @@ import store from './helpers/index.cjs.js'
 test('makeMutations', t => {
   const mutations = store._mutations
   const expectedMutations = [
+    'propToBeDeleted_commit',
+    '-propToBeDeleted_commit',
+    'propToBeDeleted_dispatch',
+    '-propToBeDeleted_dispatch',
+    'propToBeDeleted_delete',
+    '-propToBeDeleted_delete',
     'pokemonBox',
     'pokemonBox.waterPokemon',
     'pokemonBox.waterPokemon.pop',

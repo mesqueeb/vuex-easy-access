@@ -12,20 +12,49 @@ test('hooks', async t => {
 })
 
 test('setters', t => {
-  const modulePath = 'locationJournal/gymData/'
-  const prop = 'defeated.palletTown'
-  const path = modulePath + prop
+  const path = 'locationJournal/gymData/defeated.palletTown'
   const a = store.get(path)
   store.set(path, 1)
   const b = store.get(path)
   t.is(b, 1)
-  store.dispatch(modulePath + 'set/defeated.palletTown', 2)
+  store.dispatch('locationJournal/gymData/set/defeated.palletTown', 2)
   const c = store.get(path)
   t.is(c, 2)
   store.commit(path, 3)
   const d = store.get(path)
   t.is(d, 3)
   t.is(store.state.locationJournal.gymData.defeated.palletTown, 3)
+})
+
+test('delete props', t => {
+  let target
+  // commit
+  target = store.get('propToBeDeleted_commit')
+  t.is(target, true)
+  t.is(store.state.propToBeDeleted_commit, true)
+  store.commit('-propToBeDeleted_commit')
+  t.is(store.state.propToBeDeleted_commit, undefined)
+
+  // dispatch
+  target = store.get('propToBeDeleted_dispatch')
+  t.is(target, true)
+  t.is(store.state.propToBeDeleted_dispatch, true)
+  store.dispatch('delete/propToBeDeleted_dispatch')
+  t.is(store.state.propToBeDeleted_dispatch, undefined)
+
+  // delete()
+  target = store.get('propToBeDeleted_delete')
+  t.is(target, true)
+  t.is(store.state.propToBeDeleted_delete, true)
+  store.delete('propToBeDeleted_delete')
+  t.is(store.state.propToBeDeleted_delete, undefined)
+
+  // submodules
+  target = store.get('dex/propToBeDeleted')
+  t.is(target, true)
+  t.is(store.state.dex.propToBeDeleted, true)
+  store.delete('dex/propToBeDeleted')
+  t.is(store.state.dex.propToBeDeleted, undefined)
 })
 
 test('arraySetters', t => {
@@ -301,19 +330,24 @@ test('Set and delete wildcard props directly on state', t => {
   // check amount
   const fL = store.state.friendsList
 
-  // make deletions
-  // store.delete('friendsList/', '002') // now ONLY * syntax allowed
-  // t.falsy(fL['002'])
+  // DELETE with wildcard in path
+  store.delete('friendsList/*.name', ['003'])
+  t.truthy(fL['003'])
+  t.is(fL['003'].name, undefined)
+  store.commit('friendsList/-*.name', ['006'])
+  t.truthy(fL['006'])
+  t.is(fL['006'].name, undefined)
+  store.dispatch('friendsList/delete/*.name', ['009'])
+  t.truthy(fL['009'])
+  t.is(fL['009'].name, undefined)
+
+  // fully DELETE wildcard item
   store.delete('friendsList/*', '003')
-  t.falsy(fL['003'])
-  // store.commit('friendsList/-', '005') // now ONLY * syntax allowed
-  // t.falsy(fL['005'])
+  t.is(fL['003'], undefined)
   store.commit('friendsList/-*', '006')
-  t.falsy(fL['006'])
-  // store.dispatch('friendsList/delete/', '008') // now ONLY * syntax allowed
-  // t.falsy(fL['008'])
+  t.is(fL['006'], undefined)
   store.dispatch('friendsList/delete/*', '009')
-  t.falsy(fL['009'])
+  t.is(fL['009'], undefined)
 
   // check if additions are still there
   t.truthy(fL['001'])

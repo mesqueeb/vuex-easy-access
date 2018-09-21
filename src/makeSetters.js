@@ -26,14 +26,14 @@ function defaultSetter (path, payload, store, conf = {}) {
   const modulePath = (pArr.length)
     ? pArr.join('/') + '/'                    // 'info/user/'
     : ''
-  const actionName = (conf.pattern === 'traditional')
+  const setProp = (conf.pattern === 'traditional')
     ? 'set' + props[0].toUpperCase() + props.substring(1) // 'setFavColours.primary'
     : props                                               // 'favColours.primary'
   // Check if an action exists, if it does, trigger that and return early!
-  const actionPath = modulePath + actionName
-  const actionExists = store._actions[actionPath]
+  const moduleSetProp = modulePath + setProp
+  const actionExists = store._actions[moduleSetProp]
   if (actionExists) {
-    return store.dispatch(actionPath, payload)
+    return store.dispatch(moduleSetProp, payload)
   }
   // [vuex-easy-firestore] check if it's a firestore module
   const firestoreModulePath = (!modulePath && props && !props.includes('.') && conf.vuexEasyFirestore)
@@ -53,15 +53,15 @@ function defaultSetter (path, payload, store, conf = {}) {
     }
   }
   // Trigger the mutation!
-  const mutationName = (conf.pattern === 'traditional')
+  const SET_PROP = (conf.pattern === 'traditional')
     ? 'SET_' + props.toUpperCase() // 'SET_FAVCOLOURS.PRIMARY'
     : props                        // 'favColours.primary'
-  const mutationPath = modulePath + mutationName
-  const mutationExists = store._mutations[mutationPath]
+  const MODULES_SET_PROP = modulePath + SET_PROP
+  const mutationExists = store._mutations[MODULES_SET_PROP]
   if (mutationExists) {
-    return store.commit(mutationPath, payload)
+    return store.commit(MODULES_SET_PROP, payload)
   }
-  return error('missingSetterMutation', conf, mutationPath, props)
+  return error('missingSetterMutation', conf, MODULES_SET_PROP, props)
 }
 
 /**
@@ -88,14 +88,14 @@ function defaultDeletor (path, payload, store, conf = {}) {
   const modulePath = (pArr.length)
     ? pArr.join('/') + '/'                    // 'user/'
     : ''
-  const actionName = (conf.pattern === 'traditional')
+  const deleteProp = (conf.pattern === 'traditional')
     ? 'delete' + props[0].toUpperCase() + props.substring(1) // 'deleteItems.*.tags.*'
     : '-' + props                                            // '-items.*.tags.*'
   // Check if an action exists, if it does, trigger that and return early!
-  const actionPath = modulePath + actionName
-  const actionExists = store._actions[actionPath]
+  const moduleDeleteProp = modulePath + deleteProp
+  const actionExists = store._actions[moduleDeleteProp]
   if (actionExists) {
-    return store.dispatch(actionPath, payload)
+    return store.dispatch(moduleDeleteProp, payload)
   }
   // [vuex-easy-firestore] check if it's a firestore module
   const _module = store._modulesNamespaceMap[modulePath]
@@ -109,15 +109,15 @@ function defaultDeletor (path, payload, store, conf = {}) {
     if (newPath) return store.dispatch(modulePath + 'delete', newPath)
   }
   // Trigger the mutation!
-  const mutationName = (conf.pattern === 'traditional')
+  const DELETE_PROP = (conf.pattern === 'traditional')
     ? 'DELETE_' + props.toUpperCase() // 'DELETE_ITEMS.*.TAGS.*'
     : '-' + props                     // '-items.*.tags.*'
-  const mutationPath = modulePath + mutationName
-  const mutationExists = store._mutations[mutationPath]
+  const MODULE_DELETE_PROP = modulePath + DELETE_PROP
+  const mutationExists = store._mutations[MODULE_DELETE_PROP]
   if (mutationExists) {
-    return store.commit(mutationPath, payload)
+    return store.commit(MODULE_DELETE_PROP, payload)
   }
-  return error('missingDeleteMutation', conf, mutationPath, props)
+  return error('missingDeleteMutation', conf, MODULE_DELETE_PROP, props)
 }
 
 /**
@@ -134,21 +134,21 @@ function createSetterModule (targetState, moduleNS = '', store, conf = {}) {
   function getSetters (_targetState, _propPath = '') {
     return Object.keys(_targetState).reduce((carry, stateProp) => {
       // Get the path info up until this point
-      const propPath = (_propPath)
+      const PROP_SUBPROP = (_propPath)
         ? _propPath + '.' + stateProp
         : stateProp
-      const fullPath = moduleNS + propPath
+      const MODULE_PROP_SUBPROP = moduleNS + PROP_SUBPROP
       // Avoid making setters for private props
       if (conf.ignorePrivateProps && stateProp[0] === '_') return carry
-      if (conf.ignoreProps.includes(fullPath)) return carry
+      if (conf.ignoreProps.includes(MODULE_PROP_SUBPROP)) return carry
       // Avoid making setters for props which are an entire module on its own
-      if (store._modulesNamespaceMap[fullPath + '/']) return carry
+      if (store._modulesNamespaceMap[MODULE_PROP_SUBPROP + '/']) return carry
       // =================================================>
       //   NORMAL SETTER
       // =================================================>
       // All good, make the action!
-      carry[propPath] = (context, payload) => {
-        return defaultSetter(fullPath, payload, store, conf)
+      carry[PROP_SUBPROP] = (context, payload) => {
+        return defaultSetter(MODULE_PROP_SUBPROP, payload, store, conf)
       }
       // Get the value of the prop
       const propValue = _targetState[stateProp]
@@ -156,33 +156,33 @@ function createSetterModule (targetState, moduleNS = '', store, conf = {}) {
       //   ARRAY SETTERS
       // =================================================>
       if (isArray(propValue)) {
-        carry[propPath + '.push'] = (context, payload) => {
-          return defaultSetter(fullPath + '.push', payload, store, conf)
+        carry[PROP_SUBPROP + '.push'] = (context, payload) => {
+          return defaultSetter(MODULE_PROP_SUBPROP + '.push', payload, store, conf)
         }
-        carry[propPath + '.pop'] = (context, payload) => {
-          return defaultSetter(fullPath + '.pop', payload, store, conf)
+        carry[PROP_SUBPROP + '.pop'] = (context, payload) => {
+          return defaultSetter(MODULE_PROP_SUBPROP + '.pop', payload, store, conf)
         }
-        carry[propPath + '.shift'] = (context, payload) => {
-          return defaultSetter(fullPath + '.shift', payload, store, conf)
+        carry[PROP_SUBPROP + '.shift'] = (context, payload) => {
+          return defaultSetter(MODULE_PROP_SUBPROP + '.shift', payload, store, conf)
         }
-        carry[propPath + '.splice'] = (context, payload) => {
-          return defaultSetter(fullPath + '.splice', payload, store, conf)
+        carry[PROP_SUBPROP + '.splice'] = (context, payload) => {
+          return defaultSetter(MODULE_PROP_SUBPROP + '.splice', payload, store, conf)
         }
       }
       // =================================================>
       //   WILDCARDS SETTER
       // =================================================>
-      if (isObject(propValue) && !Object.keys(propValue).length) {
-        carry[propPath + '.*'] = (context, payload) => {
-          return defaultSetter(fullPath + '.*', payload, store, conf)
-        }
-      }
+      // if (isObject(propValue) && !Object.keys(propValue).length) {
+      //   carry[PROP_SUBPROP + '.*'] = (context, payload) => {
+      //     return defaultSetter(MODULE_PROP_SUBPROP + '.*', payload, store, conf)
+      //   }
+      // }
       // =================================================>
       //   CHILDREN SETTERS
       // =================================================>
       // let's do it's children as well!
       if (isObject(propValue) && Object.keys(propValue).length) {
-        const childrenSetters = getSetters(propValue, propPath)
+        const childrenSetters = getSetters(propValue, PROP_SUBPROP)
         Object.assign(carry, childrenSetters)
       }
       return carry
@@ -206,31 +206,23 @@ function createDeleteModule (targetState, moduleNS = '', store, conf = {}) {
   function getDeletors (_targetState, _propPath = '') {
     return Object.keys(_targetState).reduce((carry, stateProp) => {
       // Get the path info up until this point
-      const propPath = (_propPath)
+      const PROP_SUBPROP = (_propPath)
         ? _propPath + '.' + stateProp
         : stateProp
-      const fullPath = moduleNS + propPath
+      const MODULE_PROP_SUBPROP = moduleNS + PROP_SUBPROP
       // Avoid making deletor for private props
       if (conf.ignorePrivateProps && stateProp[0] === '_') return carry
-      if (conf.ignoreProps.includes(fullPath)) return carry
+      if (conf.ignoreProps.includes(MODULE_PROP_SUBPROP)) return carry
       // Avoid making deletor for props which are an entire module on its own
-      if (store._modulesNamespaceMap[fullPath + '/']) return carry
+      if (store._modulesNamespaceMap[MODULE_PROP_SUBPROP + '/']) return carry
       // Get the value of the prop
       const propValue = _targetState[stateProp]
-      // let's create the deletors
-      if (stateProp === '*') {
-        carry[propPath] = (context, payload) => {
-          return defaultDeletor(fullPath, payload, store, conf)
-        }
-      }
-      if (isObject(propValue) && !Object.keys(propValue).length) {
-        carry[propPath + '.*'] = (context, payload) => {
-          return defaultDeletor(fullPath + '.*', payload, store, conf)
-        }
+      carry[PROP_SUBPROP] = (context, payload) => {
+        return defaultDeletor(MODULE_PROP_SUBPROP, payload, store, conf)
       }
       // let's do it's children as well!
       if (isObject(propValue) && Object.keys(propValue).length) {
-        const childrenDeletors = getDeletors(propValue, propPath)
+        const childrenDeletors = getDeletors(propValue, PROP_SUBPROP)
         Object.assign(carry, childrenDeletors)
       }
       return carry
