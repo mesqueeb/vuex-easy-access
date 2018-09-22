@@ -5791,9 +5791,9 @@ meow@^5.0.0:
     trim-newlines "^2.0.0"
     yargs-parser "^10.0.0"
 
-merge-anything@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/merge-anything/-/merge-anything-1.0.0.tgz#e5c16e193c6fc61b086f86f626c7684ffcb02284"
+merge-anything@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/merge-anything/-/merge-anything-1.1.1.tgz#d0460368849c956df116d895af48a3d12527ac7e"
   dependencies:
     is-what "^2.0.2"
 
