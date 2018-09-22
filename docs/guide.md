@@ -24,15 +24,20 @@ With Vuex Easy Access you **only need to set your state** and you can use these 
 
 ## set as Vuex action
 
-Besides `set()` on the store object, you also get Vuex actions! Any module will automatically receive a sub-module called `/set/`! In this sub-module the actions are created to set each of the state props.
+Besides `set()` on the store object, you also get Vuex actions! Any module will automatically receive a sub-module called `/set/`! In this sub-module the actions are created to `set` each of the state props.
 
 So in our example we would receive the following a sub module:
 
 ```js
+// module: `player/`
 state: {party: {primary: 'bulbasaur'}},
-actions: {
-  'party': () => {} // set the prop `party`
-  'party.primary': () => {} // set `primary` inside `party`
+modules: {
+  set: { // `/set/` sub module with a setter for each state prop!
+    actions: {
+      'party': () => {} // set the prop `party`
+      'party.primary': () => {} // set `primary` inside `party`
+    }
+  }
 }
 ```
 
@@ -41,7 +46,7 @@ This makes it possible for you to do things like:
 ```js
 actions: {
   randomizePrimaryPokemon ({dispatch}) {
-    dispatch('set/party.primary', random())
+    dispatch('player/set/party.primary', random())
   }
 }
 ```
