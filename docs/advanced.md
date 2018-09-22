@@ -11,13 +11,13 @@ All possible values for the configuration are explained here:
 
 ## Firestore integration (for Google Firebase)
 
-You can add compatibility for the amazing sister plugin: [Vuex Easy Firestore](https://github.com/mesqueeb/VuexEasyFirestore). To do so just pass a variable in the configuration object like so:
+You can add compatibility for the amazing sister plugin: [Vuex Easy Firestore](https://mesqueeb.github.io/vuex-easy-firestore). To do so just pass a variable in the configuration object like so:
 
 ```js
 const easyAccess = createEasyAccess({vuexEasyFirestore: true})
 ```
 
-This will make sure that whenever you set a value in a module where you enabled 'Vuex Easy Firestore', it will **auto-sync to your firestore**! Please see the [Vuex Easy Firestore documentation](https://github.com/mesqueeb/VuexEasyFirestore) for more information on how to set up auto-sync with firestore.
+This will make sure that whenever you set a value in a module where you enabled 'Vuex Easy Firestore', it will **auto-sync to your firestore**! Please see the [Vuex Easy Firestore documentation](https://mesqueeb.github.io/vuex-easy-firestore) for more information on how to set up auto-sync with firestore.
 
 Please note when using both plugins, it is important to pass the 'vuex-easy-firestore' plugin first, and the 'easyAccess' second for it to work properly.
 

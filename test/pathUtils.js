@@ -76,6 +76,12 @@ test('fillinPathWildcards', t => {
   res = fillinPathWildcards(['001'], path, state, conf)
   t.is(res, '001')
 })
+test('fillinPathWildcards without *', t => {
+  let path, res, state, conf
+  path = 'a/random/path.with.vals-!'
+  res = fillinPathWildcards([], path, state, conf)
+  t.is(res, 'a/random/path.with.vals-!')
+})
 test('createObjectFromPath', t => {
   let path, payload, state, conf, res
   path = 'locationJournal/gymData/defeated.palletTown'
