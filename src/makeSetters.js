@@ -36,17 +36,21 @@ function defaultSetter (path, payload, store, conf = {}) {
     return store.dispatch(moduleSetProp, payload)
   }
   // [vuex-easy-firestore] check if it's a firestore module
-  const firestoreModulePath = (!modulePath && props && !props.includes('.') && conf.vuexEasyFirestore)
+  const fsModulePath = (!modulePath && props && !props.includes('.') && conf.vuexEasyFirestore)
     ? props + '/'
     : modulePath
-  const _module = store._modulesNamespaceMap[firestoreModulePath]
-  const firestoreConf = (!_module) ? null : _module.state._conf
-  if (conf.vuexEasyFirestore && firestoreConf) {
+  const _module = store._modulesNamespaceMap[fsModulePath]
+  const fsConf = (!_module) ? null : _module.state._conf
+  if (conf.vuexEasyFirestore && fsConf) {
     // 'info/user/set', {favColours: {primary: payload}}'
-    const newPayload = (!props || (!modulePath && props && !props.includes('.')))
+    const fsPropName = fsConf.statePropName
+    const fsProps = (fsPropName && props.startsWith(`${fsPropName}.`))
+      ? props.replace(`${fsPropName}.`, '')
+      : props
+    const newPayload = (!fsProps || (!modulePath && fsProps && !fsProps.includes('.')))
       ? payload
-      : createObjectFromPath(props, payload, _module.state, conf)
-    const firestoreActionPath = firestoreModulePath + 'set'
+      : createObjectFromPath(fsProps, payload, _module.state, conf)
+    const firestoreActionPath = fsModulePath + 'set'
     const firestoreActionExists = store._actions[firestoreActionPath]
     if (firestoreActionExists) {
       return store.dispatch(firestoreActionPath, newPayload)
@@ -99,13 +103,20 @@ function defaultDeletor (path, payload, store, conf = {}) {
   }
   // [vuex-easy-firestore] check if it's a firestore module
   const _module = store._modulesNamespaceMap[modulePath]
-  const firestoreConf = (!_module) ? null : _module.state._conf
-  if (conf.vuexEasyFirestore && firestoreConf) {
+  const fsConf = (!_module) ? null : _module.state._conf
+  if (conf.vuexEasyFirestore && fsConf) {
     // DOC: 'user/favColours.*', 'primary'
     // COLLECTION: 'items.*', '123'
     // COLLECTION: 'items.*.tags.*', ['123', 'dark']
-    const ids = (!isArray(payload)) ? [payload] : payload
-    const newPath = fillinPathWildcards(ids, props, _module.state, conf)
+    const fsPropName = fsConf.statePropName
+    const fsProps = (fsPropName && props.startsWith(`${fsPropName}.`))
+      ? props.replace(`${fsPropName}.`, '')
+      : props
+    let newPath = fsProps
+    if (fsProps.includes('*')) {
+      const ids = (!isArray(payload)) ? [payload] : payload
+      newPath = fillinPathWildcards(ids, fsProps, _module.state, conf)
+    }
     if (newPath) return store.dispatch(modulePath + 'delete', newPath)
   }
   // Trigger the mutation!
