@@ -4,12 +4,12 @@ To keep everything fun we're gonna explain things with the example of a Pokémon
 
 ## get() set() example
 
-First have our "player" with one primary Pokémon:
+Vuex Easy Access adds a `get()` and `set()` function on the store object, as can be seen in the following example:
 
 - module: `player/`
 - state: `{party: {primary: 'bulbasaur'}}`
 
-Now we need a page with an option to swap the primary Pokémon:
+We have a `player/` module with one `primary` Pokémon. Let's create a Vue component with an option to swap the primary Pokémon:
 
 ```html
 <template>
@@ -20,9 +20,37 @@ Now we need a page with an option to swap the primary Pokémon:
 
 Nothing required inside your Vue component methods! Very clean! 🏄🏼‍
 
-With Vuex Easy Access you **only need to set your state** and you can use these handy setters automatically! Below we see how you can set up the state and what kind of powers that will give you:
+With Vuex Easy Access you **only need to set your state** and you can use these handy setters automatically!
+
+## set as Vuex action
+
+Besides `set()` on the store object, you also get Vuex actions! Any module will automatically receive a sub-module called `/set/`! In this sub-module the actions are created to set each of the state props.
+
+So in our example we would receive the following a sub module:
+
+```js
+state: {party: {primary: 'bulbasaur'}},
+actions: {
+  'party': () => {} // set the prop `party`
+  'party.primary': () => {} // set `primary` inside `party`
+}
+```
+
+This makes it possible for you to do things like:
+
+```js
+actions: {
+  randomizePrimaryPokemon ({dispatch}) {
+    dispatch('set/party.primary', random())
+  }
+}
+```
+
+Below we see how you can set up the state and what kind of powers that will give you in each case. The actions you'll receive will differ slightly based on the kind of state props you have.
 
 ## Regular state props
+
+Every single state prop (and nested ones) will receive a **getter, setter and deletor** (is that a word? :).
 
 ```js
 // module: `player/`
@@ -35,11 +63,15 @@ state: {
 // Setters you can use from Vue components
 $store.set('player/party', newParty) // modules end in `/`
 $store.set('player/party.primary', newPokemon) // separate sub-props with `.`
+$store.delete('player/party.primary') // completely deletes props
 
 // Actions you can use (from `set/` sub-module)
 dispatch('player/set/party', newParty)
 dispatch('player/set/party.primary', newPokemon)
+dispatch('player/delete/party.primary') // completely deletes props
 ```
+
+Delete uses `Vue.delete` under the hood, so reactivity works as expected. However: be careful of the `delete` action, because **it will completely delete the property**. In most cases it's better to just `set('player/party.primary', null)`.
 
 ## Array props []
 
@@ -66,7 +98,7 @@ dispatch('player/set/pokeBox.splice', [0, 1, newPokemon])
 
 ## ID wildcard props 🃏
 
-Just add `'*'` as prop in your state and you will have super powers 💪🏻! Perfect for working with IDs!
+Just add `'*'` as prop in your state and you will have super powers 💪🏻! Perfect for working with IDs! This uses `Vue.set` under the hood, so reactivity works as expected.
 
 ```js
 // module: `player/`
@@ -139,26 +171,11 @@ dispatch('player/set/pokeDex.*.types.*', [id, {'grass': true}])
 
 ## Getters
 
+Remember, paths for setters and getters use `/` for modules and `.` for sub props.
+
 ```js
 // Getters you can use
 $store.get('any/path/as.seen.above')
 ```
 
-## set() in the Vuex store
-
-Besides `set()` on the store object, there is also a special setter created for each prop as an action you can dispatch!
-
-Your module `player/` will automatically receive a sub-module called `player/set/`! In this sub-module the actions are created to set each of the props of `player/`.
-
-This makes it possible for you to do:
-
-```js
-// in the `player/` module
-actions: {
-  randomizePrimaryPokemon ({dispatch}) {
-    dispatch('set/party.primary', random())
-  }
-}
-```
-
-The sub-module `set/` with the action `primary` are automatically created and commit to your store!
+I hope you understood the basics! If there are any unclear parts please open an [issue](https://github.com/mesqueeb/vuex-easy-access/issues) and let me know! I'll try to improve the docs as much as possible.
