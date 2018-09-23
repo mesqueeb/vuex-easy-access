@@ -58,3 +58,11 @@ Push/shift/pop/splice values | `set('module/someArray.push', newVal)`<br>`set('m
 Set and delete | `set('module/someObject.*', {[id]: newVal})`<br>`delete('module/someObject.*', id)`
 
 \* `set()` and `delete()` are attached to the Vuex `store` object: `store.set()`
+
+# Support
+
+If you like what I built, you can say thanks by buying me a coffee! :)
+
+<link href="https://fonts.googleapis.com/css?family=Cookie" rel="stylesheet"><a class="bmc-button" target="_blank" href="https://www.buymeacoffee.com/mesqueeb"><img src="https://www.buymeacoffee.com/assets/img/BMC-btn-logo.svg" alt="Buy me a coffee"><span style="margin-left:5px">Buy me a coffee</span></a>
+
+Thank you so much!! Every little bit helps.

@@ -53,7 +53,7 @@ actions: {
 
 The `set()` method of Vuex Easy Access checks to see if an action with the same path exist. If it exists it will dispatch this action, if not it will just make a default mutation: `commit('character/party.primary', newPokemon)`.
 
-As you can see **you need to manually commit a mutation**. All these mutations are also already created by Vuex Easy Access for you. Please review the correct mutation syntax down below or check the [overview](overview.html).
+As you can see **you need to manually commit a mutation**. All these mutations are also already created by Vuex Easy Access for you. Please review the correct mutation syntax down below or check the [overview](reference.html).
 
 ### Syntax for overwriting setters
 
