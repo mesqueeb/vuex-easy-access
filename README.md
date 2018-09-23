@@ -65,3 +65,11 @@ Set and delete | `set('module/someObject.*', {[id]: newVal})`<br>`delete('module
 \* `set()` and `delete()` are attached to the Vuex `store` object: `store.set()`
 
 **[Installation and setup](https://mesqueeb.github.io/vuex-easy-access/setup.html)　→**
+
+# Support
+
+If you like what I built, you can say thanks by buying me a coffee! :)
+
+<a href="https://www.buymeacoffee.com/mesqueeb" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+
+Thank you so much!! Every little bit helps.
