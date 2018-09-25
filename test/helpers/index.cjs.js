@@ -920,7 +920,8 @@ function generateSetterModules(store) {
  * @contact    https://lucaban.com
  */
 
-function createEasyAccess(userConfig) {
+function createEasyAccess() {
+  var userConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var conf = Object.assign({}, defaultConfig, userConfig);
   return function (store) {
     generateSetterModules(store, conf);
@@ -1102,6 +1103,6 @@ var storeObj = {
 };
 
 Vue.use(Vuex);
-var store = new Vuex.Store(storeObj);
+var store = new Vuex.Store(storeObj); // console.log('store.set → ', store.set)
 
 exports.default = store;

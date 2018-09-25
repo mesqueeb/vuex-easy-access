@@ -5,6 +5,6 @@ import storeObj from './store'
 // create store
 Vue.use(Vuex)
 const store = new Vuex.Store(storeObj)
-const a = store._mutations
-
+// console.log('store.set → ', store.set)
+// console.log('store.get → ', store.get)
 export default store
