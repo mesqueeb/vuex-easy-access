@@ -12,7 +12,7 @@ import { defaultGetter } from './makeGetters'
 import { defaultSetter, defaultDeletor, generateSetterModules } from './makeSetters'
 import { getDeepRef, getKeysFromPath } from './pathUtils'
 
-function createEasyAccess (userConfig) {
+function createEasyAccess (userConfig = {}) {
   const conf = Object.assign({}, defaultConfig, userConfig)
   return store => {
     generateSetterModules(store, conf)
