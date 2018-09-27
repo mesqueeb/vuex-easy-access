@@ -2,9 +2,13 @@
 
 ## Installation
 
+```bash
+npm i --save vuex-easy-access vue
+# or
+yarn add vuex-easy-access vue
 ```
-npm i --save vuex-easy-access
-```
+
+Vue is a peer dependency; It will use your existing version.
 
 ## Setup
 
