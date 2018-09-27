@@ -47,7 +47,7 @@ _ | actions generated from state
 **State props** | eg. ```state: {someProp: {nestedProp: ''}}```
 Set values<br>Set nested values<br><br>Delete values | `dispatch('module/set/someProp', newVal)`<br>`dispatch('module/set/someProp.nestedProp', newVal)`<br>`dispatch('module/delete/someProp')`<br>`dispatch('module/delete/someProp.nestedProp')`
 **Array props** | eg. ```state: {someArray: []}```
-Push/shift/pop/splice values | `dispatch('module/set/someArray.push', newVal)`<br>`dispatch('module/set/someArray.shift', newVal)`<br>`dispatch('module/set/someArray.pop', newVal)`<br>`dispatch('module/set/someArray.splice', newVal)`
+Push/shift/pop/splice values | `dispatch('module/set/someArray.push', newVal)`<br>`dispatch('module/set/someArray.shift')`<br>`dispatch('module/set/someArray.pop')`<br>`dispatch('module/set/someArray.splice', [ind, del, newVal])`
 **Objects with id wildcard** | eg. ```state: {someObject: {'*': ''}}```
 Set and delete | `dispatch('module/set/someObject.*', {[id]: newVal})`<br>`dispatch('module/delete/someObject.*', id)`
 
@@ -58,7 +58,7 @@ _ | available setters
 **State props** | eg. ```state: {someProp: {nestedProp: ''}}```
 Set values<br>Set nested values<br><br>Delete values | `set('module/someProp', newVal)`*<br>`set('module/someProp.nestedProp', newVal)`<br>`delete('module/someProp')`<br>`delete('module/someProp.nestedProp')`
 **Array props** | eg. ```state: {someArray: []}```
-Push/shift/pop/splice values | `set('module/someArray.push', newVal)`<br>`set('module/someArray.shift', newVal)`<br>`set('module/someArray.pop', newVal)`<br>`set('module/someArray.splice', newVal)`
+Push/shift/pop/splice values | `set('module/someArray.push', newVal)`<br>`set('module/someArray.shift')`<br>`set('module/someArray.pop')`<br>`set('module/someArray.splice', [ind, del, newVal])`
 **Objects with id wildcard** | eg. ```state: {someObject: {'*': ''}}```
 Set and delete | `set('module/someObject.*', {[id]: newVal})`<br>`delete('module/someObject.*', id)`
 
