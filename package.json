@@ -1,9 +1,10 @@
 {
   "name": "vuex-easy-access",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Unified syntax with simple set() and get() store access + auto generate mutations",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
+  "typings": "types/index.d.ts",
   "scripts": {
     "lint": "eslint --ext .js,.vue src",
     "test": "ava",
@@ -11,8 +12,7 @@
     "watch": "rollup -c build/rollup.js --watch",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
-    "docs:deploy": "./docs/.vuepress/deploy.sh",
-    "publish": "npm publish && npm run docs:deploy"
+    "docs:deploy": "./docs/.vuepress/deploy.sh"
   },
   "repository": {
     "type": "git",
