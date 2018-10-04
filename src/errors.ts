@@ -1,7 +1,12 @@
 /* eslint-disable */
 import defaultConfig from './defaultConfig'
+import { IDefaultConfig, AnyObject } from './declarations'
 
-function getErrors (conf, path, props) {
+function getErrors (
+  conf: IDefaultConfig,
+  path?: string,
+  props?: string
+): AnyObject {
   const originInfo = (path || props) ? `problem with prop: \`${props}\` at path: \`${path}\`` : ''
   const tradPatt = (conf.pattern === 'traditional')
   const setter = conf.setter
@@ -96,19 +101,25 @@ function getErrors (conf, path, props) {
     `,
   }
 }
+
 /**
  * Error logging
  *
  * @export
  * @param {string} error the error code
  * @param {object} conf the user config
- * @param {string} path (optional) the path the error occured in
- * @param {string} props (optional) the props the error occured with
+ * @param {string} [path] (optional) the path the error occured in
+ * @param {string} [props] (optional) the props the error occured with
  * @returns {string} the error code
  */
-export default function (error, conf = {}, path, props) {
-  conf = Object.assign({}, defaultConfig, conf)
-  const errorMessages = getErrors(conf, path, props)
+export default function (
+  error: string,
+  conf: object = {},
+  path?: string,
+  props?: string
+): string {
+  const mergedConf: IDefaultConfig = Object.assign({}, defaultConfig, conf)
+  const errorMessages = getErrors(mergedConf, path, props)
   console.error('[vuex-easy-access] Error!', errorMessages[error])
   return error
 }

@@ -1,7 +1,5 @@
 import createFirestores from 'vuex-easy-firestore'
-import createEasyAccess from '../../../src/index'
-
-import { defaultMutations } from '../../../src/index'
+import { createEasyAccess, defaultMutations } from '../../../dist/index.cjs'
 import config from '../config'
 import locationJournal from './locationJournal'
 import { user, firestoreUser } from './user'

@@ -1,30 +1,6 @@
-'use strict';
-
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var isWhat = _interopDefault(require('is-what'));
-var Vue = _interopDefault(require('vue'));
-var mergeAnything = _interopDefault(require('merge-anything'));
-var createFirestores = _interopDefault(require('vuex-easy-firestore'));
-var Vuex = _interopDefault(require('vuex'));
-
-function unwrapExports (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-}
-
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
-
-var index_cjs = createCommonjsModule(function (module, exports) {
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-
-var Vue$$1 = _interopDefault(Vue);
-var merge = _interopDefault(mergeAnything);
+import { isArray, isString, isObject } from 'is-what';
+import Vue from 'vue';
+import merge from 'merge-anything';
 
 var defaultConfig = {
     setter: 'set',
@@ -86,13 +62,13 @@ function error (error, conf, path, props) {
  * @returns {string} the id
  */
 function getId(payloadPiece, conf, path, fullPayload) {
-    if (isWhat.isObject(payloadPiece)) {
+    if (isObject(payloadPiece)) {
         if ('id' in payloadPiece)
             return payloadPiece.id;
         if (Object.keys(payloadPiece).length === 1)
             return Object.keys(payloadPiece)[0];
     }
-    if (isWhat.isString(payloadPiece))
+    if (isString(payloadPiece))
         return payloadPiece;
     error('wildcardFormatWrong', conf, path);
     return '';
@@ -115,7 +91,7 @@ function getIdsFromPayload(payload, conf, path) {
  * @returns {any}
  */
 function getValueFromPayloadPiece(payloadPiece) {
-    if (isWhat.isObject(payloadPiece) &&
+    if (isObject(payloadPiece) &&
         !('id' in payloadPiece) &&
         Object.keys(payloadPiece).length === 1) {
         return Object.values(payloadPiece)[0];
@@ -132,7 +108,7 @@ function getValueFromPayloadPiece(payloadPiece) {
  */
 function checkIdWildcardRatio(ids, path, conf) {
     var match = path.match(/\*/g);
-    var idCount = (isWhat.isArray(match))
+    var idCount = (isArray(match))
         ? match.length
         : 0;
     if (ids.length === idCount)
@@ -184,7 +160,7 @@ function createObjectFromPath(path, payload, state, conf) {
     var newValue = payload;
     if (path.includes('*')) {
         // only work with arrays
-        if (!isWhat.isArray(payload))
+        if (!isArray(payload))
             payload = [payload];
         var lastPayloadPiece = payload.pop();
         var ids = payload;
@@ -197,7 +173,7 @@ function createObjectFromPath(path, payload, state, conf) {
             var lastId = getId(lastPayloadPiece, conf, path);
             ids.push(lastId);
             newValue = getValueFromPayloadPiece(lastPayloadPiece);
-            if (isWhat.isObject(newValue))
+            if (isObject(newValue))
                 newValue.id = lastId;
         }
         ids = ids.map(function (_id) {
@@ -293,7 +269,7 @@ function setDeepValue(target, path, value) {
  */
 function pushDeepValue(target, path, value) {
     var deepRef = getDeepRef(target, path);
-    if (!isWhat.isArray(deepRef))
+    if (!isArray(deepRef))
         return;
     return deepRef.push(value);
 }
@@ -306,7 +282,7 @@ function pushDeepValue(target, path, value) {
  */
 function popDeepValue(target, path) {
     var deepRef = getDeepRef(target, path);
-    if (!isWhat.isArray(deepRef))
+    if (!isArray(deepRef))
         return;
     return deepRef.pop();
 }
@@ -319,7 +295,7 @@ function popDeepValue(target, path) {
  */
 function shiftDeepValue(target, path) {
     var deepRef = getDeepRef(target, path);
-    if (!isWhat.isArray(deepRef))
+    if (!isArray(deepRef))
         return;
     return deepRef.shift();
 }
@@ -337,7 +313,7 @@ function spliceDeepValue(target, path, index, deleteCount, value) {
     if (index === void 0) { index = 0; }
     if (deleteCount === void 0) { deleteCount = 0; }
     var deepRef = getDeepRef(target, path);
-    if (!isWhat.isArray(deepRef))
+    if (!isArray(deepRef))
         return;
     if (value === undefined)
         return deepRef.splice(index, deleteCount);
@@ -357,11 +333,11 @@ function DELETE_PROP_SUBPROP(state, PROP_SUBPROP) {
     var lastProp = propsArray.pop();
     var propsWithoutLast = propsArray.join('.');
     var ref = getDeepRef(state, propsWithoutLast);
-    return Vue$$1.delete(ref, lastProp);
+    return Vue.delete(ref, lastProp);
 }
 // eslint-disable-next-line
 function MUTATE_PROP_x_SUBPROP(state, payload, PROP_SUBPROP, conf) {
-    if (!isWhat.isArray(payload))
+    if (!isArray(payload))
         payload = [payload];
     var newValue = payload.pop();
     var ids = getIdsFromPayload(payload, conf, PROP_SUBPROP);
@@ -382,11 +358,11 @@ function DELETE_PROP_x_SUBPROP(state, payload, PROP_SUBPROP, conf) {
         return;
     var pathWithIds = fillinPathWildcards(ids, propsWithoutLast, state, conf);
     var ref = getDeepRef(state, pathWithIds);
-    return Vue$$1.delete(ref, lastProp);
+    return Vue.delete(ref, lastProp);
 }
 // eslint-disable-next-line
 function MUTATE_PROP_x(state, payload, PROP_SUBPROP, conf, propValue) {
-    if (!isWhat.isArray(payload))
+    if (!isArray(payload))
         payload = [payload];
     var ids = getIdsFromPayload(payload, conf, PROP_SUBPROP);
     if (!checkIdWildcardRatio(ids, PROP_SUBPROP, conf))
@@ -396,17 +372,17 @@ function MUTATE_PROP_x(state, payload, PROP_SUBPROP, conf, propValue) {
     var pathWithIds = fillinPathWildcards(ids, propPathWithoutLast, state, conf);
     var ref = getDeepRef(state, pathWithIds);
     var newValue = getValueFromPayloadPiece(payload.pop());
-    if (isWhat.isObject(newValue))
+    if (isObject(newValue))
         newValue.id = lastId;
-    if (isWhat.isObject(propValue))
+    if (isObject(propValue))
         newValue = merge(propValue, newValue);
-    return Vue$$1.set(ref, lastId, newValue);
+    return Vue.set(ref, lastId, newValue);
 }
 // eslint-disable-next-line
 function DELETE_PROP_x(state, id, PROP_SUBPROP, conf) {
     if (!id)
         return error('mutationDeleteNoId', conf, PROP_SUBPROP);
-    var ids = (!isWhat.isArray(id)) ? [id] : id;
+    var ids = (!isArray(id)) ? [id] : id;
     if (!checkIdWildcardRatio(ids, PROP_SUBPROP, conf))
         return;
     var lastId = ids.pop();
@@ -415,7 +391,7 @@ function DELETE_PROP_x(state, id, PROP_SUBPROP, conf) {
         : PROP_SUBPROP;
     var pathWithIds = fillinPathWildcards(ids, pathWithoutWildcard, state, conf);
     var ref = getDeepRef(state, pathWithIds);
-    return Vue$$1.delete(ref, lastId);
+    return Vue.delete(ref, lastId);
 }
 // execute mutation
 function executeArrayMutation(state, payload, action, PROP_SUBPROP, conf) {
@@ -425,7 +401,7 @@ function executeArrayMutation(state, payload, action, PROP_SUBPROP, conf) {
         pathWithIds = PROP_SUBPROP;
     }
     else {
-        if (!isWhat.isArray(payload) && action !== 'splice')
+        if (!isArray(payload) && action !== 'splice')
             payload = [payload];
         if (action !== 'pop' && action !== 'shift')
             newValue = payload.pop();
@@ -461,7 +437,7 @@ function executeArrayMutation(state, payload, action, PROP_SUBPROP, conf) {
  * @returns {AnyObject} all mutations for each property.
  */
 function makeMutationsForAllProps(propParent, path, conf, infoNS) {
-    if (!isWhat.isObject(propParent))
+    if (!isObject(propParent))
         return {};
     return Object.keys(propParent)
         .reduce(function (mutations, prop) {
@@ -515,7 +491,7 @@ function makeMutationsForAllProps(propParent, path, conf, infoNS) {
         // =================================================>
         //   ARRAY MUTATIONS
         // =================================================>
-        if (isWhat.isArray(propValue)) {
+        if (isArray(propValue)) {
             // PUSH mutation name
             var push = (conf.pattern === 'traditional')
                 ? 'PUSH_' + PROP_SUBPROP.toUpperCase()
@@ -548,7 +524,7 @@ function makeMutationsForAllProps(propParent, path, conf, infoNS) {
         // =================================================>
         //   CHILDREN MUTATIONS
         // =================================================>
-        if (isWhat.isObject(propValue) && Object.keys(propValue).length) {
+        if (isObject(propValue) && Object.keys(propValue).length) {
             var childrenMutations = makeMutationsForAllProps(propValue, PROP_SUBPROP, conf, infoNS);
             Object.assign(mutations, childrenMutations);
         }
@@ -705,7 +681,7 @@ function defaultDeletor(path, payload, store, conf) {
             : props;
         var newPath = fsProps;
         if (fsProps.includes('*')) {
-            var ids = (!isWhat.isArray(payload)) ? [payload] : payload;
+            var ids = (!isArray(payload)) ? [payload] : payload;
             newPath = fillinPathWildcards(ids, fsProps, _module.state, conf);
         }
         if (newPath)
@@ -761,7 +737,7 @@ function createSetterModule(targetState, moduleNS, store, conf) {
             // =================================================>
             //   ARRAY SETTERS
             // =================================================>
-            if (isWhat.isArray(propValue)) {
+            if (isArray(propValue)) {
                 carry[PROP_SUBPROP + '.push'] = function (context, payload) {
                     return defaultSetter(MODULE_PROP_SUBPROP + '.push', payload, store, conf);
                 };
@@ -787,7 +763,7 @@ function createSetterModule(targetState, moduleNS, store, conf) {
             //   CHILDREN SETTERS
             // =================================================>
             // let's do it's children as well!
-            if (isWhat.isObject(propValue) && Object.keys(propValue).length) {
+            if (isObject(propValue) && Object.keys(propValue).length) {
                 var childrenSetters = getSetters(propValue, PROP_SUBPROP);
                 Object.assign(carry, childrenSetters);
             }
@@ -830,7 +806,7 @@ function createDeleteModule(targetState, moduleNS, store, conf) {
                 return defaultDeletor(MODULE_PROP_SUBPROP, payload, store, conf);
             };
             // let's do it's children as well!
-            if (isWhat.isObject(propValue) && Object.keys(propValue).length) {
+            if (isObject(propValue) && Object.keys(propValue).length) {
                 var childrenDeletors = getDeletors(propValue, PROP_SUBPROP);
                 Object.assign(carry, childrenDeletors);
             }
@@ -892,176 +868,5 @@ function createEasyAccess(userConfig) {
     };
 }
 
-exports.default = createEasyAccess;
-exports.createEasyAccess = createEasyAccess;
-exports.defaultMutations = defaultMutations;
-exports.defaultGetter = defaultGetter;
-exports.defaultSetter = defaultSetter;
-exports.defaultDeletor = defaultDeletor;
-exports.getDeepRef = getDeepRef;
-exports.getKeysFromPath = getKeysFromPath;
-});
-
-unwrapExports(index_cjs);
-var index_cjs_1 = index_cjs.createEasyAccess;
-var index_cjs_2 = index_cjs.defaultMutations;
-var index_cjs_3 = index_cjs.defaultGetter;
-var index_cjs_4 = index_cjs.defaultSetter;
-var index_cjs_5 = index_cjs.defaultDeletor;
-var index_cjs_6 = index_cjs.getDeepRef;
-var index_cjs_7 = index_cjs.getKeysFromPath;
-
-var config = {
-  ignoreProps: ['user/importedData', 'user/user.secretProp', 'wallet'],
-};
-
-// MODULE: gymData
-const gymDataState = {
-  defeated: {
-    '*': false,
-    palletTown: false,
-  }
-};
-const gymData = {
-  namespaced: true,
-  state: gymDataState,
-  mutations: index_cjs_2(gymDataState, config, {moduleNamespace: 'locationJournal/gymData/'})
-};
-
-// MODULE: locationJournal
-const locationJournalState = {
-  visitedPlaces: {
-    '*': {
-      visited: false,
-      gym: false,
-      pokecentre: false,
-      tags: {}
-    },
-    palletTown: {
-      visited: true,
-      gym: false,
-    }
-  }
-};
-const locationJournal = {
-  namespaced: true,
-  state: locationJournalState,
-  mutations: index_cjs_2(locationJournalState, config, {moduleNamespace: 'locationJournal'}),
-  modules: { gymData }
-};
-
-// MODULE: user
-const userState = {
-  user: {secretProp: []},
-  importedData: [],
-  wallet: []
-};
-
-const user = {
-  namespaced: true,
-  state: userState,
-  actions: {
-    wallet ({state}, newVal) {
-      return newVal + '!'
-    },
-  },
-  mutations: index_cjs_2(userState, config, {moduleNamespace: 'user/'})
-};
-
-const firestoreUser = {
-  // firestore settings
-  firestorePath: 'fakePath',
-  firestoreRefType: 'doc',
-  moduleName: 'userDB',
-  statePropName: 'user',
-  // the rest
-  namespaced: true,
-  state: userState,
-  mutations: index_cjs_2(userState, config, {moduleNamespace: 'userDB/'})
-};
-
-// MODULE: dex
-const state = {
-  pokemonById: {
-    '*': {
-      name: '',
-      tags: {
-        '*': true
-      },
-      powerUps: []
-    }
-  },
-  emptyObject: {},
-  propToBeDeleted: true
-};
-
-const dex = {
-  namespaced: true,
-  state: state,
-  mutations: index_cjs_2(state, config, {moduleNamespace: 'dex/'})
-};
-
-const firestoreDex = {
-  // firestore settings
-  firestorePath: 'fakePath',
-  firestoreRefType: 'collection',
-  moduleName: 'dexDB',
-  statePropName: 'pokemonById',
-  // the rest
-  namespaced: true,
-  state: state,
-  mutations: index_cjs_2(state, config, {moduleNamespace: 'dexDB/'})
-};
-
-// MODULE: dex
-
-const state$1 = {
-  '*': {
-    name: '',
-    online: false,
-    tags: {
-      '*': true
-    }
-  }
-};
-
-const friendsList = {
-  namespaced: true,
-  state: state$1,
-  mutations: index_cjs_2(state$1, config, {moduleNamespace: 'friendsList/'})
-};
-
-// set plugins
-const easyAccess = index_cjs_1(config);
-const easyFirestores = createFirestores([firestoreDex, firestoreUser]);
-
-// Store root state
-function initialState () {
-  return {
-    pokemonBox: {
-      waterPokemon: ['squirtle'],
-      items: [],
-      _secrets: []
-    },
-    wallet: [],
-    propToBeDeleted_commit: true,
-    propToBeDeleted_dispatch: true,
-    propToBeDeleted_delete: true
-  }
-}
-
-// export store
-var storeObj = {
-  modules: { locationJournal, user, dex, friendsList },
-  state: initialState(),
-  mutations: index_cjs_2(initialState(), config, {moduleNamespace: ''}),
-  actions: {},
-  getters: {},
-  plugins: [easyFirestores, easyAccess]
-};
-
-// create store
-Vue.use(Vuex);
-const store = new Vuex.Store(storeObj);
-
-module.exports = store;
+export default createEasyAccess;
+export { createEasyAccess, defaultMutations, defaultGetter, defaultSetter, defaultDeletor, getDeepRef, getKeysFromPath };

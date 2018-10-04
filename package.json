@@ -1,9 +1,9 @@
 {
   "name": "vuex-easy-access",
-  "version": "3.0.4",
+  "version": "3.1.0",
   "description": "Unified syntax with simple set() and get() store access + auto generate mutations",
   "main": "dist/index.cjs.js",
-  "module": "dist/index.es.js",
+  "module": "dist/index.esm.js",
   "scripts": {
     "lint": "eslint --ext .js,.vue src",
     "test": "ava",
@@ -32,10 +32,6 @@
   },
   "homepage": "https://github.com/mesqueeb/vuex-easy-access#readme",
   "devDependencies": {
-    "@babel/core": "^7.0.0",
-    "@babel/plugin-external-helpers": "^7.0.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
-    "@babel/preset-env": "^7.0.0",
     "ava": "^0.25.0",
     "babel-eslint": "^8.2.6",
     "eslint": "^5.1.0",
@@ -47,18 +43,19 @@
     "eslint-plugin-promise": "^3.8.0",
     "eslint-plugin-standard": "^3.1.0",
     "eslint-plugin-vue": "^4.7.0",
+    "firebase": "^5.5.2",
     "rollup": "^0.65.2",
-    "rollup-plugin-babel": "^4.0.3",
     "rollup-plugin-commonjs": "^9.1.6",
-    "rollup-plugin-node-resolve": "^3.4.0",
-    "rollup-plugin-terser": "^2.0.2",
+    "rollup-plugin-typescript2": "^0.17.1",
+    "typescript": "^3.1.1",
     "vuepress": "^0.14.4",
     "vuex": "^3.0.1",
     "vuex-easy-firestore": "^1.2.1"
   },
   "dependencies": {
-    "is-what": "^2.1.0",
-    "merge-anything": "^2.0.1"
+    "find-and-replace-anything": "^1.1.1",
+    "is-what": "^2.5.0",
+    "merge-anything": "^2.1.1"
   },
   "peerDependencies": {
     "vue": "^2.5.17"
