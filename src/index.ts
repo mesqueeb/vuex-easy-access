@@ -7,12 +7,19 @@
  */
 
 import defaultConfig from './defaultConfig'
+import { IDefaultConfig } from './defaultConfig'
 import { defaultMutations } from './makeMutations'
 import { defaultGetter } from './makeGetters'
 import { defaultSetter, defaultDeletor, generateSetterModules } from './makeSetters'
 import { getDeepRef, getKeysFromPath } from './pathUtils'
 
-function createEasyAccess (userConfig = {}) {
+/**
+ * This will create the `/set/` sub-modules and add `set()` `get()` and `delete()` to the store object.
+ *
+ * @param {IDefaultConfig} [userConfig={}]
+ * @returns {*} the store object
+ */
+function createEasyAccess (userConfig: IDefaultConfig = {}): any {
   const conf = Object.assign({}, defaultConfig, userConfig)
   return store => {
     generateSetterModules(store, conf)

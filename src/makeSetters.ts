@@ -1,6 +1,7 @@
 import { fillinPathWildcards, createObjectFromPath, getKeysFromPath, getDeepRef, pushDeepValue, popDeepValue, shiftDeepValue, spliceDeepValue } from './pathUtils'
 import { isObject, isArray } from 'is-what'
 import defaultConf from './defaultConfig'
+import { IDefaultConfig, IInitialisedStore, AnyObject } from './declarations'
 import error from './errors'
 
 /**
@@ -12,21 +13,25 @@ import error from './errors'
  * Import method:
  * `store.set = (path, payload) => { return defaultSetter(path, payload, store, conf) }`
  *
- * @param   {string}   path     the path of the prop to set eg. 'info/user/favColours.primary'
- * @param   {*}        payload  the payload to set the prop to
- * @param   {object}   store    the store to attach
- * @param   {object}   conf     user config
- *
- * @returns {function}          dispatch or commit
+ * @param {string} path the path of the prop to set eg. 'info/user/favColours.primary'
+ * @param {*} payload the payload to set the prop to
+ * @param {IInitialisedStore} store the store to attach
+ * @param {IDefaultConfig} [conf={}] user config
+ * @returns {*} the dispatch or commit function
  */
-function defaultSetter (path, payload, store, conf = {}) {
-  conf = Object.assign({}, defaultConf, conf) // 'info/user/favColours.primary'
+export function defaultSetter (
+  path: string,
+  payload: any,
+  store: IInitialisedStore,
+  conf: IDefaultConfig = {}
+): any {
+  const dConf: IDefaultConfig = Object.assign({}, defaultConf, conf)
   const pArr = path.split('/')                // ['info', 'user', 'favColours.primary']
   const props = pArr.pop()                    // 'favColours.primary'
   const modulePath = (pArr.length)
     ? pArr.join('/') + '/'                    // 'info/user/'
     : ''
-  const setProp = (conf.pattern === 'traditional')
+  const setProp = (dConf.pattern === 'traditional')
     ? 'set' + props[0].toUpperCase() + props.substring(1) // 'setFavColours.primary'
     : props                                               // 'favColours.primary'
   // Check if an action exists, if it does, trigger that and return early!
@@ -36,12 +41,12 @@ function defaultSetter (path, payload, store, conf = {}) {
     return store.dispatch(moduleSetProp, payload)
   }
   // [vuex-easy-firestore] check if it's a firestore module
-  const fsModulePath = (!modulePath && props && !props.includes('.') && conf.vuexEasyFirestore)
+  const fsModulePath = (!modulePath && props && !props.includes('.') && dConf.vuexEasyFirestore)
     ? props + '/'
     : modulePath
   const _module = store._modulesNamespaceMap[fsModulePath]
   const fsConf = (!_module) ? null : _module.state._conf
-  if (conf.vuexEasyFirestore && fsConf) {
+  if (dConf.vuexEasyFirestore && fsConf) {
     // 'info/user/set', {favColours: {primary: payload}}'
     const fsPropName = fsConf.statePropName
     const fsProps = (fsPropName && props.startsWith(`${fsPropName}.`))
@@ -49,7 +54,7 @@ function defaultSetter (path, payload, store, conf = {}) {
       : props
     const newPayload = (!fsProps || (!modulePath && fsProps && !fsProps.includes('.')))
       ? payload
-      : createObjectFromPath(fsProps, payload, _module.state, conf)
+      : createObjectFromPath(fsProps, payload, _module.state, dConf)
     const firestoreActionPath = fsModulePath + 'set'
     const firestoreActionExists = store._actions[firestoreActionPath]
     if (firestoreActionExists) {
@@ -57,7 +62,7 @@ function defaultSetter (path, payload, store, conf = {}) {
     }
   }
   // Trigger the mutation!
-  const SET_PROP = (conf.pattern === 'traditional')
+  const SET_PROP = (dConf.pattern === 'traditional')
     ? 'SET_' + props.toUpperCase() // 'SET_FAVCOLOURS.PRIMARY'
     : props                        // 'favColours.primary'
   const MODULES_SET_PROP = modulePath + SET_PROP
@@ -65,7 +70,7 @@ function defaultSetter (path, payload, store, conf = {}) {
   if (mutationExists) {
     return store.commit(MODULES_SET_PROP, payload)
   }
-  return error('missingSetterMutation', conf, MODULES_SET_PROP, props)
+  return error('missingSetterMutation', dConf, MODULES_SET_PROP, props)
 }
 
 /**
@@ -78,21 +83,25 @@ function defaultSetter (path, payload, store, conf = {}) {
  * Import method:
  * `store.delete = (path, payload) => { return defaultDeletor(path, payload, store, conf) }`
  *
- * @param   {string}   path     the path of the prop to delete eg. 'info/user/favColours.primary'
- * @param   {*}        payload  either nothing or an id or {id}
- * @param   {object}   store    the store to attach
- * @param   {object}   conf     user config
- *
- * @returns {function}          dispatch or commit
+ * @param {string} path the path of the prop to delete eg. 'info/user/favColours.primary'
+ * @param {*} payload either nothing or an id or {id}
+ * @param {IInitialisedStore} store the store to attach
+ * @param {IDefaultConfig} [conf={}] user config
+ * @returns {*} dispatch or commit
  */
-function defaultDeletor (path, payload, store, conf = {}) {
-  conf = Object.assign({}, defaultConf, conf) // 'user/items.*.tags.*'
+export function defaultDeletor (
+  path: string,
+  payload: any,
+  store: IInitialisedStore,
+  conf: IDefaultConfig = {}
+): any {
+  const dConf: IDefaultConfig = Object.assign({}, defaultConf, conf) // 'user/items.*.tags.*'
   const pArr = path.split('/')                // ['user', 'items.*.tags.*']
   const props = pArr.pop()                    // 'items.*.tags.*'
   const modulePath = (pArr.length)
     ? pArr.join('/') + '/'                    // 'user/'
     : ''
-  const deleteProp = (conf.pattern === 'traditional')
+  const deleteProp = (dConf.pattern === 'traditional')
     ? 'delete' + props[0].toUpperCase() + props.substring(1) // 'deleteItems.*.tags.*'
     : '-' + props                                            // '-items.*.tags.*'
   // Check if an action exists, if it does, trigger that and return early!
@@ -104,7 +113,7 @@ function defaultDeletor (path, payload, store, conf = {}) {
   // [vuex-easy-firestore] check if it's a firestore module
   const _module = store._modulesNamespaceMap[modulePath]
   const fsConf = (!_module) ? null : _module.state._conf
-  if (conf.vuexEasyFirestore && fsConf) {
+  if (dConf.vuexEasyFirestore && fsConf) {
     // DOC: 'user/favColours.*', 'primary'
     // COLLECTION: 'items.*', '123'
     // COLLECTION: 'items.*.tags.*', ['123', 'dark']
@@ -120,7 +129,7 @@ function defaultDeletor (path, payload, store, conf = {}) {
     if (newPath) return store.dispatch(modulePath + 'delete', newPath)
   }
   // Trigger the mutation!
-  const DELETE_PROP = (conf.pattern === 'traditional')
+  const DELETE_PROP = (dConf.pattern === 'traditional')
     ? 'DELETE_' + props.toUpperCase() // 'DELETE_ITEMS.*.TAGS.*'
     : '-' + props                     // '-items.*.tags.*'
   const MODULE_DELETE_PROP = modulePath + DELETE_PROP
@@ -128,20 +137,24 @@ function defaultDeletor (path, payload, store, conf = {}) {
   if (mutationExists) {
     return store.commit(MODULE_DELETE_PROP, payload)
   }
-  return error('missingDeleteMutation', conf, MODULE_DELETE_PROP, props)
+  return error('missingDeleteMutation', dConf, MODULE_DELETE_PROP, props)
 }
 
 /**
  * Creates a special 'setter-module' to be registered as a child of a module. This 'setter-module' will have the 'set' namespace (by default) and have one setter action per state prop in the parent module. The setter action's name will be the state prop name.
  *
- * @param {object} targetState   parent module's state object
+ * @param {AnyObject} targetState parent module's state object
  * @param {string} [moduleNS=''] parent module's namespace, must end in '/'
- * @param {object} store         vuex store
- * @param {object} conf          user config
- * @returns a special 'setter-module' to be registered as child of target module.
+ * @param {IInitialisedStore} store vuex store
+ * @param {IDefaultConfig} conf user config
+ * @returns {*} a special 'setter-module' to be registered as child of target module.
  */
-function createSetterModule (targetState, moduleNS = '', store, conf = {}) {
-  conf = Object.assign({}, defaultConf, conf)
+function createSetterModule (
+  targetState: AnyObject,
+  moduleNS: string = '',
+  store: IInitialisedStore,
+  conf: IDefaultConfig
+): any {
   function getSetters (_targetState, _propPath = '') {
     return Object.keys(_targetState).reduce((carry, stateProp) => {
       // Get the path info up until this point
@@ -206,14 +219,18 @@ function createSetterModule (targetState, moduleNS = '', store, conf = {}) {
 /**
  * Creates a special 'delete-module' to be registered as a child of a module. This 'delete-module' will have the 'delete' namespace (by default) and have one delete action per state prop in the parent module which holds an empty object. The delete action's name will be the state prop name + `.*`.
  *
- * @param {object} targetState   parent module's state object
+ * @param {AnyObject} targetState parent module's state object
  * @param {string} [moduleNS=''] parent module's namespace, must end in '/'
- * @param {object} store         vuex store
- * @param {object} conf          user config
- * @returns a special 'delete-module' to be registered as child of target module.
+ * @param {IInitialisedStore} store vuex store
+ * @param {IDefaultConfig} conf user config
+ * @returns {*} a special 'delete-module' to be registered as child of target module.
  */
-function createDeleteModule (targetState, moduleNS = '', store, conf = {}) {
-  conf = Object.assign({}, defaultConf, conf)
+function createDeleteModule (
+  targetState: AnyObject,
+  moduleNS: string = '',
+  store: IInitialisedStore,
+  conf: IDefaultConfig
+): any {
   function getDeletors (_targetState, _propPath = '') {
     return Object.keys(_targetState).reduce((carry, stateProp) => {
       // Get the path info up until this point
@@ -243,24 +260,32 @@ function createDeleteModule (targetState, moduleNS = '', store, conf = {}) {
   return {actions: deletors, namespaced: true}
 }
 
-function generateSetterModules (store, conf = {}) {
+/**
+ * Generate all vuex-easy-access modules: `/set/` and `/delete/` for each module
+ *
+ * @export
+ * @param {IInitialisedStore} store
+ * @param {IDefaultConfig} [conf={}]
+ */
+export function generateSetterModules (
+  store: IInitialisedStore,
+  conf: IDefaultConfig = {}
+): void {
   const modules = store._modulesNamespaceMap
-  conf = Object.assign({}, defaultConf, conf)
+  const dConf: IDefaultConfig = Object.assign({}, defaultConf, conf)
   Object.keys(modules).forEach(moduleNS => {
     const _module = modules[moduleNS]
-    const moduleName = getKeysFromPath(moduleNS + conf.setter)
-    const setterModule = createSetterModule(_module.state, moduleNS, store, conf)
+    const moduleName = getKeysFromPath(moduleNS + dConf.setter)
+    const setterModule = createSetterModule(_module.state, moduleNS, store, dConf)
     store.registerModule(moduleName, setterModule)
-    const deleteModule = createDeleteModule(_module.state, moduleNS, store, conf)
-    const deleteModuleName = getKeysFromPath(moduleNS + conf.deletor)
+    const deleteModule = createDeleteModule(_module.state, moduleNS, store, dConf)
+    const deleteModuleName = getKeysFromPath(moduleNS + dConf.deletor)
     store.registerModule(deleteModuleName, deleteModule)
   })
-  const rootModuleName = conf.setter
-  const rootSetterModule = createSetterModule(store.state, '', store, conf)
+  const rootModuleName = dConf.setter
+  const rootSetterModule = createSetterModule(store.state, '', store, dConf)
   store.registerModule(rootModuleName, rootSetterModule)
-  const rootDeleteModuleName = conf.deletor
-  const rootDeleteModule = createDeleteModule(store.state, '', store, conf)
+  const rootDeleteModuleName = dConf.deletor
+  const rootDeleteModule = createDeleteModule(store.state, '', store, dConf)
   store.registerModule(rootDeleteModuleName, rootDeleteModule)
 }
-
-export { defaultSetter, defaultDeletor, generateSetterModules }

@@ -1,4 +1,4 @@
-import { defaultMutations } from '../../../src/index'
+import { defaultMutations } from '../../../dist/index.cjs'
 import config from '../config'
 
 // MODULE: user
