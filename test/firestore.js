@@ -58,7 +58,7 @@ import store from './helpers/index.cjs.js'
 //   const prop = 'pokemonById'
 //   // Add items
 //   store.set(modulePath + prop + '.*', {id: '001', name: 'bulbasaur'})
-//   store.commit(modulePath + prop + '.*', {id: '004', name: 'charmender'})
+//   store.commit(modulePath + prop + '.*', {id: '004', name: 'charmander'})
 //   store.dispatch(modulePath + 'set/' + prop + '.*', {id: '007', name: 'squirtle'})
 //   // add some more to test deletions
 //   store.set(modulePath + prop + '.*', {id: '002', name: 'ivysaur'})
@@ -88,7 +88,7 @@ import store from './helpers/index.cjs.js'
 //   // check if additions are still there
 //   t.is(dex['001'].name, 'bulbasaur')
 //   t.truthy(dex['001'])
-//   t.is(dex['004'].name, 'charmender')
+//   t.is(dex['004'].name, 'charmander')
 //   t.truthy(dex['004'])
 //   t.is(dex['007'].name, 'squirtle')
 //   t.truthy(dex['007'])
