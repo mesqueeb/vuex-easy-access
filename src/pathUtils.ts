@@ -29,12 +29,12 @@ function getId (
 /**
  * Get all ids from an array payload.
  *
- * @param {string[]} payload
+ * @param {any[]} payload
  * @param {object} [conf] (optional - for error handling) the vuex-easy-access config
  * @param {string} [path] (optional - for error handling) the path called
  * @returns {string[]} all ids
  */
-export function getIdsFromPayload (payload: string[], conf?: object, path?: string): string[] {
+export function getIdsFromPayload (payload: any[], conf?: object, path?: string): string[] {
   return payload.map(payloadPiece => getId(payloadPiece, conf, path, payload))
 }
 

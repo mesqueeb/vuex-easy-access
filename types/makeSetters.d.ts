@@ -15,6 +15,11 @@ import { IDefaultConfig, IInitialisedStore } from './declarations';
  * @returns {*} the dispatch or commit function
  */
 export declare function defaultSetter(path: string, payload: any, store: IInitialisedStore, conf?: IDefaultConfig): any;
+export declare function formatSetter(path: string, payload: any, store: IInitialisedStore, conf?: IDefaultConfig): {
+    command: string;
+    _path?: string;
+    _payload?: any;
+};
 /**
  * Creates a delete function in the store to delete any prop from a value
  * Usage:
@@ -32,6 +37,11 @@ export declare function defaultSetter(path: string, payload: any, store: IInitia
  * @returns {*} dispatch or commit
  */
 export declare function defaultDeletor(path: string, payload: any, store: IInitialisedStore, conf?: IDefaultConfig): any;
+export declare function formatDeletor(path: string, payload: any, store: IInitialisedStore, conf?: IDefaultConfig): {
+    command: string;
+    _path?: string;
+    _payload?: any;
+};
 /**
  * Generate all vuex-easy-access modules: `/set/` and `/delete/` for each module
  *

@@ -2,12 +2,12 @@ import { AnyObject } from './declarations';
 /**
  * Get all ids from an array payload.
  *
- * @param {string[]} payload
+ * @param {any[]} payload
  * @param {object} [conf] (optional - for error handling) the vuex-easy-access config
  * @param {string} [path] (optional - for error handling) the path called
  * @returns {string[]} all ids
  */
-export declare function getIdsFromPayload(payload: string[], conf?: object, path?: string): string[];
+export declare function getIdsFromPayload(payload: any[], conf?: object, path?: string): string[];
 /**
  * Returns a value of a payload piece. Eg. {[id]: 'val'} will return 'val'
  *
