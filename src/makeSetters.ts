@@ -72,7 +72,7 @@ export function formatSetter (
         : props
       const newPayload = (!fsProps || (!modulePath && fsProps && !fsProps.includes('.')))
         ? payload
-        : createObjectFromPath(fsProps, payload, _module.state, dConf)
+        : createObjectFromPath(fsProps, payload)
       return {command: 'dispatch', _path: firestoreActionPath, _payload: newPayload}
     }
   }
@@ -156,7 +156,10 @@ export function formatDeletor (
     if (fsProps.includes('*')) {
       const idsPayload = (!isArray(payload)) ? [payload] : payload
       const ids = getIdsFromPayload(idsPayload)
-      newPath = fillinPathWildcards(ids, fsProps, _module.state, conf)
+      console.log('fsProps → ', fsProps)
+      console.log('ids → ', ids)
+      newPath = fillinPathWildcards(ids, fsProps)
+      console.log('newPath → ', newPath)
     }
     if (newPath) return {command: 'dispatch', _path: modulePath + 'delete', _payload: newPath}
   }
@@ -171,27 +174,6 @@ export function formatDeletor (
   }
   const triggeredError = error('missingDeleteMutation', dConf, MODULE_DELETE_PROP, props)
   return {command: 'error', _payload: triggeredError}
-}
-
-function getStore () {
-  return {
-    state: {},
-    _actions: {},
-    _mutations: {},
-    _modulesNamespaceMap: {}
-  }
-}
-
-function getConf () {
-  return {
-    setter: 'set',
-    getter: 'get',
-    deletor: 'delete',
-    vuexEasyFirestore: false,
-    ignorePrivateProps: true,
-    ignoreProps: [],
-    pattern: 'simple'
-  }
 }
 
 /**

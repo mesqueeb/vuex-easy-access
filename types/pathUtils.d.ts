@@ -29,21 +29,21 @@ export declare function checkIdWildcardRatio(ids: string[], path: string, conf: 
  *
  * @param {string[]} ids
  * @param {string} path 'path.*.with.*.wildcards'
- * @param {object} state RELATIVE TO PATH START! the state to check if the value actually exists
- * @param {object} conf (optional - for error handling) the vuex-easy-access config
+ * @param {object} [state] RELATIVE TO PATH START! the state to check if the value actually exists
+ * @param {object} [conf] (optional - for error handling) the vuex-easy-access config
  * @returns {string} The path with '*' replaced by IDs
  */
-export declare function fillinPathWildcards(ids: string[], path: string, state: object, conf: object): string;
+export declare function fillinPathWildcards(ids: string[], path: string, state?: object, conf?: object): string;
 /**
  * ('/sub.prop', payload) becomes →  {sub: {prop: payload}}
  *
  * @param   {string} path     'a/path/like.this'
  * @param   {*}      payload
- * @param   {object} state the state to check if the value actually exists
- * @param   {object} conf (optional - for error handling) the vuex-easy-access config
+ * @param   {object} [state] the state to check if the value actually exists
+ * @param   {object} [conf] (optional - for error handling) the vuex-easy-access config
  * @returns {AnyObject} a nested object re-created based on the path & payload
  */
-export declare function createObjectFromPath(path: string, payload: any, state: object, conf: object): AnyObject;
+export declare function createObjectFromPath(path: string, payload: any, state?: object, conf?: object): AnyObject;
 /**
  * Returns the keys of a path
  *
