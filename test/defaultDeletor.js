@@ -221,6 +221,12 @@ test('[vuex-easy-firestore] wildcards', t => {
   payload = ['primary', {red: true}]
   res = formatDeletor(path, payload, store, conf)
   t.deepEqual(res, {command: 'dispatch', _path: deletePath, _payload: 'favColours.primary.visible.red'})
+  // 4. statePropName
+  store._modulesNamespaceMap['info/user/'].state._conf.statePropName = 'favColours'
+  path = 'info/user/favColours.*.visible.deeper.*'
+  payload = ['primary', {red: true}]
+  res = formatDeletor(path, payload, store, conf)
+  t.deepEqual(res, {command: 'dispatch', _path: 'info/user/delete', _payload: 'primary.visible.deeper.red'})
 })
 
 test('[vuex-easy-firestore] has statePropName', t => {

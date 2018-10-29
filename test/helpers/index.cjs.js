@@ -144,8 +144,8 @@ function checkIdWildcardRatio(ids, path, conf) {
  *
  * @param {string[]} ids
  * @param {string} path 'path.*.with.*.wildcards'
- * @param {object} state RELATIVE TO PATH START! the state to check if the value actually exists
- * @param {object} conf (optional - for error handling) the vuex-easy-access config
+ * @param {object} [state] RELATIVE TO PATH START! the state to check if the value actually exists
+ * @param {object} [conf] (optional - for error handling) the vuex-easy-access config
  * @returns {string} The path with '*' replaced by IDs
  */
 function fillinPathWildcards(ids, path, state, conf) {
@@ -175,8 +175,8 @@ function fillinPathWildcards(ids, path, state, conf) {
  *
  * @param   {string} path     'a/path/like.this'
  * @param   {*}      payload
- * @param   {object} state the state to check if the value actually exists
- * @param   {object} conf (optional - for error handling) the vuex-easy-access config
+ * @param   {object} [state] the state to check if the value actually exists
+ * @param   {object} [conf] (optional - for error handling) the vuex-easy-access config
  * @returns {AnyObject} a nested object re-created based on the path & payload
  */
 function createObjectFromPath(path, payload, state, conf) {
@@ -650,7 +650,7 @@ function formatSetter(path, payload, store, conf) {
                 : props;
             var newPayload = (!fsProps || (!modulePath && fsProps && !fsProps.includes('.')))
                 ? payload
-                : createObjectFromPath(fsProps, payload, _module.state, dConf);
+                : createObjectFromPath(fsProps, payload);
             return { command: 'dispatch', _path: firestoreActionPath, _payload: newPayload };
         }
     }
@@ -721,7 +721,10 @@ function formatDeletor(path, payload, store, conf) {
         if (fsProps.includes('*')) {
             var idsPayload = (!isWhat.isArray(payload)) ? [payload] : payload;
             var ids = getIdsFromPayload(idsPayload);
-            newPath = fillinPathWildcards(ids, fsProps, _module.state, conf);
+            console.log('fsProps → ', fsProps);
+            console.log('ids → ', ids);
+            newPath = fillinPathWildcards(ids, fsProps);
+            console.log('newPath → ', newPath);
         }
         if (newPath)
             return { command: 'dispatch', _path: modulePath + 'delete', _payload: newPath };

@@ -72,6 +72,12 @@ test('fillinPathWildcards', t => {
   path = '*.tags.*'
   res = fillinPathWildcards(ids, path, state, conf)
   t.is(res, '001.tags.water')
+  path = '*.tags.deeper.*'
+  res = fillinPathWildcards(ids, path, state, conf)
+  t.is(res, '001.tags.deeper.water')
+  path = '*.tags.deeper.d.d.d.*'
+  res = fillinPathWildcards(ids, path, state, conf)
+  t.is(res, '001.tags.deeper.d.d.d.water')
   path = '*'
   res = fillinPathWildcards(['001'], path, state, conf)
   t.is(res, '001')
