@@ -65,4 +65,8 @@ export default [
     input: 'src/pathUtils.ts',
     output: [ {file: 'test/helpers/pathUtils.cjs.js', format: 'cjs'} ]
   }),
+  defaults({
+    input: 'src/makeSetters.ts',
+    output: [ {file: 'test/helpers/makeSetters.cjs.js', format: 'cjs'} ]
+  }),
 ]

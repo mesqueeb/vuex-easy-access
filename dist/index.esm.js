@@ -76,7 +76,7 @@ function getId(payloadPiece, conf, path, fullPayload) {
 /**
  * Get all ids from an array payload.
  *
- * @param {string[]} payload
+ * @param {any[]} payload
  * @param {object} [conf] (optional - for error handling) the vuex-easy-access config
  * @param {string} [path] (optional - for error handling) the path called
  * @returns {string[]} all ids
@@ -588,6 +588,13 @@ function defaultGetter(path, store) {
  */
 function defaultSetter(path, payload, store, conf) {
     if (conf === void 0) { conf = {}; }
+    var _a = formatSetter(path, payload, store, conf), command = _a.command, _path = _a._path, _payload = _a._payload;
+    if (command === 'error')
+        return _payload;
+    return store[command](_path, _payload);
+}
+function formatSetter(path, payload, store, conf) {
+    if (conf === void 0) { conf = {}; }
     var dConf = Object.assign({}, defaultConfig, conf);
     var pArr = path.split('/'); // ['info', 'user', 'favColours.primary']
     var props = pArr.pop(); // 'favColours.primary'
@@ -601,7 +608,7 @@ function defaultSetter(path, payload, store, conf) {
     var moduleSetProp = modulePath + setProp;
     var actionExists = store._actions[moduleSetProp];
     if (actionExists) {
-        return store.dispatch(moduleSetProp, payload);
+        return { command: 'dispatch', _path: moduleSetProp, _payload: payload };
     }
     // [vuex-easy-firestore] check if it's a firestore module
     var fsModulePath = (!modulePath && props && !props.includes('.') && dConf.vuexEasyFirestore)
@@ -611,17 +618,17 @@ function defaultSetter(path, payload, store, conf) {
     var fsConf = (!_module) ? null : _module.state._conf;
     if (dConf.vuexEasyFirestore && fsConf) {
         // 'info/user/set', {favColours: {primary: payload}}'
-        var fsPropName = fsConf.statePropName;
-        var fsProps = (fsPropName && props.startsWith(fsPropName + "."))
-            ? props.replace(fsPropName + ".", '')
-            : props;
-        var newPayload = (!fsProps || (!modulePath && fsProps && !fsProps.includes('.')))
-            ? payload
-            : createObjectFromPath(fsProps, payload, _module.state, dConf);
         var firestoreActionPath = fsModulePath + 'set';
         var firestoreActionExists = store._actions[firestoreActionPath];
         if (firestoreActionExists) {
-            return store.dispatch(firestoreActionPath, newPayload);
+            var fsPropName = fsConf.statePropName;
+            var fsProps = (fsPropName && props.startsWith(fsPropName + "."))
+                ? props.replace(fsPropName + ".", '')
+                : props;
+            var newPayload = (!fsProps || (!modulePath && fsProps && !fsProps.includes('.')))
+                ? payload
+                : createObjectFromPath(fsProps, payload, _module.state, dConf);
+            return { command: 'dispatch', _path: firestoreActionPath, _payload: newPayload };
         }
     }
     // Trigger the mutation!
@@ -631,9 +638,10 @@ function defaultSetter(path, payload, store, conf) {
     var MODULES_SET_PROP = modulePath + SET_PROP;
     var mutationExists = store._mutations[MODULES_SET_PROP];
     if (mutationExists) {
-        return store.commit(MODULES_SET_PROP, payload);
+        return { command: 'commit', _path: MODULES_SET_PROP, _payload: payload };
     }
-    return error('missingSetterMutation', dConf, MODULES_SET_PROP, props);
+    var triggeredError = error('missingSetterMutation', dConf, MODULES_SET_PROP, props);
+    return { command: 'error', _payload: triggeredError };
 }
 /**
  * Creates a delete function in the store to delete any prop from a value
@@ -653,6 +661,13 @@ function defaultSetter(path, payload, store, conf) {
  */
 function defaultDeletor(path, payload, store, conf) {
     if (conf === void 0) { conf = {}; }
+    var _a = formatDeletor(path, payload, store, conf), command = _a.command, _path = _a._path, _payload = _a._payload;
+    if (command === 'error')
+        return _payload;
+    return store[command](_path, _payload);
+}
+function formatDeletor(path, payload, store, conf) {
+    if (conf === void 0) { conf = {}; }
     var dConf = Object.assign({}, defaultConfig, conf); // 'user/items.*.tags.*'
     var pArr = path.split('/'); // ['user', 'items.*.tags.*']
     var props = pArr.pop(); // 'items.*.tags.*'
@@ -666,7 +681,7 @@ function defaultDeletor(path, payload, store, conf) {
     var moduleDeleteProp = modulePath + deleteProp;
     var actionExists = store._actions[moduleDeleteProp];
     if (actionExists) {
-        return store.dispatch(moduleDeleteProp, payload);
+        return { command: 'dispatch', _path: moduleDeleteProp, _payload: payload };
     }
     // [vuex-easy-firestore] check if it's a firestore module
     var _module = store._modulesNamespaceMap[modulePath];
@@ -681,11 +696,12 @@ function defaultDeletor(path, payload, store, conf) {
             : props;
         var newPath = fsProps;
         if (fsProps.includes('*')) {
-            var ids = (!isArray(payload)) ? [payload] : payload;
+            var idsPayload = (!isArray(payload)) ? [payload] : payload;
+            var ids = getIdsFromPayload(idsPayload);
             newPath = fillinPathWildcards(ids, fsProps, _module.state, conf);
         }
         if (newPath)
-            return store.dispatch(modulePath + 'delete', newPath);
+            return { command: 'dispatch', _path: modulePath + 'delete', _payload: newPath };
     }
     // Trigger the mutation!
     var DELETE_PROP = (dConf.pattern === 'traditional')
@@ -694,9 +710,10 @@ function defaultDeletor(path, payload, store, conf) {
     var MODULE_DELETE_PROP = modulePath + DELETE_PROP;
     var mutationExists = store._mutations[MODULE_DELETE_PROP];
     if (mutationExists) {
-        return store.commit(MODULE_DELETE_PROP, payload);
+        return { command: 'commit', _path: MODULE_DELETE_PROP, _payload: payload };
     }
-    return error('missingDeleteMutation', dConf, MODULE_DELETE_PROP, props);
+    var triggeredError = error('missingDeleteMutation', dConf, MODULE_DELETE_PROP, props);
+    return { command: 'error', _payload: triggeredError };
 }
 /**
  * Creates a special 'setter-module' to be registered as a child of a module. This 'setter-module' will have the 'set' namespace (by default) and have one setter action per state prop in the parent module. The setter action's name will be the state prop name.

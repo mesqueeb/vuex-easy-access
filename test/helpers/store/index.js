@@ -1,14 +1,16 @@
-import createFirestores from 'vuex-easy-firestore'
+// import createFirestores from 'vuex-easy-firestore'
 import { createEasyAccess, defaultMutations } from '../../../dist/index.cjs'
 import config from '../config'
 import locationJournal from './locationJournal'
-import { user, firestoreUser } from './user'
-import { dex, firestoreDex } from './dex'
+import { user } from './user'
+import { dex } from './dex'
+// import { user, firestoreUser } from './user'
+// import { dex, firestoreDex } from './dex'
 import { friendsList } from './friendsList'
 
 // set plugins
 const easyAccess = createEasyAccess(config)
-const easyFirestores = createFirestores([firestoreDex, firestoreUser])
+// const easyFirestores = createFirestores([firestoreDex, firestoreUser])
 
 // Store root state
 function initialState () {
@@ -32,5 +34,6 @@ export default {
   mutations: defaultMutations(initialState(), config, {moduleNamespace: ''}),
   actions: {},
   getters: {},
-  plugins: [easyFirestores, easyAccess]
+  // plugins: [easyFirestores, easyAccess]
+  plugins: [easyAccess]
 }

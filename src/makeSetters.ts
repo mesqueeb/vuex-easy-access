@@ -1,4 +1,4 @@
-import { fillinPathWildcards, createObjectFromPath, getKeysFromPath, getDeepRef, pushDeepValue, popDeepValue, shiftDeepValue, spliceDeepValue } from './pathUtils'
+import { fillinPathWildcards, createObjectFromPath, getKeysFromPath, getIdsFromPayload, getDeepRef, pushDeepValue, popDeepValue, shiftDeepValue, spliceDeepValue } from './pathUtils'
 import { isObject, isArray } from 'is-what'
 import defaultConf from './defaultConfig'
 import { IDefaultConfig, IInitialisedStore, AnyObject } from './declarations'
@@ -25,6 +25,21 @@ export function defaultSetter (
   store: IInitialisedStore,
   conf: IDefaultConfig = {}
 ): any {
+  const {command, _path, _payload} = formatSetter(path, payload, store, conf)
+  if (command === 'error') return _payload
+  return store[command](_path, _payload)
+}
+
+export function formatSetter (
+  path: string,
+  payload: any,
+  store: IInitialisedStore,
+  conf: IDefaultConfig = {}
+): {
+  command: string,
+  _path?: string,
+  _payload?: any
+} {
   const dConf: IDefaultConfig = Object.assign({}, defaultConf, conf)
   const pArr = path.split('/')                // ['info', 'user', 'favColours.primary']
   const props = pArr.pop()                    // 'favColours.primary'
@@ -38,7 +53,7 @@ export function defaultSetter (
   const moduleSetProp = modulePath + setProp
   const actionExists = store._actions[moduleSetProp]
   if (actionExists) {
-    return store.dispatch(moduleSetProp, payload)
+    return {command: 'dispatch', _path: moduleSetProp, _payload: payload}
   }
   // [vuex-easy-firestore] check if it's a firestore module
   const fsModulePath = (!modulePath && props && !props.includes('.') && dConf.vuexEasyFirestore)
@@ -48,17 +63,17 @@ export function defaultSetter (
   const fsConf = (!_module) ? null : _module.state._conf
   if (dConf.vuexEasyFirestore && fsConf) {
     // 'info/user/set', {favColours: {primary: payload}}'
-    const fsPropName = fsConf.statePropName
-    const fsProps = (fsPropName && props.startsWith(`${fsPropName}.`))
-      ? props.replace(`${fsPropName}.`, '')
-      : props
-    const newPayload = (!fsProps || (!modulePath && fsProps && !fsProps.includes('.')))
-      ? payload
-      : createObjectFromPath(fsProps, payload, _module.state, dConf)
     const firestoreActionPath = fsModulePath + 'set'
     const firestoreActionExists = store._actions[firestoreActionPath]
     if (firestoreActionExists) {
-      return store.dispatch(firestoreActionPath, newPayload)
+      const fsPropName = fsConf.statePropName
+      const fsProps = (fsPropName && props.startsWith(`${fsPropName}.`))
+        ? props.replace(`${fsPropName}.`, '')
+        : props
+      const newPayload = (!fsProps || (!modulePath && fsProps && !fsProps.includes('.')))
+        ? payload
+        : createObjectFromPath(fsProps, payload, _module.state, dConf)
+      return {command: 'dispatch', _path: firestoreActionPath, _payload: newPayload}
     }
   }
   // Trigger the mutation!
@@ -68,9 +83,10 @@ export function defaultSetter (
   const MODULES_SET_PROP = modulePath + SET_PROP
   const mutationExists = store._mutations[MODULES_SET_PROP]
   if (mutationExists) {
-    return store.commit(MODULES_SET_PROP, payload)
+    return {command: 'commit', _path: MODULES_SET_PROP, _payload: payload}
   }
-  return error('missingSetterMutation', dConf, MODULES_SET_PROP, props)
+  const triggeredError = error('missingSetterMutation', dConf, MODULES_SET_PROP, props)
+  return {command: 'error', _payload: triggeredError}
 }
 
 /**
@@ -95,6 +111,21 @@ export function defaultDeletor (
   store: IInitialisedStore,
   conf: IDefaultConfig = {}
 ): any {
+  const {command, _path, _payload} = formatDeletor(path, payload, store, conf)
+  if (command === 'error') return _payload
+  return store[command](_path, _payload)
+}
+
+export function formatDeletor (
+  path: string,
+  payload: any,
+  store: IInitialisedStore,
+  conf: IDefaultConfig = {}
+): {
+  command: string,
+  _path?: string,
+  _payload?: any
+} {
   const dConf: IDefaultConfig = Object.assign({}, defaultConf, conf) // 'user/items.*.tags.*'
   const pArr = path.split('/')                // ['user', 'items.*.tags.*']
   const props = pArr.pop()                    // 'items.*.tags.*'
@@ -108,7 +139,7 @@ export function defaultDeletor (
   const moduleDeleteProp = modulePath + deleteProp
   const actionExists = store._actions[moduleDeleteProp]
   if (actionExists) {
-    return store.dispatch(moduleDeleteProp, payload)
+    return {command: 'dispatch', _path: moduleDeleteProp, _payload: payload}
   }
   // [vuex-easy-firestore] check if it's a firestore module
   const _module = store._modulesNamespaceMap[modulePath]
@@ -123,10 +154,11 @@ export function defaultDeletor (
       : props
     let newPath = fsProps
     if (fsProps.includes('*')) {
-      const ids = (!isArray(payload)) ? [payload] : payload
+      const idsPayload = (!isArray(payload)) ? [payload] : payload
+      const ids = getIdsFromPayload(idsPayload)
       newPath = fillinPathWildcards(ids, fsProps, _module.state, conf)
     }
-    if (newPath) return store.dispatch(modulePath + 'delete', newPath)
+    if (newPath) return {command: 'dispatch', _path: modulePath + 'delete', _payload: newPath}
   }
   // Trigger the mutation!
   const DELETE_PROP = (dConf.pattern === 'traditional')
@@ -135,9 +167,31 @@ export function defaultDeletor (
   const MODULE_DELETE_PROP = modulePath + DELETE_PROP
   const mutationExists = store._mutations[MODULE_DELETE_PROP]
   if (mutationExists) {
-    return store.commit(MODULE_DELETE_PROP, payload)
+    return {command: 'commit', _path: MODULE_DELETE_PROP, _payload: payload}
   }
-  return error('missingDeleteMutation', dConf, MODULE_DELETE_PROP, props)
+  const triggeredError = error('missingDeleteMutation', dConf, MODULE_DELETE_PROP, props)
+  return {command: 'error', _payload: triggeredError}
+}
+
+function getStore () {
+  return {
+    state: {},
+    _actions: {},
+    _mutations: {},
+    _modulesNamespaceMap: {}
+  }
+}
+
+function getConf () {
+  return {
+    setter: 'set',
+    getter: 'get',
+    deletor: 'delete',
+    vuexEasyFirestore: false,
+    ignorePrivateProps: true,
+    ignoreProps: [],
+    pattern: 'simple'
+  }
 }
 
 /**

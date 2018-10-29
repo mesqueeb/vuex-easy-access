@@ -78,7 +78,7 @@ function getId(payloadPiece, conf, path, fullPayload) {
 /**
  * Get all ids from an array payload.
  *
- * @param {string[]} payload
+ * @param {any[]} payload
  * @param {object} [conf] (optional - for error handling) the vuex-easy-access config
  * @param {string} [path] (optional - for error handling) the path called
  * @returns {string[]} all ids
