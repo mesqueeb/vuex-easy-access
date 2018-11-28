@@ -90,6 +90,17 @@ test('fillinPathWildcards without *', t => {
 })
 test('createObjectFromPath', t => {
   let path, payload, state, conf, res
+  path = '*'
+  payload = {'001': {name: 'bulba'}}
+  res = createObjectFromPath(path, payload, state, conf)
+  t.deepEqual(res, {'001': {name: 'bulba'}})
+
+  path = 'test'
+  payload = {'001': {name: 'bulba'}}
+  res = createObjectFromPath(path, payload, state, conf)
+  console.log('res → ', res)
+  t.deepEqual(res, {test: {'001': {name: 'bulba'}}})
+
   path = 'locationJournal/gymData/defeated.palletTown'
   payload = true
   res = createObjectFromPath(path, payload, state, conf)
