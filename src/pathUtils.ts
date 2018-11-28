@@ -111,6 +111,7 @@ export function fillinPathWildcards (
 
 /**
  * ('/sub.prop', payload) becomes →  {sub: {prop: payload}}
+ * ('sub', payload) becomes →  {sub: payload}
  *
  * @param   {string} path     'a/path/like.this'
  * @param   {*}      payload
@@ -124,6 +125,10 @@ export function createObjectFromPath (
   state?: object,
   conf?: object
 ): AnyObject {
+  // edge cases
+  if (path === '*') return payload
+  if (!path.includes('.') && !path.includes('/')) return {[path]: payload}
+  // start
   let newValue = payload
   if (path.includes('*')) {
     // only work with arrays

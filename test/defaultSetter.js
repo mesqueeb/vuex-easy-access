@@ -227,4 +227,50 @@ test('[vuex-easy-firestore] has statePropName', t => {
   payload = 'red'
   res = formatSetter(path, payload, store, conf)
   t.deepEqual(res, {command: 'dispatch', _path: 'info/user/set', _payload: {primary: 'red'}})
+
+  // 1. end *
+  path = 'info/user/favColours.primary.*'
+  //     a) proper id
+  payload = {red: true}
+  res = formatSetter(path, payload, store, conf)
+  t.deepEqual(res, {command: 'dispatch', _path: 'info/user/set', _payload: {primary: {red: true}}})
+  path = 'info/user/favColours.primary.*'
+  //     b) flat id
+  payload = {id: 'red', is: true}
+  res = formatSetter(path, payload, store, conf)
+  t.deepEqual(res, {command: 'dispatch', _path: 'info/user/set', _payload: {primary: {red: {id: 'red', is: true}}}})
+
+  // 1.B  end * with less long path
+  store._modulesNamespaceMap['pokemonBox/'] = {state: {_conf: {statePropName: 'pokemon'}}}
+  store._actions['pokemonBox/set'] = true
+  path = 'pokemonBox/pokemon.*'
+  //     a) proper id
+  payload = {'001': {name: 'bulba'}}
+  res = formatSetter(path, payload, store, conf)
+  t.deepEqual(res, {command: 'dispatch', _path: 'pokemonBox/set', _payload: {'001': {name: 'bulba'}}})
+  path = 'pokemonBox/pokemon.*'
+  //     b) flat id
+  payload = {id: '001', name: 'bulba'}
+  res = formatSetter(path, payload, store, conf)
+  t.deepEqual(res, {command: 'dispatch', _path: 'pokemonBox/set', _payload: {id: '001', name: 'bulba'}})
+
+  // setup for 2+
+  store.state = {info: {user: {favColours: {primary: {visible: false}}}}}
+  store._modulesNamespaceMap['info/user/'].state.favColours = {primary: {visible: false}}
+  // 2. mid-way *
+  path = 'info/user/favColours.*.visible'
+  payload = ['primary', true]
+  res = formatSetter(path, payload, store, conf)
+  t.deepEqual(res, {command: 'dispatch', _path: 'info/user/set', _payload: {primary: {visible: true}}})
+
+  // 3. mid-way * and end *
+  path = 'info/user/favColours.*.visible.*'
+  payload = ['primary', {red: true}]
+  res = formatSetter(path, payload, store, conf)
+  t.deepEqual(res, {command: 'dispatch', _path: 'info/user/set', _payload: {primary: {visible: {red: true}}}})
+
+  // await store.set('pokemonBox/pokemon.*.nested.a.met.de', [id, 'ebe'])
+  // await store.dispatch('pokemonBox/set', {id, nested: {a: {met: {de: 'ebe'}}}})
+  // await store.set('pokemonBox/pokemon.*.nested.a.met.*', [id, {de: 'ebe'}])
+  // await store.dispatch('pokemonBox/set', {id, nested: {a: {met: {de: 'ebe'}}}})
 })

@@ -36,6 +36,7 @@ export declare function checkIdWildcardRatio(ids: string[], path: string, conf: 
 export declare function fillinPathWildcards(ids: string[], path: string, state?: object, conf?: object): string;
 /**
  * ('/sub.prop', payload) becomes →  {sub: {prop: payload}}
+ * ('sub', payload) becomes →  {sub: payload}
  *
  * @param   {string} path     'a/path/like.this'
  * @param   {*}      payload

@@ -156,10 +156,7 @@ export function formatDeletor (
     if (fsProps.includes('*')) {
       const idsPayload = (!isArray(payload)) ? [payload] : payload
       const ids = getIdsFromPayload(idsPayload)
-      console.log('fsProps → ', fsProps)
-      console.log('ids → ', ids)
       newPath = fillinPathWildcards(ids, fsProps)
-      console.log('newPath → ', newPath)
     }
     if (newPath) return {command: 'dispatch', _path: modulePath + 'delete', _payload: newPath}
   }

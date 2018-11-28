@@ -172,6 +172,7 @@ function fillinPathWildcards(ids, path, state, conf) {
 }
 /**
  * ('/sub.prop', payload) becomes →  {sub: {prop: payload}}
+ * ('sub', payload) becomes →  {sub: payload}
  *
  * @param   {string} path     'a/path/like.this'
  * @param   {*}      payload
@@ -180,6 +181,13 @@ function fillinPathWildcards(ids, path, state, conf) {
  * @returns {AnyObject} a nested object re-created based on the path & payload
  */
 function createObjectFromPath(path, payload, state, conf) {
+    var _a;
+    // edge cases
+    if (path === '*')
+        return payload;
+    if (!path.includes('.') && !path.includes('/'))
+        return _a = {}, _a[path] = payload, _a;
+    // start
     var newValue = payload;
     if (path.includes('*')) {
         // only work with arrays
@@ -721,10 +729,7 @@ function formatDeletor(path, payload, store, conf) {
         if (fsProps.includes('*')) {
             var idsPayload = (!isWhat.isArray(payload)) ? [payload] : payload;
             var ids = getIdsFromPayload(idsPayload);
-            console.log('fsProps → ', fsProps);
-            console.log('ids → ', ids);
             newPath = fillinPathWildcards(ids, fsProps);
-            console.log('newPath → ', newPath);
         }
         if (newPath)
             return { command: 'dispatch', _path: modulePath + 'delete', _payload: newPath };
