@@ -118,9 +118,9 @@ state: {
 }
 
 // Setters you can use from Vue components
-$store.set('player/pokeDex.*', {'001': {name: 'Bulbasaur'}}) // or
-$store.set('player/pokeDex.*', {id: '001', name: 'Bulbasaur'})
-// You can use pass `{[id]: item}` or `{id, item}` as the payload
+$store.set('player/pokeDex.*', {id: '001', name: 'Bulbasaur'}) // or
+$store.set('player/pokeDex.*', {'001': {name: 'Bulbasaur'}})
+// You can use pass `{id, item}` or `{[id]: item}` as the payload
 $store.delete('player/pokeDex.*', id)
 
 // Actions you can use (from `set/` sub-module)
@@ -133,7 +133,7 @@ dispatch('player/delete/pokeDex.*', id) // from `delete/` sub-module
 As per the example above, values to be expected for each Pokémon are `name`, `seen` and `types`. When you define your state like so, **all expected values will automatically be added** to any new Pokémon you insert!
 
 ```js
-$store.set('player/pokeDex.*', {'001': {name: 'Bulbasaur'}})
+$store.set('player/pokeDex.*', {id: '001', name: 'Bulbasaur'})
 // results in the state:
 pokeDex: {
   '001': {

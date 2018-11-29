@@ -72,14 +72,17 @@ state: {
 // Gives you access to:
 
 // Easy Access shorthand
+set('module/someObject.*', {id, newVal}) // or
 set('module/someObject.*', {[id]: newVal})
 delete('module/someObject.*', id)
 
 // auto-generated Vuex actions
+dispatch('module/set/someObject.*', {id, newVal}) // or
 dispatch('module/set/someObject.*', {[id]: newVal})
 dispatch('module/delete/someObject.*', id)
 
 // auto-generated Vuex mutations
+commit('module/someObject.*', {id, newVal}) // or
 commit('module/someObject.*', {[id]: newVal})
 commit('module/-someObject.*', id)
 ```

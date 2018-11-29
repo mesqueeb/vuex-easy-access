@@ -44,7 +44,7 @@ Set values<br>Set nested values<br><br>Delete values | `dispatch('module/set/som
 **Array props** | eg. ```state: {someArray: []}```
 Push/shift/pop/splice values | `dispatch('module/set/someArray.push', newVal)`<br>`dispatch('module/set/someArray.shift')`<br>`dispatch('module/set/someArray.pop')`<br>`dispatch('module/set/someArray.splice', [ind, del, newVal])`
 **Objects with id wildcard** | eg. ```state: {someObject: {'*': ''}}```
-Set and delete | `dispatch('module/set/someObject.*', {[id]: newVal})`<br>`dispatch('module/delete/someObject.*', id)`
+Set and delete | `dispatch('module/set/someObject.*', {id, newVal})`<br>`dispatch('module/delete/someObject.*', id)`
 
 ### 2. Easy Access shorthand
 
@@ -55,7 +55,7 @@ Set values<br>Set nested values<br><br>Delete values | `set('module/someProp', n
 **Array props** | eg. ```state: {someArray: []}```
 Push/shift/pop/splice values | `set('module/someArray.push', newVal)`<br>`set('module/someArray.shift')`<br>`set('module/someArray.pop')`<br>`set('module/someArray.splice', [ind, del, newVal])`
 **Objects with id wildcard** | eg. ```state: {someObject: {'*': ''}}```
-Set and delete | `set('module/someObject.*', {[id]: newVal})`<br>`delete('module/someObject.*', id)`
+Set and delete | `set('module/someObject.*', {id, newVal})`<br>`delete('module/someObject.*', id)`
 
 \* `set()` and `delete()` are attached to the Vuex `store` object: `store.set()`
 
