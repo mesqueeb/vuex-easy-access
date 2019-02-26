@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/mesqueeb/vuex-easy-access#readme",
   "devDependencies": {
-    "ava": "^0.25.0",
+    "ava": "^1.2.1",
     "babel-eslint": "^8.2.6",
     "eslint": "^5.1.0",
     "eslint-config-standard": "^11.0.0",
@@ -46,7 +46,7 @@
     "firebase": "^5.5.2",
     "rollup": "^0.65.2",
     "rollup-plugin-commonjs": "^9.1.6",
-    "rollup-plugin-typescript2": "^0.17.1",
+    "rollup-plugin-typescript2": "^0.19.3",
     "ts-node": "^7.0.1",
     "typescript": "^3.1.1",
     "vuepress": "^0.14.4",
