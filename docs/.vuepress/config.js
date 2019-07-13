@@ -3,7 +3,7 @@ module.exports = {
   title: 'Vuex Easy Access',
   description: 'Unified syntax for accessing your Vuex store through simple set() and get() functions + auto generate mutations.',
   base: '/vuex-easy-access/',
-  ga: 'UA-92965499-4',
+  plugins: [['@vuepress/google-analytics', {ga: 'UA-92965499-4'}]],
   themeConfig: {
     displayAllHeaders: true,
     sidebar: [

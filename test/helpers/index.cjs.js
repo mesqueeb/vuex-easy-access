@@ -8,7 +8,7 @@ var mergeAnything = _interopDefault(require('merge-anything'));
 var Vuex = _interopDefault(require('vuex'));
 
 function unwrapExports (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x.default : x;
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
 
 function createCommonjsModule(fn, module) {
