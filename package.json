@@ -1,6 +1,6 @@
 {
   "name": "vuex-easy-access",
-  "version": "3.1.7",
+  "version": "3.1.8",
   "description": "Unified syntax with simple set() and get() store access + auto generate mutations",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -32,34 +32,34 @@
   },
   "homepage": "https://github.com/mesqueeb/vuex-easy-access#readme",
   "devDependencies": {
-    "ava": "^2.2.0",
-    "babel-eslint": "^8.2.6",
-    "eslint": "^5.16.0",
-    "eslint-config-standard": "^11.0.0",
+    "ava": "^2.4.0",
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.7.0",
+    "eslint-config-standard": "^14.1.0",
     "eslint-friendly-formatter": "^4.0.1",
-    "eslint-loader": "^2.2.1",
-    "eslint-plugin-import": "^2.18.0",
-    "eslint-plugin-node": "^7.0.1",
-    "eslint-plugin-promise": "^3.8.0",
-    "eslint-plugin-standard": "^3.1.0",
-    "eslint-plugin-vue": "^4.7.0",
-    "firebase": "^6.3.0",
-    "rollup": "^0.65.2",
-    "rollup-plugin-commonjs": "^9.3.4",
-    "rollup-plugin-typescript2": "^0.22.0",
-    "ts-node": "^7.0.1",
-    "typescript": "^3.5.3",
+    "eslint-loader": "^3.0.2",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "eslint-plugin-vue": "^6.0.1",
+    "firebase": "^7.5.0",
+    "rollup": "^1.27.4",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-typescript2": "^0.25.2",
+    "ts-node": "^8.5.2",
+    "typescript": "^3.7.2",
     "vue": "^2.6.10",
-    "vuepress": "^1.0.2",
-    "vuex": "^3.1.1"
+    "vuepress": "^1.2.0",
+    "vuex": "^3.1.2"
   },
   "dependencies": {
     "find-and-replace-anything": "^2.0.4",
-    "is-what": "^3.2.4",
-    "merge-anything": "^2.4.0"
+    "is-what": "^3.3.1",
+    "merge-anything": "^2.4.2"
   },
   "peerDependencies": {
-    "vue": "^2.5.17"
+    "vue": "^2.6.10"
   },
   "ava": {
     "helpers": [

@@ -2,10 +2,10 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var isWhat = _interopDefault(require('is-what'));
-var Vue = _interopDefault(require('vue'));
-var mergeAnything = _interopDefault(require('merge-anything'));
+var vue = _interopDefault(require('vue'));
 var Vuex = _interopDefault(require('vuex'));
+var isWhat = _interopDefault(require('is-what'));
+var mergeAnything = _interopDefault(require('merge-anything'));
 
 function unwrapExports (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -22,7 +22,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 
-var Vue$$1 = _interopDefault(Vue);
+var Vue = _interopDefault(vue);
 var merge = _interopDefault(mergeAnything);
 
 var defaultConfig = {
@@ -105,7 +105,7 @@ function getId(payloadPiece, conf, path, fullPayload) {
  * @returns {string[]} all ids
  */
 function getIdsFromPayload(payload, conf, path) {
-    return payload.map(function (payloadPiece) { return getId(payloadPiece, conf, path, payload); });
+    return payload.map(function (payloadPiece) { return getId(payloadPiece, conf, path); });
 }
 /**
  * Returns a value of a payload piece. Eg. {[id]: 'val'} will return 'val'
@@ -364,7 +364,7 @@ function DELETE_PROP_SUBPROP(state, PROP_SUBPROP) {
     var lastProp = propsArray.pop();
     var propsWithoutLast = propsArray.join('.');
     var ref = getDeepRef(state, propsWithoutLast);
-    return Vue$$1.delete(ref, lastProp);
+    return Vue.delete(ref, lastProp);
 }
 // eslint-disable-next-line
 function MUTATE_PROP_x_SUBPROP(state, payload, PROP_SUBPROP, conf) {
@@ -389,7 +389,7 @@ function DELETE_PROP_x_SUBPROP(state, payload, PROP_SUBPROP, conf) {
         return;
     var pathWithIds = fillinPathWildcards(ids, propsWithoutLast, state, conf);
     var ref = getDeepRef(state, pathWithIds);
-    return Vue$$1.delete(ref, lastProp);
+    return Vue.delete(ref, lastProp);
 }
 // eslint-disable-next-line
 function MUTATE_PROP_x(state, payload, PROP_SUBPROP, conf, propValue) {
@@ -407,7 +407,7 @@ function MUTATE_PROP_x(state, payload, PROP_SUBPROP, conf, propValue) {
         newValue.id = lastId;
     if (isWhat.isObject(propValue))
         newValue = merge(propValue, newValue);
-    return Vue$$1.set(ref, lastId, newValue);
+    return Vue.set(ref, lastId, newValue);
 }
 // eslint-disable-next-line
 function DELETE_PROP_x(state, id, PROP_SUBPROP, conf) {
@@ -422,7 +422,7 @@ function DELETE_PROP_x(state, id, PROP_SUBPROP, conf) {
         : PROP_SUBPROP;
     var pathWithIds = fillinPathWildcards(ids, pathWithoutWildcard, state, conf);
     var ref = getDeepRef(state, pathWithIds);
-    return Vue$$1.delete(ref, lastId);
+    return Vue.delete(ref, lastId);
 }
 // execute mutation
 function executeArrayMutation(state, payload, action, PROP_SUBPROP, conf) {
@@ -916,22 +916,22 @@ function createEasyAccess(userConfig) {
     };
 }
 
-exports.default = createEasyAccess;
 exports.createEasyAccess = createEasyAccess;
-exports.defaultMutations = defaultMutations;
-exports.defaultGetter = defaultGetter;
-exports.defaultSetter = defaultSetter;
+exports.default = createEasyAccess;
 exports.defaultDeletor = defaultDeletor;
+exports.defaultGetter = defaultGetter;
+exports.defaultMutations = defaultMutations;
+exports.defaultSetter = defaultSetter;
 exports.getDeepRef = getDeepRef;
 exports.getKeysFromPath = getKeysFromPath;
 });
 
 unwrapExports(index_cjs);
 var index_cjs_1 = index_cjs.createEasyAccess;
-var index_cjs_2 = index_cjs.defaultMutations;
+var index_cjs_2 = index_cjs.defaultDeletor;
 var index_cjs_3 = index_cjs.defaultGetter;
-var index_cjs_4 = index_cjs.defaultSetter;
-var index_cjs_5 = index_cjs.defaultDeletor;
+var index_cjs_4 = index_cjs.defaultMutations;
+var index_cjs_5 = index_cjs.defaultSetter;
 var index_cjs_6 = index_cjs.getDeepRef;
 var index_cjs_7 = index_cjs.getKeysFromPath;
 
@@ -949,7 +949,7 @@ const gymDataState = {
 const gymData = {
   namespaced: true,
   state: gymDataState,
-  mutations: index_cjs_2(gymDataState, config, {moduleNamespace: 'locationJournal/gymData/'})
+  mutations: index_cjs_4(gymDataState, config, {moduleNamespace: 'locationJournal/gymData/'})
 };
 
 // MODULE: locationJournal
@@ -970,7 +970,7 @@ const locationJournalState = {
 const locationJournal = {
   namespaced: true,
   state: locationJournalState,
-  mutations: index_cjs_2(locationJournalState, config, {moduleNamespace: 'locationJournal'}),
+  mutations: index_cjs_4(locationJournalState, config, {moduleNamespace: 'locationJournal'}),
   modules: { gymData }
 };
 
@@ -989,7 +989,7 @@ const user = {
       return newVal + '!'
     },
   },
-  mutations: index_cjs_2(userState, config, {moduleNamespace: 'user/'})
+  mutations: index_cjs_4(userState, config, {moduleNamespace: 'user/'})
 };
 
 const firestoreUser = {
@@ -1001,7 +1001,7 @@ const firestoreUser = {
   // the rest
   namespaced: true,
   state: userState,
-  mutations: index_cjs_2(userState, config, {moduleNamespace: 'userDB/'})
+  mutations: index_cjs_4(userState, config, {moduleNamespace: 'userDB/'})
 };
 
 // MODULE: dex
@@ -1022,7 +1022,7 @@ const state = {
 const dex = {
   namespaced: true,
   state: state,
-  mutations: index_cjs_2(state, config, {moduleNamespace: 'dex/'})
+  mutations: index_cjs_4(state, config, {moduleNamespace: 'dex/'})
 };
 
 const firestoreDex = {
@@ -1034,7 +1034,7 @@ const firestoreDex = {
   // the rest
   namespaced: true,
   state: state,
-  mutations: index_cjs_2(state, config, {moduleNamespace: 'dexDB/'})
+  mutations: index_cjs_4(state, config, {moduleNamespace: 'dexDB/'})
 };
 
 // MODULE: dex
@@ -1052,7 +1052,7 @@ const state$1 = {
 const friendsList = {
   namespaced: true,
   state: state$1,
-  mutations: index_cjs_2(state$1, config, {moduleNamespace: 'friendsList/'})
+  mutations: index_cjs_4(state$1, config, {moduleNamespace: 'friendsList/'})
 };
 
 // import createFirestores from 'vuex-easy-firestore'
@@ -1080,7 +1080,7 @@ function initialState () {
 var storeObj = {
   modules: { locationJournal, user, dex, friendsList },
   state: initialState(),
-  mutations: index_cjs_2(initialState(), config, {moduleNamespace: ''}),
+  mutations: index_cjs_4(initialState(), config, {moduleNamespace: ''}),
   actions: {},
   getters: {},
   // plugins: [easyFirestores, easyAccess]
@@ -1088,7 +1088,7 @@ var storeObj = {
 };
 
 // create store
-Vue.use(Vuex);
+vue.use(Vuex);
 const store = new Vuex.Store(storeObj);
 
 module.exports = store;

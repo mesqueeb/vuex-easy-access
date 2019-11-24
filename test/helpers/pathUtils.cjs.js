@@ -84,7 +84,7 @@ function getId(payloadPiece, conf, path, fullPayload) {
  * @returns {string[]} all ids
  */
 function getIdsFromPayload(payload, conf, path) {
-    return payload.map(function (payloadPiece) { return getId(payloadPiece, conf, path, payload); });
+    return payload.map(function (payloadPiece) { return getId(payloadPiece, conf, path); });
 }
 /**
  * Returns a value of a payload piece. Eg. {[id]: 'val'} will return 'val'
@@ -330,16 +330,16 @@ function spliceDeepValue(target, path, index, deleteCount, value) {
     return deepRef.splice(index, deleteCount, value);
 }
 
-exports.getIdsFromPayload = getIdsFromPayload;
-exports.getValueFromPayloadPiece = getValueFromPayloadPiece;
 exports.checkIdWildcardRatio = checkIdWildcardRatio;
-exports.fillinPathWildcards = fillinPathWildcards;
 exports.createObjectFromPath = createObjectFromPath;
-exports.getKeysFromPath = getKeysFromPath;
+exports.fillinPathWildcards = fillinPathWildcards;
 exports.getDeepRef = getDeepRef;
 exports.getDeepValue = getDeepValue;
-exports.setDeepValue = setDeepValue;
-exports.pushDeepValue = pushDeepValue;
+exports.getIdsFromPayload = getIdsFromPayload;
+exports.getKeysFromPath = getKeysFromPath;
+exports.getValueFromPayloadPiece = getValueFromPayloadPiece;
 exports.popDeepValue = popDeepValue;
+exports.pushDeepValue = pushDeepValue;
+exports.setDeepValue = setDeepValue;
 exports.shiftDeepValue = shiftDeepValue;
 exports.spliceDeepValue = spliceDeepValue;

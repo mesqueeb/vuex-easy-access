@@ -1,4 +1,4 @@
-import { isArray, isString, isObject } from 'is-what';
+import { isObject, isString, isArray } from 'is-what';
 import Vue from 'vue';
 import merge from 'merge-anything';
 
@@ -82,7 +82,7 @@ function getId(payloadPiece, conf, path, fullPayload) {
  * @returns {string[]} all ids
  */
 function getIdsFromPayload(payload, conf, path) {
-    return payload.map(function (payloadPiece) { return getId(payloadPiece, conf, path, payload); });
+    return payload.map(function (payloadPiece) { return getId(payloadPiece, conf, path); });
 }
 /**
  * Returns a value of a payload piece. Eg. {[id]: 'val'} will return 'val'
@@ -894,4 +894,4 @@ function createEasyAccess(userConfig) {
 }
 
 export default createEasyAccess;
-export { createEasyAccess, defaultMutations, defaultGetter, defaultSetter, defaultDeletor, getDeepRef, getKeysFromPath };
+export { createEasyAccess, defaultDeletor, defaultGetter, defaultMutations, defaultSetter, getDeepRef, getKeysFromPath };

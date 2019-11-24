@@ -88,7 +88,7 @@ function getId(payloadPiece, conf, path, fullPayload) {
  * @returns {string[]} all ids
  */
 function getIdsFromPayload(payload, conf, path) {
-    return payload.map(function (payloadPiece) { return getId(payloadPiece, conf, path, payload); });
+    return payload.map(function (payloadPiece) { return getId(payloadPiece, conf, path); });
 }
 /**
  * Returns a value of a payload piece. Eg. {[id]: 'val'} will return 'val'
@@ -899,11 +899,11 @@ function createEasyAccess(userConfig) {
     };
 }
 
-exports.default = createEasyAccess;
 exports.createEasyAccess = createEasyAccess;
-exports.defaultMutations = defaultMutations;
-exports.defaultGetter = defaultGetter;
-exports.defaultSetter = defaultSetter;
+exports.default = createEasyAccess;
 exports.defaultDeletor = defaultDeletor;
+exports.defaultGetter = defaultGetter;
+exports.defaultMutations = defaultMutations;
+exports.defaultSetter = defaultSetter;
 exports.getDeepRef = getDeepRef;
 exports.getKeysFromPath = getKeysFromPath;

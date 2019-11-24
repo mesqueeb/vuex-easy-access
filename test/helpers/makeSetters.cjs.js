@@ -4,7 +4,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 var isWhat = require('is-what');
 
-var defaultConfig = {
+var defaultConf = {
     setter: 'set',
     getter: 'get',
     deletor: 'delete',
@@ -48,7 +48,7 @@ function getErrors(conf, path, props) {
  */
 function error (error, conf, path, props) {
     if (conf === void 0) { conf = {}; }
-    var mergedConf = Object.assign({}, defaultConfig, conf);
+    var mergedConf = Object.assign({}, defaultConf, conf);
     var errorMessages = getErrors(mergedConf, path, props);
     console.error('[vuex-easy-access] Error!', errorMessages[error]);
     return error;
@@ -84,7 +84,7 @@ function getId(payloadPiece, conf, path, fullPayload) {
  * @returns {string[]} all ids
  */
 function getIdsFromPayload(payload, conf, path) {
-    return payload.map(function (payloadPiece) { return getId(payloadPiece, conf, path, payload); });
+    return payload.map(function (payloadPiece) { return getId(payloadPiece, conf, path); });
 }
 /**
  * Returns a value of a payload piece. Eg. {[id]: 'val'} will return 'val'
@@ -267,7 +267,7 @@ function defaultSetter(path, payload, store, conf) {
 }
 function formatSetter(path, payload, store, conf) {
     if (conf === void 0) { conf = {}; }
-    var dConf = Object.assign({}, defaultConfig, conf);
+    var dConf = Object.assign({}, defaultConf, conf);
     var pArr = path.split('/'); // ['info', 'user', 'favColours.primary']
     var props = pArr.pop(); // 'favColours.primary'
     var modulePath = (pArr.length)
@@ -340,7 +340,7 @@ function defaultDeletor(path, payload, store, conf) {
 }
 function formatDeletor(path, payload, store, conf) {
     if (conf === void 0) { conf = {}; }
-    var dConf = Object.assign({}, defaultConfig, conf); // 'user/items.*.tags.*'
+    var dConf = Object.assign({}, defaultConf, conf); // 'user/items.*.tags.*'
     var pArr = path.split('/'); // ['user', 'items.*.tags.*']
     var props = pArr.pop(); // 'items.*.tags.*'
     var modulePath = (pArr.length)
@@ -515,7 +515,7 @@ function createDeleteModule(targetState, moduleNS, store, conf) {
 function generateSetterModules(store, conf) {
     if (conf === void 0) { conf = {}; }
     var modules = store._modulesNamespaceMap;
-    var dConf = Object.assign({}, defaultConfig, conf);
+    var dConf = Object.assign({}, defaultConf, conf);
     Object.keys(modules).forEach(function (moduleNS) {
         var _module = modules[moduleNS];
         var moduleName = getKeysFromPath(moduleNS + dConf.setter);
@@ -533,8 +533,8 @@ function generateSetterModules(store, conf) {
     store.registerModule(rootDeleteModuleName, rootDeleteModule);
 }
 
-exports.defaultSetter = defaultSetter;
-exports.formatSetter = formatSetter;
 exports.defaultDeletor = defaultDeletor;
+exports.defaultSetter = defaultSetter;
 exports.formatDeletor = formatDeletor;
+exports.formatSetter = formatSetter;
 exports.generateSetterModules = generateSetterModules;
