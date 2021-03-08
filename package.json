@@ -4,7 +4,7 @@
   "description": "Unified syntax with simple set() and get() store access + auto generate mutations",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
-  "typings": "types/index.d.ts",
+  "types": "types/index.d.ts",
   "scripts": {
     "lint": "eslint --ext .js,.vue src",
     "test": "ava",
