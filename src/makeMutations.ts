@@ -1,7 +1,6 @@
 import { getValueFromPayloadPiece, checkIdWildcardRatio, getIdsFromPayload, fillinPathWildcards, setDeepValue, getDeepRef, pushDeepValue, popDeepValue, shiftDeepValue, spliceDeepValue } from './pathUtils'
 import { isObject, isArray } from 'is-what'
 import error from './errors'
-import Vue from 'vue'
 import merge from 'merge-anything'
 import defaultConf from './defaultConfig'
 import { IDefaultConfig, AnyObject } from './declarations'
@@ -31,7 +30,7 @@ function DELETE_PROP_SUBPROP (
   const lastProp = propsArray.pop()
   const propsWithoutLast = propsArray.join('.')
   const ref = getDeepRef(state, propsWithoutLast)
-  return Vue.delete(ref, lastProp)
+  delete ref[lastProp]
 }
 
 // eslint-disable-next-line
@@ -65,7 +64,7 @@ function DELETE_PROP_x_SUBPROP (
   if (!checkIdWildcardRatio(ids, propsWithoutLast, conf)) return
   const pathWithIds = fillinPathWildcards(ids, propsWithoutLast, state, conf)
   const ref = getDeepRef(state, pathWithIds)
-  return Vue.delete(ref, lastProp)
+  delete ref[lastProp]
 }
 
 // eslint-disable-next-line
@@ -86,7 +85,8 @@ function MUTATE_PROP_x (
   let newValue = getValueFromPayloadPiece(payload.pop())
   if (isObject(newValue)) newValue.id = lastId
   if (isObject(propValue)) newValue = merge(propValue, newValue)
-  return Vue.set(ref, lastId, newValue)
+  ref[lastId] = newValue;
+  return newValue;
 }
 
 // eslint-disable-next-line
@@ -105,7 +105,7 @@ function DELETE_PROP_x (
     : PROP_SUBPROP
   const pathWithIds = fillinPathWildcards(ids, pathWithoutWildcard, state, conf)
   const ref = getDeepRef(state, pathWithIds)
-  return Vue.delete(ref, lastId)
+  delete ref[lastId]
 }
 
 // execute mutation

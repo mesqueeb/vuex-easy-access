@@ -3,3 +3,4 @@ docs/.vuepress/dist
 .rpt2_cache
 .vscode
 .cache
+docs/.vuepress/.temp
