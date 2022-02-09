@@ -1,10 +1,10 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import { createApp } from 'vue'
+import { createStore } from 'vuex'
 import storeObj from './store'
 
-// create store
-Vue.use(Vuex)
-const store = new Vuex.Store(storeObj)
+const app = createApp({})
+const store = createStore(storeObj)
+app.use(store)
 // console.log('store.set → ', store.set)
 // console.log('store.get → ', store.get)
 export default store

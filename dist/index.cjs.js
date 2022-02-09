@@ -5,7 +5,6 @@ Object.defineProperty(exports, '__esModule', { value: true });
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var isWhat = require('is-what');
-var Vue = _interopDefault(require('vue'));
 var merge = _interopDefault(require('merge-anything'));
 
 var defaultConfig = {
@@ -347,7 +346,7 @@ function DELETE_PROP_SUBPROP(state, PROP_SUBPROP) {
     var lastProp = propsArray.pop();
     var propsWithoutLast = propsArray.join('.');
     var ref = getDeepRef(state, propsWithoutLast);
-    return Vue.delete(ref, lastProp);
+    delete ref[lastProp];
 }
 // eslint-disable-next-line
 function MUTATE_PROP_x_SUBPROP(state, payload, PROP_SUBPROP, conf) {
@@ -372,7 +371,7 @@ function DELETE_PROP_x_SUBPROP(state, payload, PROP_SUBPROP, conf) {
         return;
     var pathWithIds = fillinPathWildcards(ids, propsWithoutLast, state, conf);
     var ref = getDeepRef(state, pathWithIds);
-    return Vue.delete(ref, lastProp);
+    delete ref[lastProp];
 }
 // eslint-disable-next-line
 function MUTATE_PROP_x(state, payload, PROP_SUBPROP, conf, propValue) {
@@ -390,7 +389,8 @@ function MUTATE_PROP_x(state, payload, PROP_SUBPROP, conf, propValue) {
         newValue.id = lastId;
     if (isWhat.isObject(propValue))
         newValue = merge(propValue, newValue);
-    return Vue.set(ref, lastId, newValue);
+    ref[lastId] = newValue;
+    return newValue;
 }
 // eslint-disable-next-line
 function DELETE_PROP_x(state, id, PROP_SUBPROP, conf) {
@@ -405,7 +405,7 @@ function DELETE_PROP_x(state, id, PROP_SUBPROP, conf) {
         : PROP_SUBPROP;
     var pathWithIds = fillinPathWildcards(ids, pathWithoutWildcard, state, conf);
     var ref = getDeepRef(state, pathWithIds);
-    return Vue.delete(ref, lastId);
+    delete ref[lastId];
 }
 // execute mutation
 function executeArrayMutation(state, payload, action, PROP_SUBPROP, conf) {
